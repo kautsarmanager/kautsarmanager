@@ -1,0 +1,6 @@
+{
+  "name": "Personal Management System",
+  "description": "A comprehensive personal productivity, task, finance, file, wishlist, and AI-assisted management application.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
