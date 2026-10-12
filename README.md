@@ -1,5 +1,6 @@
 # Personal Management System (PMS)
 
+
 Aplikasi React + TypeScript + Vite untuk mengelola tugas, keuangan, file, wishlist, dan aktivitas harian. UI dark-grey yang sudah ada dipertahankan.
 
 ## Fitur integrasi yang sudah disiapkan
