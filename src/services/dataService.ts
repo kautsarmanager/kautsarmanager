@@ -75,7 +75,10 @@ class DataService {
       if (this.realtimeChannel) void supabase.removeChannel(this.realtimeChannel);
       void this.flushOutbox().then(() => this.syncFromSupabaseBackground());
       this.realtimeChannel = supabase.channel(`pms-user-${user.id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks', filter: `user_id=eq.${user.id}` }, () => void this.syncFromSupabaseBackground())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks', filter: `user_id=eq.${user.id}` }, (payload) => {
+  console.log('[Realtime tasks]', payload.eventType, payload);
+  void this.syncFromSupabaseBackground();
+})
         .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${user.id}` }, () => void this.syncFromSupabaseBackground())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'files', filter: `user_id=eq.${user.id}` }, () => void this.syncFromSupabaseBackground())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'wishlist_items', filter: `user_id=eq.${user.id}` }, () => void this.syncFromSupabaseBackground())
