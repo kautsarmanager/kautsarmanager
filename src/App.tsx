@@ -33,7 +33,15 @@ import {
 } from './types';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<NavTab>(() => {
+    try {
+      const saved = sessionStorage.getItem('kautsarmanager_active_tab');
+      const validTabs: NavTab[] = ['dashboard', 'tasks', 'finance', 'files', 'wishlist', 'ai', 'settings'];
+      return saved && validTabs.includes(saved as NavTab) ? (saved as NavTab) : 'dashboard';
+    } catch {
+      return 'dashboard';
+    }
+  });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [initialTaskModalOpen, setInitialTaskModalOpen] = useState(false);
@@ -84,6 +92,15 @@ export default function App() {
     });
     return () => { mounted = false; unsub(); };
   }, []);
+
+  // Keep the current section when the user refreshes the page (F5).
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('kautsarmanager_active_tab', activeTab);
+    } catch {
+      // Session storage may be unavailable in restricted browser contexts.
+    }
+  }, [activeTab]);
 
   // Subscribe to changes from DataService
   useEffect(() => {

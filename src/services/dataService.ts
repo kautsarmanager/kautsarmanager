@@ -75,10 +75,7 @@ class DataService {
       if (this.realtimeChannel) void supabase.removeChannel(this.realtimeChannel);
       void this.flushOutbox().then(() => this.syncFromSupabaseBackground());
       this.realtimeChannel = supabase.channel(`pms-user-${user.id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks', filter: `user_id=eq.${user.id}` }, (payload) => {
-  console.log('[Realtime tasks]', payload.eventType, payload);
-  void this.syncFromSupabaseBackground();
-})
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks', filter: `user_id=eq.${user.id}` }, () => void this.syncFromSupabaseBackground())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${user.id}` }, () => void this.syncFromSupabaseBackground())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'files', filter: `user_id=eq.${user.id}` }, () => void this.syncFromSupabaseBackground())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'wishlist_items', filter: `user_id=eq.${user.id}` }, () => void this.syncFromSupabaseBackground())
@@ -176,7 +173,7 @@ class DataService {
 
   private outboxKey(userId = this.activeUserId) { return userId ? `pms_sync_outbox:${userId}` : 'pms_sync_outbox'; }
 
-  private enqueueMutation(entry: { table: string; operation: 'upsert' | 'delete' | 'storage_delete'; payload?: any; recordId?: string }) {
+  private enqueueMutation(entry: { table: string; operation: 'upsert' | 'delete' | 'soft_delete' | 'storage_delete'; payload?: any; recordId?: string }) {
     if (!this.activeUserId) return;
     const key = this.outboxKey();
     let queue: Array<typeof entry & { queueId: string }> = [];
@@ -191,7 +188,7 @@ class DataService {
     if (!supabase || !this.activeUserId || !navigator.onLine || this.isFlushingOutbox) return;
     const userId = this.activeUserId;
     const key = this.outboxKey(userId);
-    let queue: Array<{ queueId: string; table: string; operation: 'upsert' | 'delete' | 'storage_delete'; payload?: any; recordId?: string }>;
+    let queue: Array<{ queueId: string; table: string; operation: 'upsert' | 'delete' | 'soft_delete' | 'storage_delete'; payload?: any; recordId?: string }>;
     try { queue = JSON.parse(localStorage.getItem(key) || '[]'); if (!Array.isArray(queue) || queue.length === 0) return; } catch { return; }
     this.isFlushingOutbox = true;
     const originalIds = new Set(queue.map((item) => item.queueId));
@@ -208,6 +205,12 @@ class DataService {
             const ownerColumn = item.table === 'profiles' ? 'id' : 'user_id';
             const query = supabase.from(item.table).delete().eq('id', item.recordId);
             const result = await (ownerColumn === 'id' ? query : query.eq('user_id', userId));
+            error = result.error;
+          } else if (item.operation === 'soft_delete') {
+            const result = await supabase.from(item.table)
+              .update({ deleted_at: new Date().toISOString() })
+              .eq('id', item.recordId)
+              .eq('user_id', userId);
             error = result.error;
           } else if (item.operation === 'storage_delete') {
             const result = await supabase.storage.from('pms-files').remove([String(item.recordId || '')]);
@@ -341,7 +344,7 @@ class DataService {
     this.notify();
 
     if (this.cloudWritesEnabled && supabase && this.activeUserId) {
-      this.enqueueMutation({ table: 'tasks', operation: 'delete', recordId: id });
+      this.enqueueMutation({ table: 'tasks', operation: 'soft_delete', recordId: id });
     }
 
     return true;
@@ -396,7 +399,7 @@ class DataService {
     this.notify();
 
     if (this.cloudWritesEnabled && supabase && this.activeUserId) {
-      this.enqueueMutation({ table: 'transactions', operation: 'delete', recordId: id });
+      this.enqueueMutation({ table: 'transactions', operation: 'soft_delete', recordId: id });
     }
 
     return true;
@@ -521,7 +524,7 @@ class DataService {
 
     if (this.cloudWritesEnabled && supabase && this.activeUserId) {
       if (item?.storage_path) this.enqueueMutation({ table: 'pms-files', operation: 'storage_delete', recordId: item.storage_path });
-      this.enqueueMutation({ table: 'files', operation: 'delete', recordId: id });
+      this.enqueueMutation({ table: 'files', operation: 'soft_delete', recordId: id });
     }
 
     return true;
@@ -604,7 +607,7 @@ class DataService {
     this.notify();
 
     if (this.cloudWritesEnabled && supabase && this.activeUserId) {
-      this.enqueueMutation({ table: 'wishlist_items', operation: 'delete', recordId: id });
+      this.enqueueMutation({ table: 'wishlist_items', operation: 'soft_delete', recordId: id });
     }
 
     return true;

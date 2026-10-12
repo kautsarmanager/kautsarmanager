@@ -218,7 +218,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <div className="min-w-0 flex-1">
                 <p className={`text-xs font-medium truncate ${isDark ? 'text-zinc-200' : 'text-zinc-800'}`}>
-                  {currentUser ? `@${currentUser.username}` : profile.name}
+                  {currentUser ? currentUser.username : profile.name}
                 </p>
                 <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-mono truncate">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
