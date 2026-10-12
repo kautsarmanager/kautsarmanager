@@ -19,7 +19,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess, isDark, o
   const [isLoading, setIsLoading] = useState(false);
   const [notice, setNotice] = useState('');
 
-  const inputClass = `w-full rounded-xl border py-3 pl-10 pr-3 text-sm outline-none focus:border-indigo-500 ${isDark ? 'bg-[#0c0d12] border-[#292c3a] text-zinc-100 placeholder:text-zinc-600' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400'}`;
+  const inputClass = `w-full rounded-xl border py-3 pl-10 pr-3 text-sm outline-none focus:border-lime-500 ${isDark ? 'bg-[#0c0d12] border-[#292c3a] text-zinc-100 placeholder:text-zinc-600' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400'}`;
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault(); setErrorMessage(''); setNotice(''); setIsLoading(true);
     try {
@@ -45,8 +45,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess, isDark, o
   return <div className={`min-h-screen flex items-center justify-center p-4 ${isDark ? 'bg-[#0a0b0e] text-zinc-100' : 'bg-[#f4f5f8] text-zinc-900'}`}>
     <div className={`w-full max-w-md rounded-2xl border p-6 sm:p-8 shadow-2xl ${isDark ? 'bg-[#121319] border-[#222432] shadow-black/80' : 'bg-white border-zinc-200 shadow-xl'}`}>
       <div className="flex flex-col items-center text-center mb-6">
-        <div className="w-12 h-12 rounded-2xl bg-indigo-600/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-3"><ShieldCheck className="w-6 h-6" /></div>
-        <h1 className="text-lg font-bold tracking-tight">Personal Management System</h1>
+        <div className="w-12 h-12 rounded-2xl bg-lime-600/15 border border-lime-500/30 flex items-center justify-center text-lime-400 mb-3"><ShieldCheck className="w-6 h-6" /></div>
+        <h1 className="text-lg font-bold tracking-tight">Manager</h1>
         <p className={`text-xs mt-1 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Satu akun untuk semua perangkat dan data Anda</p>
       </div>
       <div className={`flex p-1 rounded-xl border text-xs font-medium mb-5 ${isDark ? 'bg-[#0c0d12] border-[#1e202c]' : 'bg-zinc-100 border-zinc-200'}`}>
@@ -60,7 +60,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess, isDark, o
         <div className="relative"><Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-zinc-500" /><input type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className={inputClass} /></div>
         <div className="relative"><LockKeyhole className="absolute left-3.5 top-3.5 w-4 h-4 text-zinc-500" /><input type="password" autoComplete={tab === 'register' ? 'new-password' : 'current-password'} required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password (minimal 8 karakter)" className={inputClass} /></div>
         {tab === 'register' && <div className="relative"><LockKeyhole className="absolute left-3.5 top-3.5 w-4 h-4 text-zinc-500" /><input type="password" autoComplete="new-password" required minLength={8} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Ulangi password" className={inputClass} /></div>}
-        <button disabled={isLoading || !authService.isConfigured()} type="submit" className="w-full flex items-center justify-center gap-2 rounded-xl py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold disabled:opacity-50">
+        <button disabled={isLoading || !authService.isConfigured()} type="submit" className="w-full flex items-center justify-center gap-2 rounded-xl py-3 bg-lime-600 hover:bg-lime-500 text-white text-sm font-semibold disabled:opacity-50">
           {isLoading ? <LoaderCircle className="w-4 h-4 animate-spin" /> : <>{tab === 'login' ? 'Masuk ke aplikasi' : 'Buat akun'} <ArrowRight className="w-4 h-4" /></>}
         </button>
       </form>

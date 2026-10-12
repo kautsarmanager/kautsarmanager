@@ -80,7 +80,7 @@ export const PinInput: React.FC<PinInputProps> = ({
               key={idx}
               className={`w-3.5 h-3.5 rounded-full border transition-all duration-150 ${
                 isFilled
-                  ? 'bg-indigo-500 border-indigo-400 scale-110 shadow-xs shadow-indigo-500/50'
+                  ? 'bg-lime-500 border-lime-400 scale-110 shadow-xs shadow-lime-500/50'
                   : isDark
                   ? 'border-zinc-700 bg-[#161720]'
                   : 'border-zinc-300 bg-zinc-100'

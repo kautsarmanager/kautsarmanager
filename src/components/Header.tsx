@@ -104,8 +104,8 @@ export const Header: React.FC<HeaderProps> = ({
             className={`relative p-1.5 rounded-lg border transition-colors cursor-pointer ${
               notificationOpen
                 ? isDark
-                  ? 'bg-[#1f202c] border-indigo-500/50 text-indigo-400'
-                  : 'bg-indigo-50 border-indigo-300 text-indigo-600'
+                  ? 'bg-[#1f202c] border-lime-500/50 text-lime-400'
+                  : 'bg-lime-50 border-lime-300 text-lime-600'
                 : isDark
                 ? 'bg-[#14151b] border-[#222430] text-zinc-400 hover:text-zinc-200 hover:bg-[#1c1d26]'
                 : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100'
@@ -123,7 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
                     ? 'bg-rose-500 animate-pulse'
                     : counts.today > 0
                     ? 'bg-amber-500'
-                    : 'bg-indigo-600'
+                    : 'bg-lime-600'
                 }`}
               >
                 {counts.total > 9 ? '9+' : counts.total}
@@ -175,7 +175,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Primary Action Button */}
         <button
           onClick={onQuickAdd}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs shadow-indigo-600/30 active:scale-[0.98] transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-lime-600 hover:bg-lime-500 text-white shadow-xs shadow-lime-600/30 active:scale-[0.98] transition-all cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Tambah Task</span>

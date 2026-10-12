@@ -236,7 +236,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                             Target: Rp{w.target_price.toLocaleString('id-ID')}
                           </p>
                         </div>
-                        <span className="text-xs font-mono font-bold text-indigo-400 ml-2">
+                        <span className="text-xs font-mono font-bold text-lime-400 ml-2">
                           {Math.min(100, Math.round((w.saved_amount / (w.target_price || 1)) * 100))}%
                         </span>
                       </div>

@@ -145,7 +145,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
       case 'tomorrow':
       case 'soon':
         return (
-          <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+          <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md bg-lime-500/10 text-lime-400 border border-lime-500/20">
             <Calendar className="w-3 h-3 shrink-0" />
             <span>{label}</span>
           </span>
@@ -176,7 +176,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
         }`}
       >
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+          <div className="p-1.5 rounded-lg bg-lime-500/10 text-lime-400">
             <Bell className="w-4 h-4" />
           </div>
           <div>
@@ -238,7 +238,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
         {permission !== 'granted' && (
           <button
             onClick={handleRequestPermission}
-            className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shrink-0 cursor-pointer"
+            className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-lime-600 hover:bg-lime-500 text-white transition-colors shrink-0 cursor-pointer"
           >
             Izinkan
           </button>
@@ -431,7 +431,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
             onClose();
             onNavigateToTasks();
           }}
-          className="flex items-center gap-1 text-[11px] font-medium text-indigo-400 hover:text-indigo-300 cursor-pointer"
+          className="flex items-center gap-1 text-[11px] font-medium text-lime-400 hover:text-lime-300 cursor-pointer"
         >
           <span>Buka Semua Task</span>
           <ExternalLink className="w-3 h-3" />

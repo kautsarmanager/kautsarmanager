@@ -8,7 +8,6 @@ import {
   Bot,
   Settings,
   X,
-  Layers,
   Lock,
   LogOut,
   Smartphone,
@@ -117,15 +116,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div
               className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs tracking-wider border shadow-xs ${
                 isDark
-                  ? 'bg-[#191a22] border-[#292b37] text-indigo-400'
-                  : 'bg-indigo-50 border-indigo-200 text-indigo-600'
+                  ? 'bg-[#191a22] border-[#292b37] text-lime-400'
+                  : 'bg-lime-50 border-lime-200 text-lime-600'
               }`}
             >
-              <Layers className="w-3.5 h-3.5" />
+              <Settings className="w-3.5 h-3.5" />
             </div>
             <div>
               <span className={`text-xs font-semibold tracking-tight ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
-                Personal Hub
+                Manager
               </span>
               <span className="block text-[10px] text-zinc-500 font-mono leading-none">v1.2</span>
             </div>
@@ -166,7 +165,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <Icon
                     className={`w-4 h-4 ${
                       isActive
-                        ? 'text-indigo-400'
+                        ? 'text-lime-400'
                         : isDark
                         ? 'text-zinc-500'
                         : 'text-zinc-400'
@@ -179,8 +178,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
                       isActive
                         ? isDark
-                          ? 'bg-indigo-500/20 text-indigo-300'
-                          : 'bg-indigo-100 text-indigo-700'
+                          ? 'bg-lime-500/20 text-lime-300'
+                          : 'bg-lime-100 text-lime-700'
                         : isDark
                         ? 'bg-[#191a22] text-zinc-500'
                         : 'bg-zinc-200 text-zinc-600'
@@ -210,8 +209,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div
                 className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold border shrink-0 ${
                   isDark
-                    ? 'bg-[#181922] border-[#292b38] text-indigo-400'
-                    : 'bg-white border-zinc-300 text-indigo-600'
+                    ? 'bg-[#181922] border-[#292b38] text-lime-400'
+                    : 'bg-white border-zinc-300 text-lime-600'
                 }`}
               >
                 {(currentUser?.username || profile.name).charAt(0).toUpperCase()}

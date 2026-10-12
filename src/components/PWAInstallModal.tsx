@@ -48,7 +48,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-3.5 border-b border-inherit">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-indigo-600/15 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+            <div className="w-8 h-8 rounded-xl bg-lime-600/15 text-lime-400 flex items-center justify-center border border-lime-500/20">
               <Smartphone className="w-4 h-4" />
             </div>
             <div>
@@ -71,16 +71,16 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
 
         {/* Direct One-Click Install if supported */}
         {isInstallable && (
-          <div className="mt-4 p-3.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 flex items-center justify-between gap-3">
+          <div className="mt-4 p-3.5 rounded-xl border border-lime-500/30 bg-lime-500/10 flex items-center justify-between gap-3">
             <div className="text-xs">
-              <span className="font-semibold text-indigo-300">Browser Siap Pasang:</span>
+              <span className="font-semibold text-lime-300">Browser Siap Pasang:</span>
               <p className="text-[11px] text-zinc-400 mt-0.5">
                 Dapat dipasang langsung dalam 1 klik ke ponsel Anda.
               </p>
             </div>
             <button
               onClick={handleInstallClick}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs shrink-0 cursor-pointer active:scale-95 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-lime-600 hover:bg-lime-500 text-white shadow-xs shrink-0 cursor-pointer active:scale-95 transition-all"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Pasang Sekarang</span>
@@ -125,7 +125,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
                   isDark ? 'bg-[#171822] border-[#222432]' : 'bg-zinc-50 border-zinc-200'
                 }`}
               >
-                <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
+                <div className="w-5 h-5 rounded-full bg-lime-500/20 text-lime-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
                   1
                 </div>
                 <div>
@@ -141,7 +141,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
                   isDark ? 'bg-[#171822] border-[#222432]' : 'bg-zinc-50 border-zinc-200'
                 }`}
               >
-                <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
+                <div className="w-5 h-5 rounded-full bg-lime-500/20 text-lime-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
                   2
                 </div>
                 <div>
@@ -159,13 +159,13 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
                   isDark ? 'bg-[#171822] border-[#222432]' : 'bg-zinc-50 border-zinc-200'
                 }`}
               >
-                <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
+                <div className="w-5 h-5 rounded-full bg-lime-500/20 text-lime-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
                   3
                 </div>
                 <div>
                   <p className="font-medium text-zinc-200">Konfirmasi Pemasangan</p>
                   <p className={`text-[11px] mt-0.5 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                    Tekan <strong>"Instal"</strong>. Ikon PMS akan langsung tersedia di layar depan HP Anda dan bisa diklik layaknya aplikasi dari Play Store!
+                    Tekan <strong>"Instal"</strong>. Ikon Manager akan langsung tersedia di layar depan HP Anda dan bisa diklik layaknya aplikasi dari Play Store!
                   </p>
                 </div>
               </div>
@@ -177,7 +177,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
                   isDark ? 'bg-[#171822] border-[#222432]' : 'bg-zinc-50 border-zinc-200'
                 }`}
               >
-                <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
+                <div className="w-5 h-5 rounded-full bg-lime-500/20 text-lime-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
                   1
                 </div>
                 <div>
@@ -193,7 +193,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
                   isDark ? 'bg-[#171822] border-[#222432]' : 'bg-zinc-50 border-zinc-200'
                 }`}
               >
-                <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
+                <div className="w-5 h-5 rounded-full bg-lime-500/20 text-lime-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
                   2
                 </div>
                 <div>
@@ -211,7 +211,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
                   isDark ? 'bg-[#171822] border-[#222432]' : 'bg-zinc-50 border-zinc-200'
                 }`}
               >
-                <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
+                <div className="w-5 h-5 rounded-full bg-lime-500/20 text-lime-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
                   3
                 </div>
                 <div>
@@ -241,7 +241,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
         <div className="mt-4 pt-3 border-t border-inherit flex justify-end">
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-4 py-2 text-xs font-medium rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer active:scale-98 transition-all"
+            className="w-full sm:w-auto px-4 py-2 text-xs font-medium rounded-lg bg-lime-600 hover:bg-lime-500 text-white cursor-pointer active:scale-98 transition-all"
           >
             Mengerti & Siap Pasang
           </button>

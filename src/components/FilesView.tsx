@@ -136,7 +136,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
             setSelectedFile(null);
             setIsModalOpen(true);
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs shadow-indigo-600/30 active:scale-[0.98] transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-lime-600 hover:bg-lime-500 text-white shadow-xs shadow-lime-600/30 active:scale-[0.98] transition-all cursor-pointer"
         >
           <Upload className="w-3.5 h-3.5" />
           <span>Upload File</span>
@@ -280,7 +280,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
                 onClick={() => fileInputRef.current?.click()}
                 className={`flex flex-col items-center justify-center p-6 border border-dashed rounded-xl cursor-pointer transition-colors text-center ${
                   isDragging
-                    ? 'border-indigo-400 bg-indigo-500/10'
+                    ? 'border-lime-400 bg-lime-500/10'
                     : selectedFile
                     ? 'border-zinc-500 bg-[#121319]'
                     : 'border-[#262837] bg-[#101116] hover:border-zinc-500'
@@ -318,7 +318,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   placeholder="Kuliah, Tugas, dll..."
-                  className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-indigo-500 ${
+                  className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
                     isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}
                 />
@@ -336,7 +336,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
                 <button
                   type="submit"
                   disabled={!selectedFile || isUploading}
-                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium disabled:opacity-40 transition-all cursor-pointer shadow-xs shadow-indigo-600/30"
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-lime-600 hover:bg-lime-500 text-white font-medium disabled:opacity-40 transition-all cursor-pointer shadow-xs shadow-lime-600/30"
                 >
                   {isUploading ? (
                     <>

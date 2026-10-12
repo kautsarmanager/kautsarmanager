@@ -26,7 +26,7 @@ const EMPTY_PROFILE = (userId: string, username: string, email = ''): UserProfil
   email,
   currency: 'IDR',
   timezone: 'Asia/Jakarta (WIB)',
-  theme: 'dark',
+  theme: 'light',
   is_online: true,
   sync_status: 'pending',
   last_synced_at: undefined,

@@ -1,27 +1,25 @@
 {
   "id": "/",
-  "name": "Personal Management System",
-  "short_name": "PMS",
-  "description": "A comprehensive personal productivity, task, finance, file, and wishlist management application.",
+  "name": "Manager",
+  "short_name": "Manager",
+  "description": "Aplikasi manajemen pribadi untuk tugas, keuangan, file, wishlist, dan asisten AI.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0e0f13",
-  "theme_color": "#0e0f13",
-  "categories": ["productivity", "utilities", "finance"],
+  "background_color": "#f2f3f5",
+  "theme_color": "#c9f158",
+  "categories": [
+    "productivity",
+    "utilities",
+    "finance"
+  ],
   "icons": [
     {
       "src": "/icon.svg",
-      "sizes": "192x192 512x512",
+      "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
   ],
   "shortcuts": [

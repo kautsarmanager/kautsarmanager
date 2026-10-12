@@ -128,7 +128,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onAddTask}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs shadow-indigo-600/20 active:scale-[0.98] transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-lime-600 hover:bg-lime-500 text-white shadow-xs shadow-lime-600/20 active:scale-[0.98] transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Task Baru</span>
@@ -246,7 +246,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <p className={`text-[11px] font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
             Target Wishlist
           </p>
-          <p className="text-base font-semibold font-mono mt-1 text-indigo-400">
+          <p className="text-base font-semibold font-mono mt-1 text-lime-400">
             {summary.wishlist_progress_average}% <span className="text-xs font-sans text-zinc-500">terkumpul</span>
           </p>
         </div>
@@ -332,7 +332,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <p>Tidak ada tugas di kategori ini.</p>
                 <button
                   onClick={onAddTask}
-                  className="mt-2 text-indigo-400 hover:underline cursor-pointer"
+                  className="mt-2 text-lime-400 hover:underline cursor-pointer"
                 >
                   + Tambah tugas baru
                 </button>
@@ -362,7 +362,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   >
                     <button
                       type="button"
-                      className="mt-0.5 text-zinc-500 group-hover:text-indigo-400"
+                      className="mt-0.5 text-zinc-500 group-hover:text-lime-400"
                     >
                       {isDone ? (
                         <CheckCircle2 className="w-4 h-4 text-emerald-400" />
@@ -397,7 +397,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                                 : urgency.urgency === 'today'
                                 ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                                 : urgency.urgency === 'tomorrow'
-                                ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                                ? 'bg-lime-500/10 text-lime-400 border-lime-500/30'
                                 : 'text-zinc-500 border-zinc-800'
                             }`}
                           >
@@ -446,7 +446,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span className="text-[11px] font-mono text-zinc-500">{tasks.length} Total tasks</span>
             <button
               onClick={() => onNavigate('tasks')}
-              className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium cursor-pointer"
+              className="text-xs text-lime-400 hover:text-lime-300 flex items-center gap-1 font-medium cursor-pointer"
             >
               Buka Semua
               <ArrowRight className="w-3.5 h-3.5" />
@@ -528,7 +528,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className={`font-medium truncate ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
                     {wishlist[0].name}
                   </span>
-                  <span className="font-mono text-indigo-400 font-bold text-xs">
+                  <span className="font-mono text-lime-400 font-bold text-xs">
                     {Math.min(
                       100,
                       Math.round((wishlist[0].saved_amount / (wishlist[0].target_price || 1)) * 100)
@@ -543,7 +543,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   }`}
                 >
                   <div
-                    className="h-full bg-indigo-500 rounded-full transition-all duration-300"
+                    className="h-full bg-lime-500 rounded-full transition-all duration-300"
                     style={{
                       width: `${Math.min(
                         100,

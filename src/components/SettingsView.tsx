@@ -111,7 +111,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         }`}
       >
         <div className={`flex items-center gap-2 pb-3 mb-4 border-b ${isDark ? 'border-[#242634]' : 'border-[#e8ebf2]'}`}>
-          <Palette className="w-4 h-4 text-indigo-400" />
+          <Palette className="w-4 h-4 text-lime-400" />
           <h3 className={`text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
             Mode Tampilan (Tema)
           </h3>
@@ -132,7 +132,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 : 'bg-zinc-100 text-zinc-600 border-zinc-200 hover:text-black'
             }`}
           >
-            <Moon className="w-4 h-4 text-indigo-400" />
+            <Moon className="w-4 h-4 text-lime-400" />
             <span>Mode Gelap (Dark Grey)</span>
           </button>
 
@@ -144,7 +144,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             }}
             className={`flex items-center justify-center gap-2.5 p-3.5 rounded-xl border font-semibold text-xs transition-all ${
               theme === 'light'
-                ? 'bg-indigo-50 text-indigo-900 border-indigo-300 shadow-xs'
+                ? 'bg-lime-50 text-lime-900 border-lime-300 shadow-xs'
                 : isDark
                 ? 'bg-[#121319] text-zinc-400 border-[#262837] hover:text-white'
                 : 'bg-zinc-100 text-zinc-600 border-zinc-200 hover:text-black'
@@ -181,8 +181,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 onChange={(e) => setName(e.target.value)}
                 className={`w-full px-3.5 py-2.5 rounded-xl border focus:outline-hidden ${
                   isDark
-                    ? 'bg-[#13141b] border-[#292c3a] text-zinc-100 focus:border-indigo-400'
-                    : 'bg-[#f8f9fc] border-[#e2e5ef] text-zinc-900 focus:border-indigo-500'
+                    ? 'bg-[#13141b] border-[#292c3a] text-zinc-100 focus:border-lime-400'
+                    : 'bg-[#f8f9fc] border-[#e2e5ef] text-zinc-900 focus:border-lime-500'
                 }`}
               />
             </div>
@@ -197,8 +197,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 onChange={(e) => setEmail(e.target.value)}
                 className={`w-full px-3.5 py-2.5 rounded-xl border focus:outline-hidden ${
                   isDark
-                    ? 'bg-[#13141b] border-[#292c3a] text-zinc-100 focus:border-indigo-400'
-                    : 'bg-[#f8f9fc] border-[#e2e5ef] text-zinc-900 focus:border-indigo-500'
+                    ? 'bg-[#13141b] border-[#292c3a] text-zinc-100 focus:border-lime-400'
+                    : 'bg-[#f8f9fc] border-[#e2e5ef] text-zinc-900 focus:border-lime-500'
                 }`}
               />
             </div>
@@ -261,7 +261,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       >
         <div className={`flex items-center justify-between pb-3 border-b ${isDark ? 'border-[#242634]' : 'border-[#e8ebf2]'}`}>
           <div className="flex items-center gap-2">
-            <KeyRound className="w-4 h-4 text-indigo-400" />
+            <KeyRound className="w-4 h-4 text-lime-400" />
             <h3 className={`text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
               Keamanan Akun
             </h3>
@@ -279,7 +279,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#13141b] border-[#222432]' : 'bg-zinc-50 border-zinc-200'}`}>
           <p className="text-[10px] uppercase font-mono text-zinc-500 font-semibold">Akun aktif</p>
-          <p className="text-sm font-bold text-indigo-400 mt-1">{currentUser?.email || profile.email || 'Belum tersedia'}</p>
+          <p className="text-sm font-bold text-lime-400 mt-1">{currentUser?.email || profile.email || 'Belum tersedia'}</p>
           <p className="text-[10px] text-zinc-400 mt-0.5">Autentikasi dan sesi dikelola oleh Supabase Auth.</p>
         </div>
 
@@ -288,7 +288,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           isDark ? 'bg-[#13141b] border-[#222432]' : 'bg-zinc-50 border-zinc-200'
         }`}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-lime-500/15 text-lime-400 flex items-center justify-center shrink-0">
               <Smartphone className="w-4 h-4" />
             </div>
             <div>

@@ -1,35 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <linearGradient id="pms-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#14151d"/>
-      <stop offset="100%" stop-color="#0a0b0e"/>
-    </linearGradient>
-    <linearGradient id="pms-accent" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#4f46e5"/>
-    </linearGradient>
-    <filter id="pms-glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#4f46e5" flood-opacity="0.35"/>
-    </filter>
-  </defs>
-
-  <!-- Background with subtle modern squircle border -->
-  <rect width="512" height="512" rx="128" fill="url(#pms-bg)"/>
-  <rect x="8" y="8" width="496" height="496" rx="120" fill="none" stroke="#252736" stroke-width="8"/>
-
-  <!-- Center Monogram / Dashboard Grid Symbol -->
-  <g filter="url(#pms-glow)" transform="translate(106, 106)">
-    <!-- Top Left Cube -->
-    <rect x="20" y="20" width="115" height="115" rx="28" fill="url(#pms-accent)"/>
-    <!-- Top Right Card -->
-    <rect x="165" y="20" width="115" height="115" rx="28" fill="#1e202b" stroke="#313445" stroke-width="4"/>
-    <circle cx="222" cy="77" r="20" fill="#6366f1" opacity="0.8"/>
-
-    <!-- Bottom Left Card -->
-    <rect x="20" y="165" width="115" height="115" rx="28" fill="#1e202b" stroke="#313445" stroke-width="4"/>
-    <path d="M50 222 L68 240 L104 204" fill="none" stroke="#10b981" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-
-    <!-- Bottom Right Cube -->
-    <rect x="165" y="165" width="115" height="115" rx="28" fill="url(#pms-accent)"/>
+  <rect width="512" height="512" rx="112" fill="#202020"/>
+  <g fill="#c9f158">
+    <path d="M220 55h72c13 0 23 10 23 23 0 20 12 37 30 45 18 7 38 4 52-10 9-9 24-9 33 0l25 25c9 9 9 24 0 33-14 14-17 34-10 52 8 18 25 30 45 30 13 0 23 10 23 23v35c0 13-10 23-23 23-20 0-37 12-45 30-7 18-4 38 10 52 9 9 9 24 0 33l-25 25c-9 9-24 9-33 0-14-14-34-17-52-10-18 8-30 25-30 45 0 13-10 23-23 23h-35c-13 0-23-10-23-23 0-20-12-37-30-45-18-7-38-4-52 10-9 9-24 9-33 0l-25-25c-9-9-9-24 0-33 14-14 17-34 10-52-8-18-25-30-45-30-13 0-23-10-23-23v-35c0-13 10-23 23-23 20 0 37-12 45-30 7-18 4-38-10-52-9-9-9-24 0-33l25-25c9-9 24-9 33 0 14 14 34 17 52 10 18-8 30-25 30-45 0-13 10-23 23-23z" transform="translate(45 30) scale(.78)" fill="#c9f158"/>
+    <circle cx="256" cy="220" r="54" fill="#202020"/>
+    <circle cx="256" cy="220" r="23" fill="#c9f158"/>
+  </g>
+  <g fill="#ffffff">
+    <circle cx="124" cy="330" r="34"/><path d="M75 389c8-25 26-37 49-37s41 12 49 37v25H75z"/>
+    <circle cx="388" cy="330" r="34"/><path d="M339 389c8-25 26-37 49-37s41 12 49 37v25H339z"/>
+    <circle cx="256" cy="373" r="34"/><path d="M207 432c8-25 26-37 49-37s41 12 49 37v18H207z"/>
   </g>
 </svg>

@@ -43,7 +43,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
       id: 'tasks',
       label: 'Tugas & Deadline Hari Ini',
       icon: CheckSquare,
-      color: 'text-indigo-400',
+      color: 'text-lime-400',
     },
     {
       id: 'finance',
@@ -223,7 +223,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
             <h1 className={`text-lg sm:text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
               AI Personal Assistant
             </h1>
-            <span className="text-[10px] px-2 py-0.5 rounded-full font-mono bg-indigo-500/15 text-indigo-400 border border-indigo-500/20 font-medium">
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-mono bg-lime-500/15 text-lime-400 border border-lime-500/20 font-medium">
               Mode Pesan Cepat
             </span>
           </div>
@@ -264,8 +264,8 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
                 <div
                   className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 border ${
                     isDark
-                      ? 'bg-[#1a1b26] border-[#2a2c3d] text-indigo-400'
-                      : 'bg-indigo-50 border-indigo-200 text-indigo-600'
+                      ? 'bg-[#1a1b26] border-[#2a2c3d] text-lime-400'
+                      : 'bg-lime-50 border-lime-200 text-lime-600'
                   }`}
                 >
                   <Bot className="w-4 h-4" />
@@ -275,7 +275,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
               <div
                 className={`max-w-[85%] sm:max-w-[75%] p-3.5 rounded-2xl ${
                   m.sender === 'user'
-                    ? 'bg-indigo-600 text-white rounded-tr-xs'
+                    ? 'bg-lime-600 text-white rounded-tr-xs'
                     : isDark
                     ? 'bg-[#171822] border border-[#232533] text-zinc-200 rounded-tl-xs shadow-2xs'
                     : 'bg-zinc-50 border border-zinc-200 text-zinc-800 rounded-tl-xs'
@@ -286,7 +286,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
                 </div>
                 <div
                   className={`text-[10px] mt-2 font-mono text-right ${
-                    m.sender === 'user' ? 'text-indigo-200' : 'text-zinc-500'
+                    m.sender === 'user' ? 'text-lime-200' : 'text-zinc-500'
                   }`}
                 >
                   {m.timestamp}
@@ -300,8 +300,8 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
               <div
                 className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 border ${
                   isDark
-                    ? 'bg-[#1a1b26] border-[#2a2c3d] text-indigo-400'
-                    : 'bg-indigo-50 border-indigo-200 text-indigo-600'
+                    ? 'bg-[#1a1b26] border-[#2a2c3d] text-lime-400'
+                    : 'bg-lime-50 border-lime-200 text-lime-600'
                 }`}
               >
                 <Bot className="w-4 h-4 animate-pulse" />
@@ -311,9 +311,9 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
                   isDark ? 'bg-[#171822] border-[#232533] text-zinc-400' : 'bg-zinc-100 border-zinc-200 text-zinc-600'
                 }`}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce" />
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:0.2s]" />
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:0.4s]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-lime-500 animate-bounce" />
+                <span className="w-1.5 h-1.5 rounded-full bg-lime-500 animate-bounce [animation-delay:0.2s]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-lime-500 animate-bounce [animation-delay:0.4s]" />
                 <span className="text-[11px] font-mono">Memproses analisis...</span>
               </div>
             </div>
@@ -346,7 +346,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
                   onClick={() => handleQuickClick(action)}
                   className={`flex items-center gap-2 p-2.5 rounded-xl border text-left text-xs font-medium transition-all cursor-pointer active:scale-98 disabled:opacity-40 ${
                     isDark
-                      ? 'bg-[#14151e] hover:bg-[#1c1d29] border-[#252737] text-zinc-200 hover:border-indigo-500/40'
+                      ? 'bg-[#14151e] hover:bg-[#1c1d29] border-[#252737] text-zinc-200 hover:border-lime-500/40'
                       : 'bg-white hover:bg-zinc-100 border-zinc-200 text-zinc-800 hover:border-zinc-300 shadow-2xs'
                   }`}
                 >

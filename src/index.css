@@ -2,72 +2,61 @@
 
 @layer base {
   :root {
-    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --font-sans: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "Space Grotesk", ui-monospace, monospace;
+    --manager-ink: #202020;
+    --manager-lime: #c9f158;
+    --manager-bg: #f2f3f5;
+    --manager-white: #ffffff;
   }
 
+  html { background: var(--manager-bg); }
   body {
     font-family: var(--font-sans);
-    letter-spacing: -0.012em;
+    letter-spacing: -0.018em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* Linear/Raycast style smooth micro-transitions */
 button, a, input, select, textarea {
   transition-property: color, background-color, border-color, box-shadow, opacity, transform;
   transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   transition-duration: 180ms;
 }
 
-/* Subtle, minimal scrollbar */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(120, 125, 145, 0.2);
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(120, 125, 145, 0.35);
-}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(32,32,32,.18); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(32,32,32,.34); }
 
-
-/* Product polish: calm surfaces, clearer hierarchy, and accessible focus states. */
 :root {
-  color-scheme: dark;
-  --pms-radius: 14px;
-  --pms-border-dark: rgba(255,255,255,.08);
-  --pms-border-light: rgba(24,24,27,.10);
+  color-scheme: light;
+  --pms-radius: 16px;
+  --pms-border-dark: rgba(32,32,32,.10);
+  --pms-border-light: rgba(32,32,32,.10);
 }
 
-::selection {
-  background: rgba(99, 102, 241, .24);
-}
+::selection { background: rgba(201,241,88,.55); color: #202020; }
 
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid rgba(99, 102, 241, .7);
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid #a4ce28;
   outline-offset: 2px;
 }
 
-input::placeholder,
-textarea::placeholder {
-  opacity: .58;
-}
+input::placeholder, textarea::placeholder { opacity: .58; }
+
+/* Neobank-inspired lime accent and soft neutral canvas. */
+.bg-indigo-600, .bg-lime-600 { background-color: #202020 !important; }
+.bg-indigo-500, .bg-lime-500 { background-color: #c9f158 !important; }
+.text-indigo-400, .text-lime-400 { color: #202020 !important; }
+.text-indigo-500, .text-lime-500 { color: #202020 !important; }
+.border-indigo-500, .border-lime-500 { border-color: #c9f158 !important; }
+.ring-indigo-500, .ring-lime-500 { --tw-ring-color: #c9f158 !important; }
+.focus\\:border-indigo-500:focus, .focus\\:border-lime-500:focus { border-color: #a4ce28 !important; }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     scroll-behavior: auto !important;
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;

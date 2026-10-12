@@ -127,7 +127,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs shadow-indigo-600/30 active:scale-[0.98] transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-lime-600 hover:bg-lime-500 text-white shadow-xs shadow-lime-600/30 active:scale-[0.98] transition-all cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Tambah Task Baru</span>
@@ -274,7 +274,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                 setFilterDeadline('all');
                 setSearchQuery('');
               }}
-              className="mt-2 text-xs text-indigo-400 hover:underline cursor-pointer"
+              className="mt-2 text-xs text-lime-400 hover:underline cursor-pointer"
             >
               Reset filter
             </button>
@@ -303,7 +303,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                 }`}
               >
                 <div className="flex items-start gap-3 min-w-0 flex-1">
-                  <button type="button" className="mt-0.5 text-zinc-500 group-hover:text-indigo-400">
+                  <button type="button" className="mt-0.5 text-zinc-500 group-hover:text-lime-400">
                     {isDone ? (
                       <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                     ) : (
@@ -339,7 +339,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                               : urgency.urgency === 'today'
                               ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 font-semibold'
                               : urgency.urgency === 'tomorrow'
-                              ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                              ? 'bg-lime-500/10 text-lime-400 border-lime-500/30'
                               : 'text-zinc-500 border-zinc-800'
                           }`}
                         >
@@ -411,7 +411,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
           >
             <div className="flex items-center justify-between pb-3 border-b border-inherit">
               <div className="flex items-center gap-2">
-                <Bell className="w-4 h-4 text-indigo-400" />
+                <Bell className="w-4 h-4 text-lime-400" />
                 <h2 className="text-sm font-semibold">Tambah Tugas & Pengingat</h2>
               </div>
               <button
@@ -433,7 +433,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Contoh: Kerjakan laporan praktikum"
-                  className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-indigo-500 ${
+                  className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
                     isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}
                 />
@@ -448,7 +448,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Catatan detail..."
-                  className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-indigo-500 ${
+                  className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
                     isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}
                 />
@@ -580,7 +580,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                   isDark ? 'bg-[#101116] border-[#20222e] text-zinc-400' : 'bg-zinc-50 border-zinc-200 text-zinc-600'
                 }`}
               >
-                <Bell className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                <Bell className="w-3.5 h-3.5 text-lime-400 shrink-0" />
                 <span>
                   Sistem akan otomatis memunculkan notifikasi dan lonceng peringatan saat deadline mendekat.
                 </span>
@@ -596,7 +596,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow-xs shadow-indigo-600/30 active:scale-[0.98] transition-all cursor-pointer"
+                  className="px-4 py-1.5 rounded-lg bg-lime-600 hover:bg-lime-500 text-white font-medium shadow-xs shadow-lime-600/30 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   Simpan Task
                 </button>
