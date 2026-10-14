@@ -187,7 +187,8 @@ export default function App() {
             setIsAppLocked(false);
           }}
           onLogout={() => {
-            authService.logout();
+            if (!window.confirm('Keluar dari akun sekarang?')) return;
+            void authService.logout();
             setCurrentUser(null);
           }}
           isDark={isDark}
@@ -218,7 +219,7 @@ export default function App() {
         isDark={isDark}
         currentUser={currentUser}
         onLockApp={() => authService.lockApp()}
-        onLogout={() => authService.logout()}
+        onLogout={() => { if (window.confirm('Keluar dari akun sekarang?')) void authService.logout(); }}
       />
 
       {/* Main Content Area */}
@@ -296,7 +297,7 @@ export default function App() {
             <SettingsView
               profile={profile}
               currentUser={currentUser}
-              onLogout={() => authService.logout()}
+              onLogout={() => { if (window.confirm('Keluar dari akun sekarang?')) void authService.logout(); }}
             />
           )}
           </div>

@@ -31,12 +31,12 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
 
   // File states
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [category, setCategory] = useState('Kuliah');
+  const [category, setCategory] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const categories = Array.from(
-    new Set(['Kuliah', 'Tugas', 'Template', 'Pribadi', ...files.map((f) => f.category)])
+    new Set(files.map((f) => f.category).filter(Boolean))
   );
 
   const filteredFiles = files.filter((f) => {
@@ -102,6 +102,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
   };
 
   const handleDelete = (file: FileItem) => {
+    if (!window.confirm(`Hapus file "${file.name}"? Tindakan ini tidak dapat dibatalkan.`)) return;
     dataService.deleteFile(file.id);
     if (onShowToast) {
       onShowToast(`File "${file.name}" dihapus`, 'info');
@@ -136,7 +137,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
             setSelectedFile(null);
             setIsModalOpen(true);
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-lime-600 hover:bg-lime-500 text-white shadow-xs shadow-lime-600/30 active:scale-[0.98] transition-all cursor-pointer"
+          className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-xl bg-lime-600 hover:bg-lime-500 text-white shadow-xs shadow-lime-600/30 active:scale-[0.98] transition-all cursor-pointer"
         >
           <Upload className="w-3.5 h-3.5" />
           <span>Upload File</span>
@@ -244,7 +245,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
 
       {/* Modal Upload File */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div onMouseDown={(e) => { if (e.target === e.currentTarget && !isUploading) setIsModalOpen(false); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div
             className={`w-full max-w-md border rounded-2xl p-5 shadow-2xl ${
               isDark ? 'bg-[#15161d] border-[#262836]' : 'bg-white border-zinc-300'

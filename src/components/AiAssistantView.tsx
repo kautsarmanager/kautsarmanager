@@ -1,5 +1,5 @@
 import { getLocalDateString } from '../utils/date';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Bot,
   Sparkles,
@@ -37,6 +37,8 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const feedRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (feedRef.current) feedRef.current.scrollTo({ top: feedRef.current.scrollHeight, behavior: 'smooth' }); }, [messages, isLoading]);
 
   const quickActions = [
     {
@@ -252,7 +254,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
         }`}
       >
         {/* Messages Feed */}
-        <div className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-3.5">
+        <div ref={feedRef} className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-3.5">
           {messages.map((m) => (
             <div
               key={m.id}

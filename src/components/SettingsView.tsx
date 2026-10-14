@@ -30,7 +30,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onLogout,
 }) => {
   const [name, setName] = useState(profile.name);
-  const [email, setEmail] = useState(profile.email);
   const [currency, setCurrency] = useState(profile.currency);
   const [timezone, setTimezone] = useState(profile.timezone);
   const [theme, setTheme] = useState<'dark' | 'light'>(profile.theme || 'dark');
@@ -42,7 +41,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     e.preventDefault();
     dataService.updateProfile({
       name,
-      email,
       currency,
       timezone,
       theme,
@@ -193,8 +191,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </label>
               <input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={currentUser?.email || profile.email}
+                readOnly
+                aria-readonly="true"
                 className={`w-full px-3.5 py-2.5 rounded-xl border focus:outline-hidden ${
                   isDark
                     ? 'bg-[#13141b] border-[#292c3a] text-zinc-100 focus:border-lime-400'
@@ -209,8 +208,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <label className={`block text-[11px] font-semibold mb-1 ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
                 Mata Uang
               </label>
-              <input
-                type="text"
+              <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
                 className={`w-full px-3.5 py-2.5 rounded-xl border focus:outline-hidden ${
@@ -218,23 +216,26 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     ? 'bg-[#13141b] border-[#292c3a] text-zinc-100'
                     : 'bg-[#f8f9fc] border-[#e2e5ef] text-zinc-900'
                 }`}
-              />
+              >
+                {[['IDR','IDR — Rupiah Indonesia'],['USD','USD — US Dollar'],['EUR','EUR — Euro'],['GBP','GBP — Pound Sterling'],['JPY','JPY — Yen Jepang'],['CNY','CNY — Yuan Tiongkok'],['SGD','SGD — Dolar Singapura'],['MYR','MYR — Ringgit Malaysia'],['AUD','AUD — Dolar Australia'],['CAD','CAD — Dolar Kanada'],['INR','INR — Rupee India'],['KRW','KRW — Won Korea Selatan'],['SAR','SAR — Riyal Saudi'],['THB','THB — Baht Thailand'],['CHF','CHF — Franc Swiss']].map(([code,label]) => <option key={code} value={code}>{label}</option>)}
+              </select>
             </div>
 
             <div>
               <label className={`block text-[11px] font-semibold mb-1 ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
                 Zona Waktu
               </label>
-              <input
-                type="text"
-                value={timezone}
+              <select
+                value={timezone.replace(/\s*\([^)]*\)/, '')}
                 onChange={(e) => setTimezone(e.target.value)}
                 className={`w-full px-3.5 py-2.5 rounded-xl border focus:outline-hidden ${
                   isDark
                     ? 'bg-[#13141b] border-[#292c3a] text-zinc-100'
                     : 'bg-[#f8f9fc] border-[#e2e5ef] text-zinc-900'
                 }`}
-              />
+              >
+                {['Pacific/Honolulu','America/Los_Angeles','America/Denver','America/Chicago','America/New_York','America/Sao_Paulo','Europe/London','Europe/Paris','Europe/Berlin','Africa/Cairo','Asia/Dubai','Asia/Kolkata','Asia/Bangkok','Asia/Jakarta','Asia/Makassar','Asia/Jayapura','Asia/Singapore','Asia/Tokyo','Asia/Seoul','Asia/Shanghai','Australia/Sydney','Pacific/Auckland'].map((zone) => <option key={zone} value={zone}>{zone}</option>)}
+              </select>
             </div>
           </div>
 

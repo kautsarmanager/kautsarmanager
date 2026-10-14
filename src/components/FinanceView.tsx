@@ -58,7 +58,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
     dataService.createTransaction({
       type,
       amount: numAmount,
-      category: category.trim() || 'Umum',
+      category: category.trim(),
       description: description.trim() || (type === 'income' ? 'Pemasukan' : 'Pengeluaran'),
       transaction_date: date,
     });
@@ -76,6 +76,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
   };
 
   const handleDelete = (tx: Transaction) => {
+    if (!window.confirm(`Hapus catatan ${tx.type === 'income' ? 'pemasukan' : 'pengeluaran'} "${tx.description}"?`)) return;
     dataService.deleteTransaction(tx.id);
     if (onShowToast) {
       onShowToast(`Catatan kas "${tx.description}" dihapus`, 'info');
@@ -97,7 +98,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-lime-600 hover:bg-lime-500 text-white shadow-xs shadow-lime-600/30 active:scale-[0.98] transition-all cursor-pointer"
+          className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-xl bg-lime-600 hover:bg-lime-500 text-white shadow-xs shadow-lime-600/30 active:scale-[0.98] transition-all cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Catat Transaksi</span>
@@ -262,7 +263,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
 
       {/* Modal Catat Transaksi */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div onMouseDown={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div
             className={`w-full max-w-md border rounded-2xl p-5 shadow-2xl ${
               isDark ? 'bg-[#15161d] border-[#262836]' : 'bg-white border-zinc-300'
