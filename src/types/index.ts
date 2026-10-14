@@ -44,7 +44,7 @@ export interface FileItem {
 export interface WishlistSubTarget {
   id: string;
   title: string;
-  amount: number;
+  amount: number | null;
   completed: boolean;
 }
 

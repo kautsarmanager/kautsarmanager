@@ -29,19 +29,19 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [targetPrice, setTargetPrice] = useState('');
-  const [initialSaved, setInitialSaved] = useState('0');
+  const [initialSaved, setInitialSaved] = useState('');
   const [deadline, setDeadline] = useState('');
 
   const formatCurrency = (val: number) => 'Rp' + val.toLocaleString('id-ID');
 
   const handleCreateWishlist = (e: React.FormEvent) => {
     e.preventDefault();
-    const target = parseFloat(targetPrice);
-    const saved = parseFloat(initialSaved || '0');
-    if (!name.trim() || isNaN(target) || target <= 0) return;
+    const target = Math.max(0, Number(targetPrice) || 0);
+    const saved = Math.max(0, Number(initialSaved) || 0);
+    if (!name.trim()) return;
 
-    const cleanSubtargets = subtargets.filter((subtarget) => subtarget.title.trim()).map((subtarget) => ({ ...subtarget, title: subtarget.title.trim(), amount: Math.max(0, Number(subtarget.amount) || 0) }));
-    const totalTarget = target + cleanSubtargets.reduce((sum, subtarget) => sum + subtarget.amount, 0);
+    const cleanSubtargets = subtargets.filter((subtarget) => subtarget.title.trim()).map((subtarget) => ({ ...subtarget, title: subtarget.title.trim(), amount: subtarget.amount === null || subtarget.amount === undefined ? null : Math.max(0, Number(subtarget.amount) || 0) }));
+    const totalTarget = target + cleanSubtargets.reduce((sum, subtarget) => sum + (Number(subtarget.amount) || 0), 0);
     if (editingItem) {
       dataService.updateWishlistItem(editingItem.id, {
         name: name.trim(), description: description.trim(), category: category.trim(),
@@ -61,7 +61,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
     setName('');
     setDescription('');
     setTargetPrice('');
-    setInitialSaved('0');
+    setInitialSaved('');
     setDeadline('');
     setSubtargets([]);
     setEditingItem(null);
@@ -71,7 +71,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
   const openEdit = (item: WishlistItem) => {
     setEditingItem(item);
     setName(item.name); setDescription(item.description || ''); setCategory(item.category || '');
-    setTargetPrice(String(item.base_target_price ?? Math.max(0, item.target_price - (item.subtasks || []).reduce((sum, subtarget) => sum + (subtarget.amount || 0), 0)))); setInitialSaved(String(item.saved_amount));
+    setTargetPrice((item.base_target_price ?? Math.max(0, item.target_price - (item.subtasks || []).reduce((sum, subtarget) => sum + (Number(subtarget.amount) || 0), 0))) ? String(item.base_target_price ?? Math.max(0, item.target_price - (item.subtasks || []).reduce((sum, subtarget) => sum + (Number(subtarget.amount) || 0), 0))) : ''); setInitialSaved(item.saved_amount ? String(item.saved_amount) : '');
     setDeadline(item.deadline || '');
     setSubtargets((item.subtasks || []).map((subtask) => ({ ...subtask, amount: Number(subtask.amount) || 0 })));
     setIsModalOpen(true);
@@ -79,7 +79,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
 
   const closeWishlistModal = () => {
     setIsModalOpen(false); setEditingItem(null); setName(''); setDescription(''); setCategory('');
-    setTargetPrice(''); setInitialSaved('0'); setDeadline(''); setSubtargets([]);
+    setTargetPrice(''); setInitialSaved(''); setDeadline(''); setSubtargets([]);
   };
 
   const handleDepositSubmit = (e: React.FormEvent) => {
@@ -141,7 +141,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
           </div>
         ) : (
           wishlist.map((item) => {
-            const pct = Math.min(100, Math.round((item.saved_amount / (item.target_price || 1)) * 100));
+            const pct = item.target_price > 0 ? Math.min(100, Math.round((item.saved_amount / item.target_price) * 100)) : 0;
             const isCompleted = item.completed || pct >= 100;
             const remaining = Math.max(0, item.target_price - item.saved_amount);
 
@@ -394,16 +394,15 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-medium text-zinc-400 mb-1">
-                    Dana utama target (Rp) *
+                    Dana utama (Rp) — opsional
                   </label>
                   <input
                     type="number"
-                    required
-                    min="1"
+                    min="0"
                     step="any"
                     value={targetPrice}
                     onChange={(e) => setTargetPrice(e.target.value)}
-                    placeholder="10000000"
+                    placeholder="Kosongkan jika tidak ada"
                     className={`w-full px-3 py-2 rounded-lg border font-mono focus:outline-hidden ${
                       isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
@@ -420,7 +419,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                     step="any"
                     value={initialSaved}
                     onChange={(e) => setInitialSaved(e.target.value)}
-                    placeholder="0"
+                    placeholder="Kosong"
                     className={`w-full px-3 py-2 rounded-lg border font-mono focus:outline-hidden ${
                       isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
@@ -462,13 +461,13 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
               <div className={`rounded-xl border p-3 space-y-3 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}>
                 <div className="flex items-center justify-between gap-2">
                   <div><label className="block text-[11px] font-semibold text-zinc-300">Sub-target dan dana</label><p className="text-[10px] text-zinc-500">Total target otomatis menjumlahkan dana utama dan seluruh sub-target.</p></div>
-                  <button type="button" onClick={() => setSubtargets((current) => [...current, { id: crypto.randomUUID(), title: '', amount: 0, completed: false }])} className="shrink-0 rounded-lg bg-lime-600 px-2.5 py-1.5 text-[11px] font-semibold text-white">+ Tambah</button>
+                  <button type="button" onClick={() => setSubtargets((current) => [...current, { id: crypto.randomUUID(), title: '', amount: null, completed: false }])} className="shrink-0 rounded-lg bg-lime-600 px-2.5 py-1.5 text-[11px] font-semibold text-white">+ Tambah</button>
                 </div>
                 {subtargets.length === 0 && <p className="text-[11px] text-zinc-500">Belum ada sub-target. Contoh: Dana bensin, dana logistik.</p>}
                 {subtargets.map((subtarget, index) => (
                   <div key={subtarget.id} className="grid grid-cols-[minmax(0,1fr)_120px_28px] gap-2 items-center">
                     <input value={subtarget.title} onChange={(e) => setSubtargets((current) => current.map((entry) => entry.id === subtarget.id ? { ...entry, title: e.target.value } : entry))} placeholder={index === 0 ? 'Dana bensin' : 'Nama sub-target'} className={`min-w-0 px-2.5 py-2 rounded-lg border text-xs ${isDark ? 'bg-[#0c0d12] border-[#292c3a] text-zinc-100' : 'bg-white border-zinc-200 text-zinc-900'}`} />
-                    <input type="number" min="0" step="1000" value={subtarget.amount} onChange={(e) => setSubtargets((current) => current.map((entry) => entry.id === subtarget.id ? { ...entry, amount: Number(e.target.value) } : entry))} placeholder="Dana (Rp)" aria-label={`Dana sub-target ${index + 1}`} className={`w-full px-2 py-2 rounded-lg border text-xs font-mono ${isDark ? 'bg-[#0c0d12] border-[#292c3a] text-zinc-100' : 'bg-white border-zinc-200 text-zinc-900'}`} />
+                    <input type="number" min="0" step="1000" value={subtarget.amount ?? ''} onChange={(e) => setSubtargets((current) => current.map((entry) => entry.id === subtarget.id ? { ...entry, amount: e.target.value === '' ? null : Math.max(0, Number(e.target.value)) } : entry))} placeholder="Dana (Rp)" aria-label={`Dana sub-target ${index + 1}`} className={`w-full px-2 py-2 rounded-lg border text-xs font-mono ${isDark ? 'bg-[#0c0d12] border-[#292c3a] text-zinc-100' : 'bg-white border-zinc-200 text-zinc-900'}`} />
                     <button type="button" onClick={() => setSubtargets((current) => current.filter((entry) => entry.id !== subtarget.id))} title="Hapus sub-target" className="p-1 text-zinc-500 hover:text-rose-400"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 ))}

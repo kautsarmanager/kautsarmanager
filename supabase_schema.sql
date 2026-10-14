@@ -38,6 +38,8 @@ create table if not exists public.wishlist_items (
   id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id) on delete cascade,
   name text not null, description text not null default '', category text not null default 'Umum',
   target_price numeric(15,2) not null default 0 check (target_price >= 0), saved_amount numeric(15,2) not null default 0 check (saved_amount >= 0),
+  base_target_price numeric(15,2) not null default 0 check (base_target_price >= 0),
+  subtasks jsonb not null default '[]'::jsonb,
   deadline date, completed boolean not null default false, deleted_at timestamptz,
   created_at timestamptz not null default now(), updated_at timestamptz not null default now()
 );
@@ -52,6 +54,8 @@ alter table public.transactions add column if not exists deleted_at timestamptz;
 alter table public.files add column if not exists deleted_at timestamptz;
 alter table public.files add column if not exists updated_at timestamptz not null default now();
 alter table public.wishlist_items add column if not exists deleted_at timestamptz;
+alter table public.wishlist_items add column if not exists subtasks jsonb not null default '[]'::jsonb;
+alter table public.wishlist_items add column if not exists base_target_price numeric(15,2) not null default 0;
 alter table public.profiles add column if not exists updated_at timestamptz not null default now();
 alter table public.tasks add column if not exists updated_at timestamptz not null default now();
 alter table public.transactions add column if not exists updated_at timestamptz not null default now();
