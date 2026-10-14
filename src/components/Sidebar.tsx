@@ -52,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'tasks' as NavTab,
-      label: 'Tasks',
+      label: 'Tugas',
       icon: CheckSquare,
       badge: summary.pending_tasks_count > 0 ? summary.pending_tasks_count : null,
     },

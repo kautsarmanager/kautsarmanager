@@ -565,6 +565,31 @@ class DataService {
     return newItem;
   }
 
+  public updateWishlistItem(id: string, updates: Partial<WishlistItem>): WishlistItem | null {
+    const list = this.getWishlist();
+    const index = list.findIndex((item) => item.id === id);
+    if (index === -1) return null;
+    const merged = { ...list[index], ...updates, updated_at: new Date().toISOString() };
+    merged.completed = merged.saved_amount >= merged.target_price;
+    list[index] = merged;
+    localStorage.setItem(this.key(STORAGE_KEYS.WISHLIST), JSON.stringify(list));
+    this.logActivity('wishlist', `Memperbarui target impian: "${merged.name}"`, 'updated');
+    this.notify();
+    if (this.cloudWritesEnabled && supabase && this.activeUserId) {
+      this.enqueueMutation({ table: 'wishlist_items', operation: 'upsert', payload: merged });
+    }
+    return merged;
+  }
+
+  public toggleWishlistSubtask(id: string, subtaskId: string): WishlistItem | null {
+    const item = this.getWishlist().find((entry) => entry.id === id);
+    if (!item) return null;
+    const subtasks = (item.subtasks || []).map((subtask) => subtask.id === subtaskId
+      ? { ...subtask, completed: !subtask.completed }
+      : subtask);
+    return this.updateWishlistItem(id, { subtasks });
+  }
+
   public updateWishlistDeposit(id: string, additionalAmount: number): WishlistItem | null {
     const list = this.getWishlist();
     const index = list.findIndex((w) => w.id === id);

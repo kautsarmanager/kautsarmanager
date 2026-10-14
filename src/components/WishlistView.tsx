@@ -6,8 +6,9 @@ import {
   CheckCircle2,
   Trash2,
   X,
+  Pencil,
 } from 'lucide-react';
-import { WishlistItem } from '../types';
+import { WishlistItem, WishlistSubTarget } from '../types';
 import { dataService } from '../services/dataService';
 
 interface WishlistViewProps {
@@ -18,6 +19,8 @@ interface WishlistViewProps {
 
 export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, onShowToast }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<WishlistItem | null>(null);
+  const [subtargets, setSubtargets] = useState<WishlistSubTarget[]>([]);
   const [depositModalItem, setDepositModalItem] = useState<WishlistItem | null>(null);
   const [depositAmount, setDepositAmount] = useState<string>('100000');
 
@@ -37,17 +40,22 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
     const saved = parseFloat(initialSaved || '0');
     if (!name.trim() || isNaN(target) || target <= 0) return;
 
-    dataService.createWishlistItem({
-      name: name.trim(),
-      description: description.trim(),
-      category: category.trim(),
-      target_price: target,
-      saved_amount: isNaN(saved) ? 0 : saved,
-      deadline: deadline || undefined,
-    });
-
-    if (onShowToast) {
-      onShowToast(`Target "${name.trim()}" ditambahkan`, 'success');
+    const cleanSubtargets = subtargets.filter((subtarget) => subtarget.title.trim()).map((subtarget) => ({ ...subtarget, title: subtarget.title.trim(), amount: Math.max(0, Number(subtarget.amount) || 0) }));
+    const totalTarget = target + cleanSubtargets.reduce((sum, subtarget) => sum + subtarget.amount, 0);
+    if (editingItem) {
+      dataService.updateWishlistItem(editingItem.id, {
+        name: name.trim(), description: description.trim(), category: category.trim(),
+        base_target_price: target, target_price: totalTarget, saved_amount: isNaN(saved) ? 0 : saved,
+        deadline: deadline || undefined, subtasks: cleanSubtargets,
+      });
+      onShowToast?.(`Target "${name.trim()}" diperbarui`, 'success');
+    } else {
+      dataService.createWishlistItem({
+        name: name.trim(), description: description.trim(), category: category.trim(),
+        base_target_price: target, target_price: totalTarget, saved_amount: isNaN(saved) ? 0 : saved,
+        deadline: deadline || undefined, subtasks: cleanSubtargets,
+      });
+      onShowToast?.(`Target "${name.trim()}" ditambahkan`, 'success');
     }
 
     setName('');
@@ -55,7 +63,23 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
     setTargetPrice('');
     setInitialSaved('0');
     setDeadline('');
+    setSubtargets([]);
+    setEditingItem(null);
     setIsModalOpen(false);
+  };
+
+  const openEdit = (item: WishlistItem) => {
+    setEditingItem(item);
+    setName(item.name); setDescription(item.description || ''); setCategory(item.category || '');
+    setTargetPrice(String(item.base_target_price ?? Math.max(0, item.target_price - (item.subtasks || []).reduce((sum, subtarget) => sum + (subtarget.amount || 0), 0)))); setInitialSaved(String(item.saved_amount));
+    setDeadline(item.deadline || '');
+    setSubtargets((item.subtasks || []).map((subtask) => ({ ...subtask, amount: Number(subtask.amount) || 0 })));
+    setIsModalOpen(true);
+  };
+
+  const closeWishlistModal = () => {
+    setIsModalOpen(false); setEditingItem(null); setName(''); setDescription(''); setCategory('');
+    setTargetPrice(''); setInitialSaved('0'); setDeadline(''); setSubtargets([]);
   };
 
   const handleDepositSubmit = (e: React.FormEvent) => {
@@ -158,6 +182,22 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                     </p>
                   )}
 
+                  {(item.subtasks || []).length > 0 && (
+                    <div className={`mt-3 rounded-lg p-2.5 space-y-2 ${isDark ? 'bg-[#101116]' : 'bg-zinc-50'}`}>
+                      <p className="text-[10px] uppercase tracking-wide text-zinc-500 font-semibold">Rincian sub-target</p>
+                      {(item.subtasks || []).map((subtarget) => (
+                        <div key={subtarget.id} className="flex items-center justify-between gap-2 text-[11px]">
+                          <label className="flex min-w-0 items-center gap-2 cursor-pointer">
+                            <input type="checkbox" checked={subtarget.completed} onChange={() => dataService.toggleWishlistSubtask(item.id, subtarget.id)} className="accent-lime-500" />
+                            <span className={subtarget.completed ? 'line-through opacity-60' : ''}>{subtarget.title}</span>
+                          </label>
+                          <span className="shrink-0 font-mono text-zinc-400">{formatCurrency(subtarget.amount || 0)}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between border-t border-inherit pt-2 text-[10px] text-zinc-500"><span>Dana utama + sub-target</span><span className="font-semibold text-lime-400">{formatCurrency(item.target_price)}</span></div>
+                    </div>
+                  )}
+
                   {/* Clean Minimal Progress Bar */}
                   <div
                     className={`w-full h-1.5 rounded-full mt-3 overflow-hidden ${
@@ -204,12 +244,19 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                     <span>+ Tabungan</span>
                   </button>
 
-                  <button
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => openEdit(item)}
+                      title="Edit target"
+                      className="p-1 text-zinc-500 hover:text-lime-400 rounded-md hover:bg-zinc-800/50 transition-colors"
+                    ><Pencil className="w-3.5 h-3.5" /></button>
+                    <button
                     onClick={() => handleDelete(item)}
                     className="p-1 text-zinc-500 hover:text-rose-400 rounded-md hover:bg-zinc-800/50 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -219,7 +266,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
 
       {/* Modal Tabungan / Deposit */}
       {depositModalItem && (
-        <div onMouseDown={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div onMouseDown={(e) => { if (e.target === e.currentTarget) setDepositModalItem(null); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div
             className={`w-full max-w-sm border rounded-2xl p-5 shadow-2xl ${
               isDark ? 'bg-[#15161d] border-[#262836]' : 'bg-white border-zinc-300'
@@ -296,16 +343,16 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
 
       {/* Modal Buat Target Wishlist Baru */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div onMouseDown={(e) => { if (e.target === e.currentTarget) closeWishlistModal(); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div
             className={`w-full max-w-md border rounded-2xl p-5 shadow-2xl ${
               isDark ? 'bg-[#15161d] border-[#262836]' : 'bg-white border-zinc-300'
             }`}
           >
             <div className="flex items-center justify-between pb-3 border-b border-inherit">
-              <h2 className="text-sm font-semibold">Tambah Target Wishlist</h2>
+              <h2 className="text-sm font-semibold">{editingItem ? 'Edit Target Wishlist' : 'Tambah Target Wishlist'}</h2>
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={closeWishlistModal}
                 className="text-zinc-500 hover:text-zinc-300 cursor-pointer"
               >
                 <X className="w-4 h-4" />
@@ -322,7 +369,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Contoh: Laptop Baru"
+                  placeholder="Contoh: Liburan ke Bali"
                   className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
                     isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}
@@ -347,7 +394,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-medium text-zinc-400 mb-1">
-                    Target Harga (Rp) *
+                    Dana utama target (Rp) *
                   </label>
                   <input
                     type="number"
@@ -412,10 +459,26 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                 </div>
               </div>
 
+              <div className={`rounded-xl border p-3 space-y-3 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <div><label className="block text-[11px] font-semibold text-zinc-300">Sub-target dan dana</label><p className="text-[10px] text-zinc-500">Total target otomatis menjumlahkan dana utama dan seluruh sub-target.</p></div>
+                  <button type="button" onClick={() => setSubtargets((current) => [...current, { id: crypto.randomUUID(), title: '', amount: 0, completed: false }])} className="shrink-0 rounded-lg bg-lime-600 px-2.5 py-1.5 text-[11px] font-semibold text-white">+ Tambah</button>
+                </div>
+                {subtargets.length === 0 && <p className="text-[11px] text-zinc-500">Belum ada sub-target. Contoh: Dana bensin, dana logistik.</p>}
+                {subtargets.map((subtarget, index) => (
+                  <div key={subtarget.id} className="grid grid-cols-[minmax(0,1fr)_120px_28px] gap-2 items-center">
+                    <input value={subtarget.title} onChange={(e) => setSubtargets((current) => current.map((entry) => entry.id === subtarget.id ? { ...entry, title: e.target.value } : entry))} placeholder={index === 0 ? 'Dana bensin' : 'Nama sub-target'} className={`min-w-0 px-2.5 py-2 rounded-lg border text-xs ${isDark ? 'bg-[#0c0d12] border-[#292c3a] text-zinc-100' : 'bg-white border-zinc-200 text-zinc-900'}`} />
+                    <input type="number" min="0" step="1000" value={subtarget.amount} onChange={(e) => setSubtargets((current) => current.map((entry) => entry.id === subtarget.id ? { ...entry, amount: Number(e.target.value) } : entry))} placeholder="Dana (Rp)" aria-label={`Dana sub-target ${index + 1}`} className={`w-full px-2 py-2 rounded-lg border text-xs font-mono ${isDark ? 'bg-[#0c0d12] border-[#292c3a] text-zinc-100' : 'bg-white border-zinc-200 text-zinc-900'}`} />
+                    <button type="button" onClick={() => setSubtargets((current) => current.filter((entry) => entry.id !== subtarget.id))} title="Hapus sub-target" className="p-1 text-zinc-500 hover:text-rose-400"><Trash2 className="w-3.5 h-3.5" /></button>
+                  </div>
+                ))}
+                <div className="flex justify-between border-t border-inherit pt-2 text-xs"><span className="text-zinc-500">Total dana target</span><strong className="font-mono text-lime-400">{formatCurrency((Number(targetPrice) || 0) + subtargets.reduce((sum, subtarget) => sum + (Number(subtarget.amount) || 0), 0))}</strong></div>
+              </div>
+
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-inherit">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={closeWishlistModal}
                   className="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 cursor-pointer"
                 >
                   Batal
@@ -424,7 +487,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                   type="submit"
                   className="px-4 py-1.5 rounded-lg bg-lime-600 hover:bg-lime-500 text-white font-medium shadow-xs shadow-lime-600/30 active:scale-[0.98] transition-all cursor-pointer"
                 >
-                  Simpan Target
+                  {editingItem ? 'Simpan Perubahan' : 'Simpan Target'}
                 </button>
               </div>
             </form>

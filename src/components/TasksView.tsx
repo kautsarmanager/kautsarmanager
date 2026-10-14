@@ -12,6 +12,7 @@ import {
   Search,
   AlertTriangle,
   Bell,
+  Pencil,
 } from 'lucide-react';
 import { Task, Priority } from '../types';
 import { dataService } from '../services/dataService';
@@ -36,6 +37,8 @@ export const TasksView: React.FC<TasksViewProps> = ({
   const [filterDeadline, setFilterDeadline] = useState<'all' | 'overdue' | 'today' | 'soon'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(initialCreateOpen);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   // New Task Form State
   const [title, setTitle] = useState('');
@@ -68,24 +71,47 @@ export const TasksView: React.FC<TasksViewProps> = ({
     e.preventDefault();
     if (!title.trim()) return;
 
-    dataService.createTask({
+    const taskData = {
       title: title.trim(),
       description: description.trim(),
       deadline,
       priority,
-      status: 'pending',
+      status: editingTask?.status ?? 'pending' as const,
       category: category.trim(),
       reminder: reminder.trim() || undefined,
-    });
-
-    if (onShowToast) {
-      onShowToast(`Tugas "${title.trim()}" dengan deadline berhasil dibuat`, 'success');
+    };
+    if (editingTask) {
+      dataService.updateTask(editingTask.id, taskData);
+      onShowToast?.(`Tugas "${title.trim()}" diperbarui`, 'success');
+    } else {
+      dataService.createTask(taskData);
+      onShowToast?.(`Tugas "${title.trim()}" dengan deadline berhasil dibuat`, 'success');
     }
 
     setTitle('');
     setDescription('');
     setReminder('');
+    setEditingTask(null);
     setIsModalOpen(false);
+  };
+
+  const handleEdit = (task: Task, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingTask(task);
+    setTitle(task.title);
+    setDescription(task.description || '');
+    setDeadline(task.deadline || getLocalDateString());
+    setPriority(task.priority);
+    setCategory(task.category || '');
+    setReminder(task.reminder || '');
+    setIsModalOpen(true);
+  };
+
+  const closeTaskModal = () => {
+    setIsModalOpen(false);
+    setEditingTask(null);
+    setTitle(''); setDescription(''); setDeadline(getLocalDateString());
+    setPriority('medium'); setCategory(''); setReminder('');
   };
 
   const handleToggle = (task: Task) => {
@@ -101,6 +127,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
 
   const handleDelete = (task: Task, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!window.confirm(`Hapus tugas "${task.title}"?`)) return;
     dataService.deleteTask(task.id);
     if (onShowToast) {
       onShowToast(`Tugas "${task.title}" dihapus`, 'info');
@@ -118,7 +145,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className={`text-lg sm:text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
-            Tasks & Deadline
+            Tugas & Deadline
           </h1>
           <p className={`text-xs mt-0.5 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
             Kelola target harian, deadline, dan sistem pengingat otomatis tugas Anda.
@@ -130,7 +157,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
           className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-xl bg-lime-600 hover:bg-lime-500 text-white shadow-xs shadow-lime-600/30 active:scale-[0.98] transition-all cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>Tambah Task Baru</span>
+          <span>Tambah Tugas Baru</span>
         </button>
       </div>
 
@@ -152,7 +179,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari task..."
+              placeholder="Cari tugas..."
               className="bg-transparent text-xs w-full focus:outline-hidden"
             />
           </div>
@@ -253,7 +280,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
         </div>
 
         <span className="text-xs font-mono text-zinc-500 pr-2">
-          {filteredTasks.length} {filteredTasks.length === 1 ? 'task' : 'tasks'}
+          {filteredTasks.length} {filteredTasks.length === 1 ? 'tugas' : 'tugas'}
         </span>
       </div>
 
@@ -287,7 +314,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
             return (
               <div
                 key={task.id}
-                onClick={() => handleToggle(task)}
+                onClick={() => setSelectedTask(task)}
                 className={`flex items-start justify-between gap-3 p-3 rounded-xl border transition-all cursor-pointer group ${
                   isDone
                     ? isDark
@@ -303,7 +330,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                 }`}
               >
                 <div className="flex items-start gap-3 min-w-0 flex-1">
-                  <button type="button" className="mt-0.5 text-zinc-500 group-hover:text-lime-400">
+                  <button type="button" onClick={(e) => { e.stopPropagation(); handleToggle(task); }} aria-label={isDone ? 'Tandai belum selesai' : 'Tandai selesai'} className="mt-0.5 text-zinc-500 group-hover:text-lime-400">
                     {isDone ? (
                       <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                     ) : (
@@ -388,9 +415,16 @@ export const TasksView: React.FC<TasksViewProps> = ({
                   </span>
 
                   <button
+                    onClick={(e) => handleEdit(task, e)}
+                    className="p-1 text-zinc-500 hover:text-lime-400 rounded-md hover:bg-zinc-800/50 transition-colors opacity-70 group-hover:opacity-100"
+                    title="Edit tugas"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  <button
                     onClick={(e) => handleDelete(task, e)}
                     className="p-1 text-zinc-500 hover:text-rose-400 rounded-md hover:bg-zinc-800/50 transition-colors opacity-70 group-hover:opacity-100"
-                    title="Hapus task"
+                    title="Hapus tugas"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -401,7 +435,31 @@ export const TasksView: React.FC<TasksViewProps> = ({
         )}
       </div>
 
-      {/* Modal Tambah Task */}
+      {/* Panel detail tugas lengkap */}
+      {selectedTask && !isModalOpen && (
+        <div onMouseDown={(e) => { if (e.target === e.currentTarget) setSelectedTask(null); }} className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <section className={`w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-2xl border p-5 shadow-2xl ${isDark ? 'bg-[#15161d] border-[#262836]' : 'bg-white border-zinc-300'}`}>
+            <div className="flex items-start justify-between gap-3 border-b border-inherit pb-3">
+              <div><p className="text-[10px] uppercase tracking-wider text-lime-400">Detail tugas</p><h2 className={`mt-1 text-base font-semibold ${selectedTask.status === 'completed' ? 'line-through text-zinc-500' : ''}`}>{selectedTask.title}</h2></div>
+              <button onClick={() => setSelectedTask(null)} className="rounded-lg p-1 text-zinc-500 hover:text-zinc-200" aria-label="Tutup detail"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 text-xs">
+              <div className={`rounded-xl border p-3 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Status</p><p className="font-medium">{selectedTask.status === 'completed' ? 'Selesai' : selectedTask.status === 'in_progress' ? 'Sedang dikerjakan' : 'Belum selesai'}</p></div>
+              <div className={`rounded-xl border p-3 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Prioritas</p><p className="font-medium capitalize">{selectedTask.priority}</p></div>
+              <div className={`rounded-xl border p-3 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Kategori</p><p className="font-medium">{selectedTask.category || 'Belum dikategorikan'}</p></div>
+              <div className={`rounded-xl border p-3 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Deadline</p><p className="font-medium">{selectedTask.deadline || 'Belum ditentukan'}</p></div>
+              <div className={`rounded-xl border p-3 sm:col-span-2 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Deskripsi lengkap</p><p className="whitespace-pre-wrap break-words">{selectedTask.description || 'Belum ada deskripsi.'}</p></div>
+              {selectedTask.reminder && <div className={`rounded-xl border p-3 sm:col-span-2 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Pengingat</p><p className="font-medium">Pukul {selectedTask.reminder}</p></div>}
+            </div>
+            <div className="flex flex-wrap justify-end gap-2 mt-5 border-t border-inherit pt-4">
+              <button onClick={() => { setSelectedTask(null); handleToggle(selectedTask); }} className="rounded-lg border border-inherit px-3 py-2 text-xs">{selectedTask.status === 'completed' ? 'Buka kembali' : 'Tandai selesai'}</button>
+              <button onClick={(e) => { const task = selectedTask; setSelectedTask(null); handleEdit(task, e as unknown as React.MouseEvent); }} className="inline-flex items-center gap-1.5 rounded-lg bg-lime-600 px-4 py-2 text-xs font-semibold text-white"><Pencil className="w-3.5 h-3.5" /> Edit tugas</button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* Modal Tambah Tugas */}
       {isModalOpen && (
         <div onMouseDown={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div
@@ -412,7 +470,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
             <div className="flex items-center justify-between pb-3 border-b border-inherit">
               <div className="flex items-center gap-2">
                 <Bell className="w-4 h-4 text-lime-400" />
-                <h2 className="text-sm font-semibold">Tambah Tugas & Pengingat</h2>
+                <h2 className="text-sm font-semibold">{editingTask ? 'Edit Tugas & Pengingat' : 'Tambah Tugas & Pengingat'}</h2>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -589,7 +647,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-inherit">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={closeTaskModal}
                   className="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 cursor-pointer"
                 >
                   Batal
@@ -598,7 +656,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                   type="submit"
                   className="px-4 py-1.5 rounded-lg bg-lime-600 hover:bg-lime-500 text-white font-medium shadow-xs shadow-lime-600/30 active:scale-[0.98] transition-all cursor-pointer"
                 >
-                  Simpan Task
+                  {editingTask ? 'Simpan Perubahan' : 'Simpan Task'}
                 </button>
               </div>
             </form>

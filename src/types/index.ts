@@ -41,6 +41,13 @@ export interface FileItem {
   url?: string;
 }
 
+export interface WishlistSubTarget {
+  id: string;
+  title: string;
+  amount: number;
+  completed: boolean;
+}
+
 export interface WishlistItem {
   id: string;
   user_id: string;
@@ -48,9 +55,11 @@ export interface WishlistItem {
   description: string;
   category: string;
   target_price: number;
+  base_target_price?: number;
   saved_amount: number;
   deadline?: string;
   completed: boolean;
+  subtasks?: WishlistSubTarget[];
   created_at: string;
   updated_at: string;
 }

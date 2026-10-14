@@ -131,7 +131,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-lime-600 hover:bg-lime-500 text-white shadow-xs shadow-lime-600/20 active:scale-[0.98] transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Task Baru</span>
+            <span>Tugas Baru</span>
           </button>
           <button
             onClick={onAddTransaction}
@@ -263,7 +263,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {/* Header & Minimal Tab Switcher */}
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-inherit">
             <h2 className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-zinc-200' : 'text-zinc-800'}`}>
-              Tasks
+              Tugas
             </h2>
 
             {/* Linear-style quiet tabs */}
@@ -443,7 +443,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
 
           <div className="pt-3 mt-3 border-t border-inherit flex items-center justify-between text-xs">
-            <span className="text-[11px] font-mono text-zinc-500">{tasks.length} Total tasks</span>
+            <span className="text-[11px] font-mono text-zinc-500">{tasks.length} Total tugas</span>
             <button
               onClick={() => onNavigate('tasks')}
               className="text-xs text-lime-400 hover:text-lime-300 flex items-center gap-1 font-medium cursor-pointer"

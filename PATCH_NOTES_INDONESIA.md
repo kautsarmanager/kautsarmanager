@@ -26,3 +26,18 @@
 6. Jalankan `git status`, `git add .`, `git commit -m "Improve app settings and confirmations"`, lalu `git push`.
 7. Cloudflare Pages akan build ulang otomatis dari branch `main`. Pastikan environment variables `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` di Cloudflare Pages sama dengan `.env.local`.
 8. Uji login, logout, create task, finance, upload file, wishlist, dan buka aplikasi dari perangkat kedua.
+
+## Tambahan lanjutan
+- Task sekarang dapat diedit lewat ikon pensil; status task dipertahankan saat mengubah detail. Hapus task meminta konfirmasi.
+- Wishlist sekarang dapat diedit, termasuk nama, deskripsi, kategori, harga target, tabungan awal, tanggal, dan daftar sub-target.
+- Sub-target wishlist tampil sebagai checklist yang dapat dicentang dan progres checklist ditampilkan pada kartu.
+- Catatan sinkronisasi: sub-target saat ini disimpan lokal pada data wishlist; payload Supabase sengaja tidak mengirim field `subtasks` karena schema database yang ada belum dipastikan memiliki kolom JSONB untuk itu. Agar checklist tersinkron antarperangkat, schema Supabase perlu migrasi kolom `subtasks` bertipe JSONB dan proses sync perlu diperbarui.
+- Verifikasi sintaks TypeScript/TSX selesai tanpa diagnostic transpile. Build penuh belum terverifikasi karena dependency Vite tidak tersedia di cache offline; `npm ci --offline` gagal karena paket Vite belum tercache. Wajib jalankan `npm ci` dan `npm run build` di komputer lokal sebelum deploy.
+
+
+## Pembaruan tambahan (14 Oktober 2026)
+- Panel tugas: klik satu tugas untuk melihat detail lengkap; tombol Edit tugas tersedia di dalam panel detail. Tombol lingkaran tetap untuk menandai selesai.
+- Label menu tugas memakai bahasa Indonesia, termasuk judul, tombol tambah, pencarian, dan jumlah tugas.
+- Wishlist: sub-target sekarang punya nama, nominal dana, checklist, dan total target otomatis (dana utama + seluruh dana sub-target).
+- Login: kolom email/password tidak memakai nilai yang disimpan oleh state aplikasi, autocomplete diperketat, dan berpindah tab login/daftar mengosongkan input. Browser/password manager tertentu masih dapat mengabaikan petunjuk autocomplete.
+- Untuk sinkronisasi sub-target dan dana antarperangkat, jalankan SQL di `supabase/migrations/202610140001_wishlist_subtargets.sql` pada Supabase SQL Editor sebelum memakai fitur ini di produksi.

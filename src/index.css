@@ -63,3 +63,25 @@ input::placeholder, textarea::placeholder { opacity: .58; }
     transition-duration: .01ms !important;
   }
 }
+
+
+/* Kautsar Manager refresh: borderless surfaces, depth through tonal contrast. */
+:root {
+  --pms-radius: 18px;
+  --pms-border-dark: transparent;
+  --pms-border-light: transparent;
+}
+* { scrollbar-color: rgba(128,128,128,.35) transparent; }
+@layer base {
+  body { min-height: 100vh; }
+  button, a, input, select, textarea { transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
+}
+@layer utilities {
+  .border, [class*="border-"] { border-color: transparent !important; }
+  .divide-y > :not(:first-child), .divide-x > :not(:first-child) { border-color: rgba(128,128,128,.12) !important; }
+}
+/* Preserve visible keyboard focus and validation states after removing decorative borders. */
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 2px solid #c9f158;
+  outline-offset: 3px;
+}

@@ -19,7 +19,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     { id: 'dashboard' as NavTab, label: 'Home', icon: LayoutDashboard },
     {
       id: 'tasks' as NavTab,
-      label: 'Tasks',
+      label: 'Tugas',
       icon: CheckSquare,
       badge: pendingTasksCount > 0 ? pendingTasksCount : null,
     },
