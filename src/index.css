@@ -73,3 +73,38 @@ input::placeholder, textarea::placeholder { opacity: .58; }
     transition-duration: .01ms !important;
   }
 }
+
+/* Responsive consistency layer: keep layouts usable from small phones to desktop. */
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { width: 100%; min-width: 0; }
+body { overflow-x: hidden; }
+img, video, canvas, svg { max-width: 100%; }
+/* Flex/grid children must be allowed to shrink instead of stretching panels. */
+.flex > *, .grid > * { min-width: 0; }
+/* Long labels, IDs and user-entered content must not force a wider viewport. */
+.break-words, p, h1, h2, h3, h4, label { overflow-wrap: anywhere; }
+/* Tables retain their columns and scroll inside their own region on narrow screens. */
+:where(.overflow-x-auto, .overflow-auto) { max-width: 100%; -webkit-overflow-scrolling: touch; }
+table { max-width: 100%; }
+/* Inputs remain inside cards and comfortable to use on touch devices. */
+input, select, textarea { max-width: 100%; min-width: 0; }
+button, [role="button"] { touch-action: manipulation; }
+
+@media (max-width: 640px) {
+  body { font-size: 14px; }
+  main { min-width: 0; }
+  /* Avoid fixed/min-content controls pushing cards beyond the viewport. */
+  .flex, .inline-flex, .grid { min-width: 0; }
+  .flex-wrap { row-gap: .5rem; }
+  /* Forms stack cleanly on phones unless a component explicitly controls layout. */
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+    font-size: 16px; /* avoids iOS zoom when focusing inputs */
+  }
+  /* Keep controls readable and tappable without forcing oversized panels. */
+  button { max-width: 100%; }
+  .overflow-x-auto { overscroll-behavior-x: contain; }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  main { min-width: 0; }
+}
