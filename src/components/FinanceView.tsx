@@ -218,14 +218,16 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
             <p className="text-xs text-zinc-500 mt-1">Ringkasan dan daftar transaksi mengikuti rentang waktu yang dipilih.</p>
           </div>
           <div className="flex flex-wrap items-center gap-1">
-            <div className={`flex items-center gap-1 rounded-lg border p-1 ${isDark ? 'border-[#424242] bg-[#212121]' : 'border-zinc-200 bg-white'}`} aria-label="Pilih tanggal cashflow">
-              <button type="button" onClick={() => { const d = dateFromLocal(selectedDay); d.setDate(d.getDate() - 1); setSelectedDay(dateKey(d)); setCashflowPeriod('today'); }} aria-label="Hari sebelumnya" title="Hari sebelumnya" className={`rounded-md p-2 ${isDark ? 'hover:bg-[#383838]' : 'hover:bg-zinc-100'}`}><ChevronLeft className="h-4 w-4" /></button>
-              <label className="flex items-center gap-2 px-1 text-xs font-medium">
+            <div className="flex items-center gap-2" aria-label="Pilih tanggal cashflow">
+              <button type="button" onClick={() => { const d = dateFromLocal(selectedDay); d.setDate(d.getDate() - 1); setSelectedDay(dateKey(d)); setCashflowPeriod('today'); }} aria-label="Hari sebelumnya" title="Hari sebelumnya" className={`h-10 w-10 shrink-0 rounded-lg border flex items-center justify-center ${isDark ? 'border-[#424242] bg-[#212121] hover:bg-[#383838]' : 'border-zinc-200 bg-white hover:bg-zinc-100'}`}><ChevronLeft className="h-4 w-4" /></button>
+              <div className={`flex h-10 w-[250px] max-w-[calc(100vw-190px)] min-w-0 items-center justify-center rounded-lg border px-3 text-center ${isDark ? 'border-[#424242] bg-[#212121]' : 'border-zinc-200 bg-white'}`}>
+                <span className={`truncate text-xs font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-800'}`}>{selectedDay === today ? 'Hari ini' : formatDateLong(selectedDay)}</span>
+              </div>
+              <button type="button" onClick={() => { const d = dateFromLocal(selectedDay); d.setDate(d.getDate() + 1); setSelectedDay(dateKey(d)); setCashflowPeriod('today'); }} aria-label="Hari berikutnya" title="Hari berikutnya" className={`h-10 w-10 shrink-0 rounded-lg border flex items-center justify-center ${isDark ? 'border-[#424242] bg-[#212121] hover:bg-[#383838]' : 'border-zinc-200 bg-white hover:bg-zinc-100'}`}><ChevronRight className="h-4 w-4" /></button>
+              <label className={`relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border ${isDark ? 'border-[#424242] bg-[#212121] hover:bg-[#383838]' : 'border-zinc-200 bg-white hover:bg-zinc-100'}`} title="Pilih tanggal tertentu" aria-label="Pilih tanggal tertentu">
                 <Calendar className="h-4 w-4 text-zinc-400" />
-                <span className="whitespace-nowrap">{selectedDay === today ? 'Hari ini' : formatDateLong(selectedDay)}</span>
-                <input type="date" aria-label="Pilih tanggal cashflow" value={selectedDay} onChange={(e) => { if (e.target.value) { setSelectedDay(e.target.value); setCashflowPeriod('today'); } }} className={`max-w-[34px] cursor-pointer border-0 bg-transparent p-0 opacity-70 ${isDark ? 'text-zinc-100' : 'text-zinc-800'}`} />
+                <input type="date" aria-label="Pilih tanggal cashflow" value={selectedDay} onChange={(e) => { if (e.target.value) { setSelectedDay(e.target.value); setCashflowPeriod('today'); } }} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
               </label>
-              <button type="button" onClick={() => { const d = dateFromLocal(selectedDay); d.setDate(d.getDate() + 1); setSelectedDay(dateKey(d)); setCashflowPeriod('today'); }} aria-label="Hari berikutnya" title="Hari berikutnya" className={`rounded-md p-2 ${isDark ? 'hover:bg-[#383838]' : 'hover:bg-zinc-100'}`}><ChevronRight className="h-4 w-4" /></button>
             </div>
             {([['week', 'Minggu ini'], ['month', 'Bulanan'], ['year', 'Tahunan'], ['all', 'All time']] as const).map(([value, label]) => (
               <button key={value} onClick={() => setCashflowPeriod(value)} className={`rounded-lg px-3 py-2 text-xs font-medium ${cashflowPeriod === value ? 'bg-lime-600 text-white' : isDark ? 'bg-[#212121] text-zinc-300' : 'bg-zinc-100 text-zinc-700'}`}>{label}</button>
