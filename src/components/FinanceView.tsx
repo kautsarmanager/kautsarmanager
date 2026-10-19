@@ -6,6 +6,8 @@ import {
   Plus,
   Trash2,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
   SlidersHorizontal,
   X,
 } from 'lucide-react';
@@ -27,6 +29,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [sortMode, setSortMode] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
   const [cashflowPeriod, setCashflowPeriod] = useState<'today' | 'week' | 'month' | 'year' | 'all' | 'custom'>('today');
+  const [selectedDay, setSelectedDay] = useState<string>(getLocalDateString());
   const [customStart, setCustomStart] = useState<string>(getLocalDateString());
   const [customEnd, setCustomEnd] = useState<string>(getLocalDateString());
 
@@ -44,7 +47,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
   const dateKey = (value: Date) => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
   const periodRange = useMemo(() => {
     const current = dateFromLocal(today);
-    if (cashflowPeriod === 'today') return { start: today, end: today };
+    if (cashflowPeriod === 'today') return { start: selectedDay, end: selectedDay };
     if (cashflowPeriod === 'week') {
       const monday = new Date(current);
       monday.setDate(current.getDate() - ((current.getDay() + 6) % 7));
@@ -54,9 +57,9 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
     }
     if (cashflowPeriod === 'month') return { start: dateKey(new Date(current.getFullYear(), current.getMonth(), 1)), end: dateKey(new Date(current.getFullYear(), current.getMonth() + 1, 0)) };
     if (cashflowPeriod === 'year') return { start: `${current.getFullYear()}-01-01`, end: `${current.getFullYear()}-12-31` };
-    if (cashflowPeriod === 'custom') return { start: customStart <= customEnd ? customStart : customEnd, end: customStart <= customEnd ? customEnd : customStart };
+    if (cashflowPeriod === 'custom') return customStart <= customEnd ? { start: customStart, end: customEnd } : { start: customEnd, end: customStart };
     return { start: '', end: '' };
-  }, [cashflowPeriod, today, customStart, customEnd]);
+  }, [cashflowPeriod, today, selectedDay, customStart, customEnd]);
 
   const periodTransactions = useMemo(() => transactions.filter((t) => {
     const day = String(t.transaction_date || '').slice(0, 10);
@@ -73,8 +76,13 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
     return parsed.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   };
   const formatPeriodLabel = () => {
-    if (cashflowPeriod === 'today') return 'Hari ini';
+    if (cashflowPeriod === 'today') return selectedDay === today ? 'Hari ini' : formatDateLong(selectedDay);
     if (cashflowPeriod === 'all') return 'Sepanjang waktu';
+    if (cashflowPeriod === 'custom') {
+      const a = dateFromLocal(periodRange.start); const b = dateFromLocal(periodRange.end);
+      const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long' };
+      return periodRange.start === periodRange.end ? formatDateLong(periodRange.start) : a.getFullYear() === b.getFullYear() ? (a.getMonth() === b.getMonth() ? `${a.getDate()}–${b.getDate()} ${b.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}` : `${a.toLocaleDateString('id-ID', opts)} – ${b.toLocaleDateString('id-ID', { ...opts, year: 'numeric' })}`) : `${a.toLocaleDateString('id-ID', { ...opts, year: 'numeric' })} – ${b.toLocaleDateString('id-ID', { ...opts, year: 'numeric' })}`;
+    }
     if (cashflowPeriod === 'week') return `Pekan ${formatDateLong(periodRange.start)} – ${formatDateLong(periodRange.end)}`;
     if (cashflowPeriod === 'month') return dateFromLocal(today).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
     if (cashflowPeriod === 'year') return dateFromLocal(today).getFullYear().toString();
@@ -209,16 +217,35 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
             </div>
             <p className="text-xs text-zinc-500 mt-1">Ringkasan dan daftar transaksi mengikuti rentang waktu yang dipilih.</p>
           </div>
-          <div className="flex flex-wrap gap-1">
-            {([['today', 'Hari ini'], ['week', 'Minggu ini'], ['month', 'Bulanan'], ['year', 'Tahunan'], ['all', 'All time'], ['custom', 'Custom']] as const).map(([value, label]) => (
+          <div className="flex flex-wrap items-center gap-1">
+            <div className={`flex items-center gap-1 rounded-lg border p-1 ${isDark ? 'border-[#424242] bg-[#212121]' : 'border-zinc-200 bg-white'}`} aria-label="Pilih tanggal cashflow">
+              <button type="button" onClick={() => { const d = dateFromLocal(selectedDay); d.setDate(d.getDate() - 1); setSelectedDay(dateKey(d)); setCashflowPeriod('today'); }} aria-label="Hari sebelumnya" title="Hari sebelumnya" className={`rounded-md p-2 ${isDark ? 'hover:bg-[#383838]' : 'hover:bg-zinc-100'}`}><ChevronLeft className="h-4 w-4" /></button>
+              <label className="flex items-center gap-2 px-1 text-xs font-medium">
+                <Calendar className="h-4 w-4 text-zinc-400" />
+                <span className="whitespace-nowrap">{selectedDay === today ? 'Hari ini' : formatDateLong(selectedDay)}</span>
+                <input type="date" aria-label="Pilih tanggal cashflow" value={selectedDay} onChange={(e) => { if (e.target.value) { setSelectedDay(e.target.value); setCashflowPeriod('today'); } }} className={`max-w-[34px] cursor-pointer border-0 bg-transparent p-0 opacity-70 ${isDark ? 'text-zinc-100' : 'text-zinc-800'}`} />
+              </label>
+              <button type="button" onClick={() => { const d = dateFromLocal(selectedDay); d.setDate(d.getDate() + 1); setSelectedDay(dateKey(d)); setCashflowPeriod('today'); }} aria-label="Hari berikutnya" title="Hari berikutnya" className={`rounded-md p-2 ${isDark ? 'hover:bg-[#383838]' : 'hover:bg-zinc-100'}`}><ChevronRight className="h-4 w-4" /></button>
+            </div>
+            {([['week', 'Minggu ini'], ['month', 'Bulanan'], ['year', 'Tahunan'], ['all', 'All time']] as const).map(([value, label]) => (
               <button key={value} onClick={() => setCashflowPeriod(value)} className={`rounded-lg px-3 py-2 text-xs font-medium ${cashflowPeriod === value ? 'bg-lime-600 text-white' : isDark ? 'bg-[#212121] text-zinc-300' : 'bg-zinc-100 text-zinc-700'}`}>{label}</button>
             ))}
+            <button type="button" onClick={() => setCashflowPeriod('custom')} className={`rounded-lg px-3 py-2 text-xs font-medium ${cashflowPeriod === 'custom' ? 'bg-lime-600 text-white' : isDark ? 'bg-[#212121] text-zinc-300' : 'bg-zinc-100 text-zinc-700'}`}>Kustom</button>
           </div>
         </div>
-        {cashflowPeriod === 'custom' && <div className="mt-3 flex flex-wrap items-center gap-2">
-          <label className="text-xs text-zinc-500">Dari <input type="date" aria-label="Tanggal awal cashflow" value={customStart} onChange={(e) => setCustomStart(e.target.value)} className={`ml-1 rounded-lg border px-2 py-1.5 ${controlClass}`} /></label>
-          <label className="text-xs text-zinc-500">Sampai <input type="date" aria-label="Tanggal akhir cashflow" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} className={`ml-1 rounded-lg border px-2 py-1.5 ${controlClass}`} /></label>
-        </div>}
+        {cashflowPeriod === 'custom' && (
+          <div className={`mt-3 flex flex-col gap-3 rounded-xl border p-3 sm:flex-row sm:items-end ${isDark ? 'border-[#424242] bg-[#212121]' : 'border-zinc-200 bg-zinc-50'}`}>
+            <div className="flex-1">
+              <label htmlFor="cashflow-custom-start" className="mb-1 block text-xs text-zinc-500">Tanggal awal</label>
+              <input id="cashflow-custom-start" type="date" value={customStart} max={customEnd} onChange={(e) => e.target.value && setCustomStart(e.target.value)} className={`w-full rounded-lg border p-2 text-sm ${isDark ? 'border-[#424242] bg-[#303030] text-zinc-100' : 'border-zinc-300 bg-white text-zinc-900'}`} />
+            </div>
+            <div className="flex-1">
+              <label htmlFor="cashflow-custom-end" className="mb-1 block text-xs text-zinc-500">Tanggal akhir</label>
+              <input id="cashflow-custom-end" type="date" value={customEnd} min={customStart} onChange={(e) => e.target.value && setCustomEnd(e.target.value)} className={`w-full rounded-lg border p-2 text-sm ${isDark ? 'border-[#424242] bg-[#303030] text-zinc-100' : 'border-zinc-300 bg-white text-zinc-900'}`} />
+            </div>
+            <button type="button" onClick={() => { setCustomStart(today); setCustomEnd(today); setSelectedDay(today); setCashflowPeriod('today'); }} className={`rounded-lg px-3 py-2 text-xs font-medium ${isDark ? 'bg-[#383838] text-zinc-200' : 'bg-white text-zinc-700 border border-zinc-200'}`}>Kembali ke hari ini</button>
+          </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
           <div className={`rounded-xl p-3 ${isDark ? 'bg-[#212121]' : 'bg-[#f7f7f7]'}`}>
             <p className="text-xs text-zinc-500">Total pemasukan</p>
