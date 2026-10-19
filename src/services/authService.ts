@@ -112,4 +112,5 @@ class AuthService {
   public resetPinSecurity() {}
 }
 
+
 export const authService = new AuthService();
