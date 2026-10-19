@@ -582,7 +582,6 @@ class DataService {
         const result = await supabase.from('wishlist_items').upsert({
           id: item.id, user_id: userId, name: item.name, description: item.description || '',
           category: item.category || 'Umum', target_price: item.target_price, saved_amount: item.saved_amount,
-          base_target_price: item.base_target_price ?? 0, subtasks: item.subtasks ?? [],
           deadline: item.deadline || null, completed: item.completed,
           created_at: item.created_at, updated_at: item.updated_at,
         }, { onConflict: 'id' }).select('id');
