@@ -46,14 +46,14 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
       dataService.updateWishlistItem(editingItem.id, {
         name: name.trim(), description: description.trim(), category: category.trim(),
         base_target_price: target, target_price: totalTarget, saved_amount: isNaN(saved) ? 0 : saved,
-        deadline: deadline || undefined, subtasks: cleanSubtargets,
+        deadline: deadline || null, subtasks: cleanSubtargets,
       });
       onShowToast?.(`Target "${name.trim()}" diperbarui`, 'success');
     } else {
       dataService.createWishlistItem({
         name: name.trim(), description: description.trim(), category: category.trim(),
         base_target_price: target, target_price: totalTarget, saved_amount: isNaN(saved) ? 0 : saved,
-        deadline: deadline || undefined, subtasks: cleanSubtargets,
+        deadline: deadline || null, subtasks: cleanSubtargets,
       });
       onShowToast?.(`Target "${name.trim()}" ditambahkan`, 'success');
     }

@@ -57,7 +57,7 @@ export interface WishlistItem {
   target_price: number;
   base_target_price?: number;
   saved_amount: number;
-  deadline?: string;
+  deadline?: string | null;
   completed: boolean;
   subtasks?: WishlistSubTarget[];
   created_at: string;
