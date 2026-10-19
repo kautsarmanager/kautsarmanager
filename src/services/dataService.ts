@@ -232,7 +232,27 @@ class DataService {
         try {
           let error: any = null;
           if (item.operation === 'upsert') {
-            const result = await supabase.from(item.table).upsert(item.payload, { onConflict: 'id' });
+            // Normalize queued Wishlist payloads to the actual public.wishlist_items schema.
+            // Older outbox entries may contain UI-only fields such as base_target_price/subtasks,
+            // which cause PostgREST PGRST204 and otherwise remain stuck forever in the queue.
+            let payload = item.payload;
+            if (item.table === 'wishlist_items') {
+              const source = item.payload || {};
+              payload = {
+                id: source.id,
+                user_id: userId,
+                name: String(source.name ?? ''),
+                description: String(source.description ?? ''),
+                category: String(source.category ?? 'Umum'),
+                target_price: Number(source.target_price ?? 0),
+                saved_amount: Number(source.saved_amount ?? 0),
+                deadline: source.deadline || null,
+                completed: Boolean(source.completed),
+                created_at: source.created_at || new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              };
+            }
+            const result = await supabase.from(item.table).upsert(payload, { onConflict: 'id' });
             error = result.error;
           } else if (item.operation === 'delete') {
             const ownerColumn = item.table === 'profiles' ? 'id' : 'user_id';
