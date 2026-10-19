@@ -34,7 +34,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
 
   const formatCurrency = (val: number) => 'Rp' + val.toLocaleString('id-ID');
 
-  const handleCreateWishlist = (e: React.FormEvent) => {
+  const handleCreateWishlist = async (e: React.FormEvent) => {
     e.preventDefault();
     const target = Math.max(0, Number(targetPrice) || 0);
     const saved = Math.max(0, Number(initialSaved) || 0);
@@ -42,20 +42,25 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
 
     const cleanSubtargets = subtargets.filter((subtarget) => subtarget.title.trim()).map((subtarget) => ({ ...subtarget, title: subtarget.title.trim(), amount: subtarget.amount === null || subtarget.amount === undefined ? null : Math.max(0, Number(subtarget.amount) || 0) }));
     const totalTarget = target + cleanSubtargets.reduce((sum, subtarget) => sum + (Number(subtarget.amount) || 0), 0);
-    if (editingItem) {
-      dataService.updateWishlistItem(editingItem.id, {
-        name: name.trim(), description: description.trim(), category: category.trim(),
-        base_target_price: target, target_price: totalTarget, saved_amount: isNaN(saved) ? 0 : saved,
-        deadline: deadline || null, subtasks: cleanSubtargets,
-      });
-      onShowToast?.(`Target "${name.trim()}" diperbarui`, 'success');
-    } else {
-      dataService.createWishlistItem({
-        name: name.trim(), description: description.trim(), category: category.trim(),
-        base_target_price: target, target_price: totalTarget, saved_amount: isNaN(saved) ? 0 : saved,
-        deadline: deadline || null, subtasks: cleanSubtargets,
-      });
-      onShowToast?.(`Target "${name.trim()}" ditambahkan`, 'success');
+    try {
+      if (editingItem) {
+        await dataService.updateWishlistItem(editingItem.id, {
+          name: name.trim(), description: description.trim(), category: category.trim(),
+          base_target_price: target, target_price: totalTarget, saved_amount: isNaN(saved) ? 0 : saved,
+          deadline: deadline || null, subtasks: cleanSubtargets,
+        });
+        onShowToast?.(`Target "${name.trim()}" tersimpan di Supabase`, 'success');
+      } else {
+        await dataService.createWishlistItem({
+          name: name.trim(), description: description.trim(), category: category.trim(),
+          base_target_price: target, target_price: totalTarget, saved_amount: isNaN(saved) ? 0 : saved,
+          deadline: deadline || null, subtasks: cleanSubtargets,
+        });
+        onShowToast?.(`Target "${name.trim()}" tersimpan di Supabase`, 'success');
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Operasi Wishlist gagal.';
+      onShowToast?.(message, 'error');
     }
 
     setName('');
@@ -82,28 +87,29 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
     setTargetPrice(''); setInitialSaved(''); setDeadline(''); setSubtargets([]);
   };
 
-  const handleDepositSubmit = (e: React.FormEvent) => {
+  const handleDepositSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!depositModalItem) return;
     const add = parseFloat(depositAmount);
     if (isNaN(add) || add <= 0) return;
 
-    dataService.updateWishlistDeposit(depositModalItem.id, add);
-    if (onShowToast) {
-      onShowToast(
-        `Tabungan +Rp${add.toLocaleString('id-ID')} untuk "${depositModalItem.name}"`,
-        'success'
-      );
+    try {
+      await dataService.updateWishlistDeposit(depositModalItem.id, add);
+      onShowToast?.(`Tabungan +Rp${add.toLocaleString('id-ID')} untuk "${depositModalItem.name}" tersimpan di Supabase`, 'success');
+      setDepositModalItem(null);
+      setDepositAmount('100000');
+    } catch (error) {
+      onShowToast?.(error instanceof Error ? error.message : 'Gagal menyimpan tabungan.', 'error');
     }
-    setDepositModalItem(null);
-    setDepositAmount('100000');
   };
 
-  const handleDelete = (item: WishlistItem) => {
+  const handleDelete = async (item: WishlistItem) => {
     if (!window.confirm(`Hapus target wishlist "${item.name}"?`)) return;
-    dataService.deleteWishlistItem(item.id);
-    if (onShowToast) {
-      onShowToast(`Target "${item.name}" dihapus`, 'info');
+    try {
+      await dataService.deleteWishlistItem(item.id);
+      onShowToast?.(`Target "${item.name}" dihapus dari Supabase`, 'success');
+    } catch (error) {
+      onShowToast?.(error instanceof Error ? error.message : 'Gagal menghapus target.', 'error');
     }
   };
 
@@ -188,7 +194,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                       {(item.subtasks || []).map((subtarget) => (
                         <div key={subtarget.id} className="flex items-center justify-between gap-2 text-[11px]">
                           <label className="flex min-w-0 items-center gap-2 cursor-pointer">
-                            <input type="checkbox" checked={subtarget.completed} onChange={() => dataService.toggleWishlistSubtask(item.id, subtarget.id)} className="accent-lime-500" />
+                            <input type="checkbox" checked={subtarget.completed} onChange={() => { void dataService.toggleWishlistSubtask(item.id, subtarget.id).then(() => onShowToast?.('Status sub-target tersimpan di Supabase', 'success')).catch((error) => onShowToast?.(error instanceof Error ? error.message : 'Gagal menyimpan status sub-target.', 'error')); }} className="accent-lime-500" />
                             <span className={subtarget.completed ? 'line-through opacity-60' : ''}>{subtarget.title}</span>
                           </label>
                           <span className="shrink-0 font-mono text-zinc-400">{formatCurrency(subtarget.amount || 0)}</span>

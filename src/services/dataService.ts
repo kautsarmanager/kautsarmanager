@@ -157,7 +157,21 @@ class DataService {
         return { ...file, url: data?.signedUrl || undefined };
       }));
       applyCloud<FileItem>(STORAGE_KEYS.FILES, cloudFiles);
-      applyCloud<WishlistItem>(STORAGE_KEYS.WISHLIST, wishlistRes.data as WishlistItem[]);
+      const wishlistCloud = (wishlistRes.data || []) as WishlistItem[];
+      let pendingWishlistIds = new Set<string>();
+      let pendingWishlistDeletes = new Set<string>();
+      try {
+        const pending = JSON.parse(localStorage.getItem(this.outboxKey(userId)) || '[]') as Array<{ table: string; operation?: string; payload?: WishlistItem; recordId?: string }>;
+        const wishlistPending = pending.filter((entry) => entry.table === 'wishlist_items');
+        pendingWishlistIds = new Set(wishlistPending.map((entry) => entry.payload?.id || entry.recordId).filter((id): id is string => Boolean(id)));
+        pendingWishlistDeletes = new Set(wishlistPending.filter((entry) => entry.operation === 'soft_delete').map((entry) => entry.recordId).filter((id): id is string => Boolean(id)));
+      } catch { /* Keep cloud snapshot usable even if the outbox cache is malformed. */ }
+      const localWishlist = this.readArray<WishlistItem>(STORAGE_KEYS.WISHLIST);
+      const mergedWishlist = wishlistCloud.filter((cloudItem) => !pendingWishlistDeletes.has(cloudItem.id));
+      for (const localItem of localWishlist) {
+        if (pendingWishlistIds.has(localItem.id) && !mergedWishlist.some((cloudItem) => cloudItem.id === localItem.id)) mergedWishlist.push(localItem);
+      }
+      applyCloud<WishlistItem>(STORAGE_KEYS.WISHLIST, mergedWishlist);
       localStorage.setItem(snapshotKey, 'true');
       localStorage.setItem(this.key(STORAGE_KEYS.CACHE_TIMESTAMP), Date.now().toString());
       this.notify();
@@ -530,6 +544,53 @@ class DataService {
     return true;
   }
 
+  private async persistWishlistMutation(entry: { operation: 'upsert' | 'soft_delete'; payload?: WishlistItem; recordId?: string }): Promise<void> {
+    const userId = this.activeUserId;
+    if (!userId) throw new Error('Sesi pengguna belum siap. Silakan masuk kembali.');
+    if (!supabase || !isSupabaseConfigured) {
+      this.enqueueMutation({ table: 'wishlist_items', ...entry });
+      throw new Error('Supabase belum dikonfigurasi. Perubahan disimpan di perangkat dan menunggu sinkronisasi; periksa VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY.');
+    }
+    if (!navigator.onLine) {
+      this.enqueueMutation({ table: 'wishlist_items', ...entry });
+      throw new Error('Perangkat sedang offline. Perubahan disimpan lokal dan masuk antrean sinkronisasi.');
+    }
+    try {
+      let error;
+      if (entry.operation === 'upsert' && entry.payload) {
+        // Send only columns defined by public.wishlist_items; never trust a cached owner id.
+        const item = entry.payload;
+        const result = await supabase.from('wishlist_items').upsert({
+          id: item.id, user_id: userId, name: item.name, description: item.description || '',
+          category: item.category || 'Umum', target_price: item.target_price, saved_amount: item.saved_amount,
+          base_target_price: item.base_target_price ?? 0, subtasks: item.subtasks ?? [],
+          deadline: item.deadline || null, completed: item.completed,
+          created_at: item.created_at, updated_at: item.updated_at,
+        }, { onConflict: 'id' }).select('id');
+        error = result.error;
+        if (!error && (!result.data || result.data.length === 0)) error = new Error('Supabase tidak mengembalikan baris tersimpan; periksa kebijakan RLS dan hak akses.');
+      } else if (entry.operation === 'soft_delete' && entry.recordId) {
+        const result = await supabase.from('wishlist_items').update({ deleted_at: new Date().toISOString() })
+          .eq('id', entry.recordId).eq('user_id', userId).select('id');
+        error = result.error;
+        if (!error && (!result.data || result.data.length === 0)) error = new Error('Target tidak ditemukan atau akses ditolak oleh kebijakan RLS.');
+      }
+      if (error) throw error;
+      // Remove stale queued mutations for this record only after the direct write succeeded.
+      const key = this.outboxKey(userId);
+      try {
+        const queue = JSON.parse(localStorage.getItem(key) || '[]') as Array<{ table: string; recordId?: string; payload?: WishlistItem; queueId: string }>;
+        const recordId = entry.recordId || entry.payload?.id;
+        const filteredQueue = queue.filter((q) => q.table !== 'wishlist_items' || (q.recordId !== recordId && q.payload?.id !== recordId));
+        localStorage.setItem(key, JSON.stringify(filteredQueue));
+      } catch { /* Outbox cleanup must not invalidate a confirmed cloud write. */ }
+    } catch (error) {
+      this.enqueueMutation({ table: 'wishlist_items', ...entry });
+      const detail = error instanceof Error ? error.message : String((error as { message?: string })?.message || error);
+      throw new Error(`Sinkronisasi Wishlist ke Supabase gagal; perubahan lokal dipertahankan dan masuk antrean. ${detail}`);
+    }
+  }
+
   // --- Wishlist ---
   public getWishlist(): WishlistItem[] {
     try {
@@ -540,9 +601,9 @@ class DataService {
     }
   }
 
-  public createWishlistItem(
+  public async createWishlistItem(
     wishData: Omit<WishlistItem, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'completed'>
-  ): WishlistItem {
+  ): Promise<WishlistItem> {
     const list = this.getWishlist();
     const profile = this.getProfile();
     const newItem: WishlistItem = {
@@ -557,15 +618,11 @@ class DataService {
     localStorage.setItem(this.key(STORAGE_KEYS.WISHLIST), JSON.stringify(list));
     this.logActivity('wishlist', `Menambah target impian: "${newItem.name}"`, 'created');
     this.notify();
-
-    if (this.cloudWritesEnabled && supabase && this.activeUserId) {
-      this.enqueueMutation({ table: 'wishlist_items', operation: 'upsert', payload: newItem });
-    }
-
+    await this.persistWishlistMutation({ operation: 'upsert', payload: newItem });
     return newItem;
   }
 
-  public updateWishlistItem(id: string, updates: Partial<WishlistItem>): WishlistItem | null {
+  public async updateWishlistItem(id: string, updates: Partial<WishlistItem>): Promise<WishlistItem | null> {
     const list = this.getWishlist();
     const index = list.findIndex((item) => item.id === id);
     if (index === -1) return null;
@@ -575,13 +632,11 @@ class DataService {
     localStorage.setItem(this.key(STORAGE_KEYS.WISHLIST), JSON.stringify(list));
     this.logActivity('wishlist', `Memperbarui target impian: "${merged.name}"`, 'updated');
     this.notify();
-    if (this.cloudWritesEnabled && supabase && this.activeUserId) {
-      this.enqueueMutation({ table: 'wishlist_items', operation: 'upsert', payload: merged });
-    }
+    await this.persistWishlistMutation({ operation: 'upsert', payload: merged });
     return merged;
   }
 
-  public toggleWishlistSubtask(id: string, subtaskId: string): WishlistItem | null {
+  public async toggleWishlistSubtask(id: string, subtaskId: string): Promise<WishlistItem | null> {
     const item = this.getWishlist().find((entry) => entry.id === id);
     if (!item) return null;
     const subtasks = (item.subtasks || []).map((subtask) => subtask.id === subtaskId
@@ -590,7 +645,7 @@ class DataService {
     return this.updateWishlistItem(id, { subtasks });
   }
 
-  public updateWishlistDeposit(id: string, additionalAmount: number): WishlistItem | null {
+  public async updateWishlistDeposit(id: string, additionalAmount: number): Promise<WishlistItem | null> {
     const list = this.getWishlist();
     const index = list.findIndex((w) => w.id === id);
     if (index === -1) return null;
@@ -613,15 +668,11 @@ class DataService {
       'updated'
     );
     this.notify();
-
-    if (this.cloudWritesEnabled && supabase && this.activeUserId) {
-      this.enqueueMutation({ table: 'wishlist_items', operation: 'upsert', payload: list[index] });
-    }
-
+    await this.persistWishlistMutation({ operation: 'upsert', payload: list[index] });
     return list[index];
   }
 
-  public deleteWishlistItem(id: string): boolean {
+  public async deleteWishlistItem(id: string): Promise<boolean> {
     const list = this.getWishlist();
     const item = list.find((w) => w.id === id);
     const filtered = list.filter((w) => w.id !== id);
@@ -630,11 +681,7 @@ class DataService {
       this.logActivity('wishlist', `Menghapus impian: "${item.name}"`, 'deleted');
     }
     this.notify();
-
-    if (this.cloudWritesEnabled && supabase && this.activeUserId) {
-      this.enqueueMutation({ table: 'wishlist_items', operation: 'soft_delete', recordId: id });
-    }
-
+    if (item) await this.persistWishlistMutation({ operation: 'soft_delete', recordId: id });
     return true;
   }
 
