@@ -26,7 +26,9 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [sortMode, setSortMode] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
-  const [cashflowDate, setCashflowDate] = useState<string>(getLocalDateString());
+  const [cashflowPeriod, setCashflowPeriod] = useState<'today' | 'week' | 'month' | 'year' | 'all' | 'custom'>('today');
+  const [customStart, setCustomStart] = useState<string>(getLocalDateString());
+  const [customEnd, setCustomEnd] = useState<string>(getLocalDateString());
 
   // Form State - all strictly empty by default
   const [type, setType] = useState<TransactionType>('expense');
@@ -37,35 +39,65 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
 
   const formatCurrency = (val: number) => 'Rp' + val.toLocaleString('id-ID');
 
-  const totalIncome = transactions
-    .filter((t) => t.type === 'income')
-    .reduce((acc, t) => acc + t.amount, 0);
+  const today = getLocalDateString();
+  const dateFromLocal = (value: string) => new Date(`${value}T00:00:00`);
+  const dateKey = (value: Date) => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
+  const periodRange = useMemo(() => {
+    const current = dateFromLocal(today);
+    if (cashflowPeriod === 'today') return { start: today, end: today };
+    if (cashflowPeriod === 'week') {
+      const monday = new Date(current);
+      monday.setDate(current.getDate() - ((current.getDay() + 6) % 7));
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      return { start: dateKey(monday), end: dateKey(sunday) };
+    }
+    if (cashflowPeriod === 'month') return { start: dateKey(new Date(current.getFullYear(), current.getMonth(), 1)), end: dateKey(new Date(current.getFullYear(), current.getMonth() + 1, 0)) };
+    if (cashflowPeriod === 'year') return { start: `${current.getFullYear()}-01-01`, end: `${current.getFullYear()}-12-31` };
+    if (cashflowPeriod === 'custom') return { start: customStart <= customEnd ? customStart : customEnd, end: customStart <= customEnd ? customEnd : customStart };
+    return { start: '', end: '' };
+  }, [cashflowPeriod, today, customStart, customEnd]);
 
-  const totalExpense = transactions
-    .filter((t) => t.type === 'expense')
-    .reduce((acc, t) => acc + t.amount, 0);
-
+  const periodTransactions = useMemo(() => transactions.filter((t) => {
+    const day = String(t.transaction_date || '').slice(0, 10);
+    return cashflowPeriod === 'all' || (day >= periodRange.start && day <= periodRange.end);
+  }), [transactions, cashflowPeriod, periodRange]);
+  const totalIncome = periodTransactions.filter((t) => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+  const totalExpense = periodTransactions.filter((t) => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
   const currentBalance = totalIncome - totalExpense;
 
-  const filteredTransactions = useMemo(() => {
-    return transactions
-      .filter((t) => filterType === 'all' || t.type === filterType)
-      .sort((a, b) => {
-        const dateComparison = String(a.transaction_date || '').localeCompare(String(b.transaction_date || ''));
-        if (sortMode === 'newest') return -dateComparison || b.amount - a.amount;
-        if (sortMode === 'oldest') return dateComparison || b.amount - a.amount;
-        if (sortMode === 'highest') return b.amount - a.amount || -dateComparison;
-        return a.amount - b.amount || -dateComparison;
-      });
-  }, [transactions, filterType, sortMode]);
+  const formatDateLong = (value: string) => {
+    if (value === today) return 'Hari ini';
+    const parsed = dateFromLocal(value);
+    return parsed.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  };
+  const formatPeriodLabel = () => {
+    if (cashflowPeriod === 'today') return 'Hari ini';
+    if (cashflowPeriod === 'all') return 'Sepanjang waktu';
+    if (cashflowPeriod === 'week') return `Pekan ${formatDateLong(periodRange.start)} – ${formatDateLong(periodRange.end)}`;
+    if (cashflowPeriod === 'month') return dateFromLocal(today).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    if (cashflowPeriod === 'year') return dateFromLocal(today).getFullYear().toString();
+    const a = dateFromLocal(periodRange.start); const b = dateFromLocal(periodRange.end);
+    const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long' };
+    return a.getFullYear() === b.getFullYear()
+      ? (a.getMonth() === b.getMonth() ? `${a.getDate()}–${b.getDate()} ${b.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}` : `${a.toLocaleDateString('id-ID', opts)} – ${b.toLocaleDateString('id-ID', { ...opts, year: 'numeric' })}`)
+      : `${a.toLocaleDateString('id-ID', { ...opts, year: 'numeric' })} – ${b.toLocaleDateString('id-ID', { ...opts, year: 'numeric' })}`;
+  };
 
-  const selectedDayTransactions = useMemo(
-    () => transactions.filter((t) => t.transaction_date === cashflowDate),
-    [transactions, cashflowDate]
-  );
-  const dailyIncome = selectedDayTransactions.filter((t) => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-  const dailyExpense = selectedDayTransactions.filter((t) => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-  const dailyNet = dailyIncome - dailyExpense;
+  const filteredTransactions = useMemo(() => periodTransactions
+    .filter((t) => filterType === 'all' || t.type === filterType)
+    .sort((a, b) => {
+      const dateComparison = String(a.transaction_date || '').localeCompare(String(b.transaction_date || ''));
+      if (sortMode === 'newest') return -dateComparison || b.amount - a.amount;
+      if (sortMode === 'oldest') return dateComparison || b.amount - a.amount;
+      if (sortMode === 'highest') return b.amount - a.amount || -dateComparison;
+      return a.amount - b.amount || -dateComparison;
+    }), [periodTransactions, filterType, sortMode]);
+
+  const selectedDayTransactions = periodTransactions;
+  const dailyIncome = totalIncome;
+  const dailyExpense = totalExpense;
+  const dailyNet = currentBalance;
   const surfaceClass = isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-[#e5e5e5]';
   const controlClass = isDark ? 'bg-[#212121] border-[#424242] text-zinc-100' : 'bg-white border-zinc-200 text-zinc-800';
 
@@ -172,25 +204,27 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-zinc-400" />
-              <h2 className={`text-sm font-semibold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Cashflow Harian</h2>
+              <h2 className={`text-sm font-semibold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Cashflow: {formatPeriodLabel()}</h2>
             </div>
-            <p className="text-xs text-zinc-500 mt-1">Ringkasan pemasukan dan pengeluaran pada tanggal yang dipilih.</p>
+            <p className="text-xs text-zinc-500 mt-1">Ringkasan dan daftar transaksi mengikuti rentang waktu yang dipilih.</p>
           </div>
-          <input
-            type="date"
-            aria-label="Pilih tanggal cashflow harian"
-            value={cashflowDate}
-            onChange={(e) => setCashflowDate(e.target.value)}
-            className={`rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500/30 ${controlClass}`}
-          />
+          <div className="flex flex-wrap gap-1">
+            {([['today', 'Hari ini'], ['week', 'Minggu ini'], ['month', 'Bulanan'], ['year', 'Tahunan'], ['all', 'All time'], ['custom', 'Custom']] as const).map(([value, label]) => (
+              <button key={value} onClick={() => setCashflowPeriod(value)} className={`rounded-lg px-3 py-2 text-xs font-medium ${cashflowPeriod === value ? 'bg-lime-600 text-white' : isDark ? 'bg-[#212121] text-zinc-300' : 'bg-zinc-100 text-zinc-700'}`}>{label}</button>
+            ))}
+          </div>
         </div>
+        {cashflowPeriod === 'custom' && <div className="mt-3 flex flex-wrap items-center gap-2">
+          <label className="text-xs text-zinc-500">Dari <input type="date" aria-label="Tanggal awal cashflow" value={customStart} onChange={(e) => setCustomStart(e.target.value)} className={`ml-1 rounded-lg border px-2 py-1.5 ${controlClass}`} /></label>
+          <label className="text-xs text-zinc-500">Sampai <input type="date" aria-label="Tanggal akhir cashflow" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} className={`ml-1 rounded-lg border px-2 py-1.5 ${controlClass}`} /></label>
+        </div>}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
           <div className={`rounded-xl p-3 ${isDark ? 'bg-[#212121]' : 'bg-[#f7f7f7]'}`}>
-            <p className="text-xs text-zinc-500">Pemasukan hari itu</p>
+            <p className="text-xs text-zinc-500">Total pemasukan</p>
             <p className="mt-1 text-base font-semibold text-emerald-500">+ {formatCurrency(dailyIncome)}</p>
           </div>
           <div className={`rounded-xl p-3 ${isDark ? 'bg-[#212121]' : 'bg-[#f7f7f7]'}`}>
-            <p className="text-xs text-zinc-500">Pengeluaran hari itu</p>
+            <p className="text-xs text-zinc-500">Total pengeluaran</p>
             <p className="mt-1 text-base font-semibold text-rose-500">− {formatCurrency(dailyExpense)}</p>
           </div>
           <div className={`rounded-xl p-3 ${isDark ? 'bg-[#212121]' : 'bg-[#f7f7f7]'}`}>
@@ -201,17 +235,17 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
         </div>
         <div className={`mt-4 rounded-xl border overflow-hidden ${isDark ? 'border-[#424242]' : 'border-zinc-200'}`}>
           <div className={`px-3 py-2 text-xs font-medium ${isDark ? 'bg-[#212121] text-zinc-300' : 'bg-[#f7f7f7] text-zinc-600'}`}>
-            Catatan pada {cashflowDate}
+            Catatan {formatPeriodLabel()}
           </div>
           {selectedDayTransactions.length === 0 ? (
             <p className="px-3 py-4 text-xs text-zinc-500">Belum ada transaksi pada tanggal ini.</p>
           ) : (
             <div className="divide-y divide-zinc-500/10">
-              {[...selectedDayTransactions].sort((a, b) => b.amount - a.amount).map((tx) => (
+              {[...selectedDayTransactions].sort((a, b) => String(b.transaction_date || '').localeCompare(String(a.transaction_date || ''))).map((tx) => (
                 <div key={tx.id} className="flex items-center justify-between gap-3 px-3 py-2.5">
                   <div className="min-w-0">
                     <p className={`text-xs font-medium truncate ${isDark ? 'text-zinc-200' : 'text-zinc-800'}`}>{tx.description}</p>
-                    <p className="mt-0.5 text-[11px] text-zinc-500">{tx.category || 'Tanpa kategori'}</p>
+                    <p className="mt-0.5 text-[11px] text-zinc-500">{tx.category || 'Tanpa kategori'} • {tx.transaction_date === today ? 'Hari ini' : formatDateLong(String(tx.transaction_date || '').slice(0, 10))}</p>
                   </div>
                   <span className={`shrink-0 text-xs font-semibold ${tx.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>
                     {tx.type === 'income' ? '+' : '−'} {formatCurrency(tx.amount)}
@@ -231,7 +265,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
         <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
           <div className={`flex flex-wrap items-center gap-1 rounded-xl p-1 ${isDark ? 'bg-[#212121]' : 'bg-[#f7f7f7]'}`}>
             {([
-              ['all', `Semua (${transactions.length})`],
+              ['all', `Semua (${periodTransactions.length})`],
               ['income', 'Pemasukan'],
               ['expense', 'Pengeluaran'],
             ] as const).map(([value, label]) => (
@@ -293,7 +327,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                     {tx.description}
                   </p>
                   <p className="text-[11px] font-mono text-zinc-500 mt-0.5">
-                    {tx.category} • {tx.transaction_date}
+                    {tx.category} • {((tx.transaction_date || '').slice(0, 10) === today) ? 'Hari ini' : formatDateLong(String(tx.transaction_date || '').slice(0, 10))}
                   </p>
                 </div>
               </div>
