@@ -45,6 +45,17 @@ class DataService {
     // Data is initialized only after a user session is known.
     if (typeof window !== 'undefined') {
       window.addEventListener('online', () => { void this.flushOutbox().then(() => this.syncFromSupabaseBackground()); });
+      // Realtime delivery depends on the Supabase project's publication/RLS configuration.
+      // Poll as a safe fallback so another device's changes still appear if Realtime is not enabled.
+      window.addEventListener('focus', () => { void this.syncFromSupabaseBackground(); });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') void this.syncFromSupabaseBackground();
+      });
+      window.setInterval(() => {
+        if (document.visibilityState === 'visible' && navigator.onLine && this.activeUserId) {
+          void this.syncFromSupabaseBackground();
+        }
+      }, 8000);
     }
   }
 
@@ -80,7 +91,15 @@ class DataService {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'files', filter: `user_id=eq.${user.id}` }, () => void this.syncFromSupabaseBackground())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'wishlist_items', filter: `user_id=eq.${user.id}` }, () => void this.syncFromSupabaseBackground())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` }, () => void this.syncFromSupabaseBackground())
-        .subscribe();
+        .subscribe((status: string, error?: Error) => {
+          if (status === 'SUBSCRIBED') {
+            // Fetch a fresh snapshot after joining, covering changes made before subscription.
+            void this.syncFromSupabaseBackground();
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            console.warn(`Supabase Realtime Wishlist/data channel status: ${status}`, error || '');
+            // The periodic foreground sync above remains the fallback if Realtime cannot connect.
+          }
+        });
     }
     this.notify();
   }
