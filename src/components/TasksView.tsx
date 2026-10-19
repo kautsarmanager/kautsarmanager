@@ -164,14 +164,14 @@ export const TasksView: React.FC<TasksViewProps> = ({
       {/* Filter Toolbar (Linear Style) */}
       <div
         className={`flex flex-wrap items-center justify-between gap-2.5 p-2.5 rounded-xl border ${
-          isDark ? 'bg-[#14151b] border-[#20222d]' : 'bg-white border-zinc-200 shadow-2xs'
+          isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-200 shadow-2xs'
         }`}
       >
         <div className="flex flex-wrap items-center gap-2 flex-1">
           {/* Quick Search inside Tasks */}
           <div
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs w-44 sm:w-52 ${
-              isDark ? 'bg-[#101116] border-[#222430]' : 'bg-zinc-50 border-zinc-200'
+              isDark ? 'bg-[#171717] border-[#424242]' : 'bg-zinc-50 border-zinc-200'
             }`}
           >
             <Search className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
@@ -187,7 +187,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
           {/* Status Segmented Control */}
           <div
             className={`flex items-center p-0.5 rounded-lg border text-[11px] ${
-              isDark ? 'bg-[#101116] border-[#222430]' : 'bg-zinc-100 border-zinc-200'
+              isDark ? 'bg-[#171717] border-[#424242]' : 'bg-zinc-100 border-zinc-200'
             }`}
           >
             <button
@@ -195,7 +195,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
               className={`px-2.5 py-1 rounded-md font-medium cursor-pointer transition-colors ${
                 filterStatus === 'all'
                   ? isDark
-                    ? 'bg-[#1f202b] text-white'
+                    ? 'bg-[#424242] text-white'
                     : 'bg-white text-zinc-950 shadow-2xs'
                   : 'text-zinc-400 hover:text-zinc-200'
               }`}
@@ -207,7 +207,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
               className={`px-2.5 py-1 rounded-md font-medium cursor-pointer transition-colors ${
                 filterStatus === 'pending'
                   ? isDark
-                    ? 'bg-[#1f202b] text-white'
+                    ? 'bg-[#424242] text-white'
                     : 'bg-white text-zinc-950 shadow-2xs'
                   : 'text-zinc-400 hover:text-zinc-200'
               }`}
@@ -219,7 +219,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
               className={`px-2.5 py-1 rounded-md font-medium cursor-pointer transition-colors ${
                 filterStatus === 'completed'
                   ? isDark
-                    ? 'bg-[#1f202b] text-white'
+                    ? 'bg-[#424242] text-white'
                     : 'bg-white text-zinc-950 shadow-2xs'
                   : 'text-zinc-400 hover:text-zinc-200'
               }`}
@@ -234,7 +234,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
             onChange={(e) => setFilterDeadline(e.target.value as any)}
             className={`border rounded-lg px-2.5 py-1.5 text-xs focus:outline-hidden ${
               isDark
-                ? 'bg-[#101116] border-[#222430] text-zinc-300'
+                ? 'bg-[#171717] border-[#424242] text-zinc-300'
                 : 'bg-zinc-50 border-zinc-200 text-zinc-700'
             }`}
           >
@@ -250,7 +250,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
             onChange={(e) => setFilterCategory(e.target.value)}
             className={`border rounded-lg px-2.5 py-1.5 text-xs focus:outline-hidden ${
               isDark
-                ? 'bg-[#101116] border-[#222430] text-zinc-300'
+                ? 'bg-[#171717] border-[#424242] text-zinc-300'
                 : 'bg-zinc-50 border-zinc-200 text-zinc-700'
             }`}
           >
@@ -268,7 +268,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
             onChange={(e) => setFilterPriority(e.target.value)}
             className={`border rounded-lg px-2.5 py-1.5 text-xs focus:outline-hidden ${
               isDark
-                ? 'bg-[#101116] border-[#222430] text-zinc-300'
+                ? 'bg-[#171717] border-[#424242] text-zinc-300'
                 : 'bg-zinc-50 border-zinc-200 text-zinc-700'
             }`}
           >
@@ -289,7 +289,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
         {filteredTasks.length === 0 ? (
           <div
             className={`p-10 text-center rounded-xl border border-dashed ${
-              isDark ? 'border-[#222430] bg-[#14151b]' : 'border-zinc-300 bg-white'
+              isDark ? 'border-[#424242] bg-[#2f2f2f]' : 'border-zinc-300 bg-white'
             }`}
           >
             <p className="text-zinc-400 text-xs">Tidak ada tugas yang sesuai filter.</p>
@@ -325,7 +325,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                       ? 'bg-rose-500/5 border-rose-500/25 hover:border-rose-500/40'
                       : 'bg-rose-50/50 border-rose-200 hover:border-rose-300'
                     : isDark
-                    ? 'bg-[#14151b] border-[#20222d] hover:border-zinc-700'
+                    ? 'bg-[#2f2f2f] border-[#424242] hover:border-zinc-700'
                     : 'bg-white border-zinc-200 hover:border-zinc-400 shadow-2xs'
                 }`}
               >
@@ -350,7 +350,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                       <span
                         className={`text-[10px] font-mono px-1.5 py-0.2 rounded border ${
                           isDark
-                            ? 'bg-[#101116] text-zinc-400 border-[#222430]'
+                            ? 'bg-[#171717] text-zinc-400 border-[#424242]'
                             : 'bg-zinc-100 text-zinc-600 border-zinc-200'
                         }`}
                       >
@@ -438,18 +438,18 @@ export const TasksView: React.FC<TasksViewProps> = ({
       {/* Panel detail tugas lengkap */}
       {selectedTask && !isModalOpen && (
         <div onMouseDown={(e) => { if (e.target === e.currentTarget) setSelectedTask(null); }} className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <section className={`w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-2xl border p-5 shadow-2xl ${isDark ? 'bg-[#15161d] border-[#262836]' : 'bg-white border-zinc-300'}`}>
+          <section className={`w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-2xl border p-5 shadow-2xl ${isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-300'}`}>
             <div className="flex items-start justify-between gap-3 border-b border-inherit pb-3">
               <div><p className="text-[10px] uppercase tracking-wider text-lime-400">Detail tugas</p><h2 className={`mt-1 text-base font-semibold ${selectedTask.status === 'completed' ? 'line-through text-zinc-500' : ''}`}>{selectedTask.title}</h2></div>
               <button onClick={() => setSelectedTask(null)} className="rounded-lg p-1 text-zinc-500 hover:text-zinc-200" aria-label="Tutup detail"><X className="w-4 h-4" /></button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 text-xs">
-              <div className={`rounded-xl border p-3 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Status</p><p className="font-medium">{selectedTask.status === 'completed' ? 'Selesai' : selectedTask.status === 'in_progress' ? 'Sedang dikerjakan' : 'Belum selesai'}</p></div>
-              <div className={`rounded-xl border p-3 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Prioritas</p><p className="font-medium capitalize">{selectedTask.priority}</p></div>
-              <div className={`rounded-xl border p-3 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Kategori</p><p className="font-medium">{selectedTask.category || 'Belum dikategorikan'}</p></div>
-              <div className={`rounded-xl border p-3 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Deadline</p><p className="font-medium">{selectedTask.deadline || 'Belum ditentukan'}</p></div>
-              <div className={`rounded-xl border p-3 sm:col-span-2 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Deskripsi lengkap</p><p className="whitespace-pre-wrap break-words">{selectedTask.description || 'Belum ada deskripsi.'}</p></div>
-              {selectedTask.reminder && <div className={`rounded-xl border p-3 sm:col-span-2 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Pengingat</p><p className="font-medium">Pukul {selectedTask.reminder}</p></div>}
+              <div className={`rounded-xl border p-3 ${isDark ? 'border-[#292c3a] bg-[#171717]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Status</p><p className="font-medium">{selectedTask.status === 'completed' ? 'Selesai' : selectedTask.status === 'in_progress' ? 'Sedang dikerjakan' : 'Belum selesai'}</p></div>
+              <div className={`rounded-xl border p-3 ${isDark ? 'border-[#292c3a] bg-[#171717]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Prioritas</p><p className="font-medium capitalize">{selectedTask.priority}</p></div>
+              <div className={`rounded-xl border p-3 ${isDark ? 'border-[#292c3a] bg-[#171717]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Kategori</p><p className="font-medium">{selectedTask.category || 'Belum dikategorikan'}</p></div>
+              <div className={`rounded-xl border p-3 ${isDark ? 'border-[#292c3a] bg-[#171717]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Deadline</p><p className="font-medium">{selectedTask.deadline || 'Belum ditentukan'}</p></div>
+              <div className={`rounded-xl border p-3 sm:col-span-2 ${isDark ? 'border-[#292c3a] bg-[#171717]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Deskripsi lengkap</p><p className="whitespace-pre-wrap break-words">{selectedTask.description || 'Belum ada deskripsi.'}</p></div>
+              {selectedTask.reminder && <div className={`rounded-xl border p-3 sm:col-span-2 ${isDark ? 'border-[#292c3a] bg-[#171717]' : 'border-zinc-200 bg-zinc-50'}`}><p className="text-zinc-500 mb-1">Pengingat</p><p className="font-medium">Pukul {selectedTask.reminder}</p></div>}
             </div>
             <div className="flex flex-wrap justify-end gap-2 mt-5 border-t border-inherit pt-4">
               <button onClick={() => { setSelectedTask(null); handleToggle(selectedTask); }} className="rounded-lg border border-inherit px-3 py-2 text-xs">{selectedTask.status === 'completed' ? 'Buka kembali' : 'Tandai selesai'}</button>
@@ -464,7 +464,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
         <div onMouseDown={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div
             className={`w-full max-w-md border rounded-2xl p-5 shadow-2xl ${
-              isDark ? 'bg-[#15161d] border-[#262836]' : 'bg-white border-zinc-300'
+              isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-300'
             }`}
           >
             <div className="flex items-center justify-between pb-3 border-b border-inherit">
@@ -492,7 +492,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Contoh: Kerjakan laporan praktikum"
                   className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
-                    isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                    isDark ? 'bg-[#171717] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}
                 />
               </div>
@@ -507,7 +507,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Catatan detail..."
                   className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
-                    isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                    isDark ? 'bg-[#171717] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}
                 />
               </div>
@@ -565,7 +565,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                     value={deadline}
                     onChange={(e) => setDeadline(e.target.value)}
                     className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden ${
-                      isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                      isDark ? 'bg-[#171717] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
                   />
 
@@ -573,7 +573,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                     value={priority}
                     onChange={(e) => setPriority(e.target.value as Priority)}
                     className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden ${
-                      isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                      isDark ? 'bg-[#171717] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
                   >
                     <option value="low">Prioritas Rendah (Low)</option>
@@ -594,7 +594,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                     onChange={(e) => setCategory(e.target.value)}
                     placeholder="Kuliah, Kerja..."
                     className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden ${
-                      isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                      isDark ? 'bg-[#171717] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
                   />
                 </div>
@@ -626,7 +626,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                     value={reminder}
                     onChange={(e) => setReminder(e.target.value)}
                     className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden ${
-                      isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                      isDark ? 'bg-[#171717] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
                   />
                 </div>
@@ -635,7 +635,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
               {/* Notification note */}
               <div
                 className={`p-2.5 rounded-lg border text-[11px] flex items-center gap-2 ${
-                  isDark ? 'bg-[#101116] border-[#20222e] text-zinc-400' : 'bg-zinc-50 border-zinc-200 text-zinc-600'
+                  isDark ? 'bg-[#171717] border-[#20222e] text-zinc-400' : 'bg-zinc-50 border-zinc-200 text-zinc-600'
                 }`}
               >
                 <Bell className="w-3.5 h-3.5 text-lime-400 shrink-0" />

@@ -39,7 +39,7 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
           compact ? 'p-1.5' : 'px-2.5 py-1.5'
         } ${
           isDark
-            ? 'bg-[#14151b] border-[#252735] text-zinc-300 hover:text-white hover:border-lime-500/50 hover:bg-[#1a1b24]'
+            ? 'bg-[#2f2f2f] border-[#252735] text-zinc-300 hover:text-white hover:border-lime-500/50 hover:bg-[#1a1b24]'
             : 'bg-zinc-50 border-zinc-200 text-zinc-700 hover:text-zinc-950 hover:border-zinc-300 hover:bg-zinc-100'
         }`}
         title="Pasang aplikasi di layar utama HP (PWA)"

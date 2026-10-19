@@ -165,7 +165,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
       ref={panelRef}
       className={`fixed sm:absolute top-14 right-2 sm:right-4 z-50 w-[calc(100vw-1rem)] sm:w-[420px] max-h-[85vh] flex flex-col rounded-2xl border shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 ${
         isDark
-          ? 'bg-[#121319]/95 border-[#222430] text-zinc-100 shadow-black/60'
+          ? 'bg-[#121319]/95 border-[#424242] text-zinc-100 shadow-black/60'
           : 'bg-white/95 border-zinc-200 text-zinc-900 shadow-xl'
       }`}
     >
@@ -343,7 +343,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                       <span
                         className={`text-[9px] font-mono px-1.5 py-0.2 rounded border ${
                           isDark
-                            ? 'bg-[#101116] text-zinc-400 border-[#222430]'
+                            ? 'bg-[#171717] text-zinc-400 border-[#424242]'
                             : 'bg-zinc-100 text-zinc-600 border-zinc-200'
                         }`}
                       >

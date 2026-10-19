@@ -46,7 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
     <header
       className={`sticky top-0 z-30 flex items-center justify-between h-14 px-4 sm:px-6 backdrop-blur-md border-b transition-colors relative ${
         isDark
-          ? 'bg-[#0e0f13]/85 border-[#1f212a]'
+          ? 'bg-[#212121]/85 border-[#424242]'
           : 'bg-white/90 border-zinc-200 shadow-2xs'
       }`}
     >
@@ -66,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={onOpenSearch}
           className={`flex items-center gap-2 px-2.5 py-1.5 w-44 sm:w-60 md:w-72 rounded-lg border text-xs text-left cursor-pointer transition-all ${
             isDark
-              ? 'bg-[#14151b] border-[#222430] text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
+              ? 'bg-[#2f2f2f] border-[#424242] text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
               : 'bg-zinc-50 border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:border-zinc-300'
           }`}
         >
@@ -75,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
           <kbd
             className={`hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono rounded border ${
               isDark
-                ? 'bg-[#191a22] text-zinc-400 border-[#272935]'
+                ? 'bg-[#2f2f2f] text-zinc-400 border-[#272935]'
                 : 'bg-zinc-200 text-zinc-600 border-zinc-300'
             }`}
           >
@@ -107,7 +107,7 @@ export const Header: React.FC<HeaderProps> = ({
                   ? 'bg-[#1f202c] border-lime-500/50 text-lime-400'
                   : 'bg-lime-50 border-lime-300 text-lime-600'
                 : isDark
-                ? 'bg-[#14151b] border-[#222430] text-zinc-400 hover:text-zinc-200 hover:bg-[#1c1d26]'
+                ? 'bg-[#2f2f2f] border-[#424242] text-zinc-400 hover:text-zinc-200 hover:bg-[#1c1d26]'
                 : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100'
             }`}
             title={`Notifikasi Deadline (${counts.total} tugas)`}
@@ -148,7 +148,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onLockApp}
             className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
               isDark
-                ? 'bg-[#14151b] border-[#222430] text-zinc-400 hover:text-zinc-200 hover:bg-[#1c1d26]'
+                ? 'bg-[#2f2f2f] border-[#424242] text-zinc-400 hover:text-zinc-200 hover:bg-[#1c1d26]'
                 : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100'
             }`}
             title="Kunci Aplikasi dengan PIN"
@@ -163,7 +163,7 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={onToggleTheme}
           className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
             isDark
-              ? 'bg-[#14151b] border-[#222430] text-zinc-400 hover:text-zinc-200 hover:bg-[#1c1d26]'
+              ? 'bg-[#2f2f2f] border-[#424242] text-zinc-400 hover:text-zinc-200 hover:bg-[#1c1d26]'
               : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100'
           }`}
           title={isDark ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'}

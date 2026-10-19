@@ -32,7 +32,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     <nav
       className={`md:hidden fixed bottom-0 left-0 right-0 z-40 h-14 px-1.5 flex items-center justify-around border-t backdrop-blur-md transition-colors ${
         isDark
-          ? 'bg-[#101116]/95 border-[#1f212a] text-zinc-400'
+          ? 'bg-[#171717]/95 border-[#424242] text-zinc-400'
           : 'bg-white/95 border-zinc-200 text-zinc-500 shadow-lg'
       }`}
     >

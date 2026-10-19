@@ -155,7 +155,7 @@ export default function App() {
 
   // Avoid flashing the login screen while the saved cloud session is restored.
   if (authInitializing) {
-    return <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-[#0e0f13] text-zinc-300' : 'bg-[#f7f8fa] text-zinc-700'}`}><div className="text-sm">Memulihkan sesi akun...</div></div>;
+    return <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-[#212121] text-zinc-300' : 'bg-[#ffffff] text-zinc-700'}`}><div className="text-sm">Memulihkan sesi akun...</div></div>;
   }
 
   // If no active session, show authentication screen.
@@ -202,7 +202,7 @@ export default function App() {
   return (
     <div
       className={`min-h-screen flex flex-col font-sans transition-colors duration-150 antialiased ${
-        isDark ? 'bg-[#0e0f13] text-zinc-200' : 'bg-[#f7f8fa] text-zinc-900'
+        isDark ? 'bg-[#212121] text-zinc-200' : 'bg-[#ffffff] text-zinc-900'
       }`}
     >
       {/* Sidebar Navigation */}

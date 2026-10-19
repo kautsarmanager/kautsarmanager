@@ -102,21 +102,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         } ${
           isDark
-            ? 'bg-[#101116] border-[#1f212a] text-zinc-300'
+            ? 'bg-[#171717] border-[#424242] text-zinc-300'
             : 'bg-white border-zinc-200 text-zinc-700 shadow-2xs'
         }`}
       >
         {/* Workspace Brand (Linear / Raycast Style) */}
         <div
           className={`flex items-center justify-between px-4 h-14 border-b ${
-            isDark ? 'border-[#1f212a]' : 'border-zinc-200'
+            isDark ? 'border-[#424242]' : 'border-zinc-200'
           }`}
         >
           <div className="flex items-center gap-2.5">
             <div
               className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs tracking-wider border shadow-xs ${
                 isDark
-                  ? 'bg-[#191a22] border-[#292b37] text-lime-400'
+                  ? 'bg-[#2f2f2f] border-[#424242] text-lime-400'
                   : 'bg-lime-50 border-lime-200 text-lime-600'
               }`}
             >
@@ -181,7 +181,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           ? 'bg-lime-500/20 text-lime-300'
                           : 'bg-lime-100 text-lime-700'
                         : isDark
-                        ? 'bg-[#191a22] text-zinc-500'
+                        ? 'bg-[#2f2f2f] text-zinc-500'
                         : 'bg-zinc-200 text-zinc-600'
                     }`}
                   >
@@ -196,7 +196,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Minimal User Profile, PWA, & System Status */}
         <div
           className={`p-3 border-t space-y-2.5 ${
-            isDark ? 'border-[#1f212a] bg-[#0c0d11]' : 'border-zinc-200 bg-zinc-50'
+            isDark ? 'border-[#424242] bg-[#0c0d11]' : 'border-zinc-200 bg-zinc-50'
           }`}
         >
           {/* PWA Mobile App Install Button */}
@@ -233,7 +233,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   type="button"
                   onClick={onLockApp}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                    isDark ? 'text-zinc-400 hover:text-white hover:bg-[#1a1b26]' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200'
+                    isDark ? 'text-zinc-400 hover:text-white hover:bg-[#2f2f2f]' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200'
                   }`}
                   title="Kunci Aplikasi dengan PIN"
                   aria-label="Kunci aplikasi"
@@ -247,7 +247,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   type="button"
                   onClick={onLogout}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                    isDark ? 'text-zinc-400 hover:text-rose-400 hover:bg-[#1a1b26]' : 'text-zinc-500 hover:text-rose-600 hover:bg-zinc-200'
+                    isDark ? 'text-zinc-400 hover:text-rose-400 hover:bg-[#2f2f2f]' : 'text-zinc-500 hover:text-rose-600 hover:bg-zinc-200'
                   }`}
                   title="Keluar Akun"
                   aria-label="Keluar akun"

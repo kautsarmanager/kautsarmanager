@@ -134,7 +134,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
         {wishlist.length === 0 ? (
           <div
             className={`col-span-full p-10 text-center rounded-xl border border-dashed text-xs text-zinc-400 ${
-              isDark ? 'border-[#222430] bg-[#14151b]' : 'border-zinc-300 bg-white'
+              isDark ? 'border-[#424242] bg-[#2f2f2f]' : 'border-zinc-300 bg-white'
             }`}
           >
             Belum ada target wishlist yang dicatat.
@@ -150,7 +150,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                 key={item.id}
                 className={`flex flex-col justify-between p-4 rounded-xl border transition-all ${
                   isDark
-                    ? 'bg-[#14151b] border-[#20222d] hover:border-zinc-700'
+                    ? 'bg-[#2f2f2f] border-[#424242] hover:border-zinc-700'
                     : 'bg-white border-zinc-200 hover:border-zinc-400 shadow-2xs'
                 }`}
               >
@@ -158,7 +158,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <span
                       className={`text-[10px] font-mono uppercase px-1.5 py-0.2 rounded border ${
-                        isDark ? 'bg-[#101116] text-zinc-400 border-[#222430]' : 'bg-zinc-100 text-zinc-600 border-zinc-200'
+                        isDark ? 'bg-[#171717] text-zinc-400 border-[#424242]' : 'bg-zinc-100 text-zinc-600 border-zinc-200'
                       }`}
                     >
                       {item.category}
@@ -183,7 +183,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                   )}
 
                   {(item.subtasks || []).length > 0 && (
-                    <div className={`mt-3 rounded-lg p-2.5 space-y-2 ${isDark ? 'bg-[#101116]' : 'bg-zinc-50'}`}>
+                    <div className={`mt-3 rounded-lg p-2.5 space-y-2 ${isDark ? 'bg-[#171717]' : 'bg-zinc-50'}`}>
                       <p className="text-[10px] uppercase tracking-wide text-zinc-500 font-semibold">Rincian sub-target</p>
                       {(item.subtasks || []).map((subtarget) => (
                         <div key={subtarget.id} className="flex items-center justify-between gap-2 text-[11px]">
@@ -269,7 +269,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
         <div onMouseDown={(e) => { if (e.target === e.currentTarget) setDepositModalItem(null); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div
             className={`w-full max-w-sm border rounded-2xl p-5 shadow-2xl ${
-              isDark ? 'bg-[#15161d] border-[#262836]' : 'bg-white border-zinc-300'
+              isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-300'
             }`}
           >
             <div className="flex items-center justify-between pb-3 border-b border-inherit">
@@ -299,7 +299,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(e.target.value)}
                   className={`w-full px-3 py-2 rounded-lg border font-mono text-sm focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
-                    isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                    isDark ? 'bg-[#171717] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}
                 />
               </div>
@@ -312,7 +312,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                     onClick={() => setDepositAmount(amt.toString())}
                     className={`flex-1 py-1 rounded-md border text-[10px] font-mono transition-colors cursor-pointer ${
                       isDark
-                        ? 'bg-[#101116] border-[#222430] text-zinc-300 hover:text-white'
+                        ? 'bg-[#171717] border-[#424242] text-zinc-300 hover:text-white'
                         : 'bg-zinc-100 border-zinc-200 text-zinc-700 hover:text-black'
                     }`}
                   >
@@ -346,7 +346,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
         <div onMouseDown={(e) => { if (e.target === e.currentTarget) closeWishlistModal(); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div
             className={`w-full max-w-md border rounded-2xl p-5 shadow-2xl ${
-              isDark ? 'bg-[#15161d] border-[#262836]' : 'bg-white border-zinc-300'
+              isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-300'
             }`}
           >
             <div className="flex items-center justify-between pb-3 border-b border-inherit">
@@ -371,7 +371,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Contoh: Liburan ke Bali"
                   className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
-                    isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                    isDark ? 'bg-[#171717] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}
                 />
               </div>
@@ -386,7 +386,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Kebutuhan atau catatan spesifikasi..."
                   className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
-                    isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                    isDark ? 'bg-[#171717] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}
                 />
               </div>
@@ -404,7 +404,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                     onChange={(e) => setTargetPrice(e.target.value)}
                     placeholder="Kosongkan jika tidak ada"
                     className={`w-full px-3 py-2 rounded-lg border font-mono focus:outline-hidden ${
-                      isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                      isDark ? 'bg-[#171717] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
                   />
                 </div>
@@ -421,7 +421,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                     onChange={(e) => setInitialSaved(e.target.value)}
                     placeholder="Kosong"
                     className={`w-full px-3 py-2 rounded-lg border font-mono focus:outline-hidden ${
-                      isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                      isDark ? 'bg-[#171717] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
                   />
                 </div>
@@ -438,7 +438,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                     onChange={(e) => setCategory(e.target.value)}
                     placeholder="Elektronik, Kuliah..."
                     className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden ${
-                      isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                      isDark ? 'bg-[#171717] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
                   />
                 </div>
@@ -452,13 +452,13 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                     value={deadline}
                     onChange={(e) => setDeadline(e.target.value)}
                     className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden ${
-                      isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                      isDark ? 'bg-[#171717] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
                   />
                 </div>
               </div>
 
-              <div className={`rounded-xl border p-3 space-y-3 ${isDark ? 'border-[#292c3a] bg-[#101116]' : 'border-zinc-200 bg-zinc-50'}`}>
+              <div className={`rounded-xl border p-3 space-y-3 ${isDark ? 'border-[#292c3a] bg-[#171717]' : 'border-zinc-200 bg-zinc-50'}`}>
                 <div className="flex items-center justify-between gap-2">
                   <div><label className="block text-[11px] font-semibold text-zinc-300">Sub-target dan dana</label><p className="text-[10px] text-zinc-500">Total target otomatis menjumlahkan dana utama dan seluruh sub-target.</p></div>
                   <button type="button" onClick={() => setSubtargets((current) => [...current, { id: crypto.randomUUID(), title: '', amount: null, completed: false }])} className="shrink-0 rounded-lg bg-lime-600 px-2.5 py-1.5 text-[11px] font-semibold text-white">+ Tambah</button>

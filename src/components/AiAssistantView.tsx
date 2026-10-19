@@ -238,7 +238,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
           onClick={handleClearChat}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer self-start sm:self-auto ${
             isDark
-              ? 'border-[#242633] text-zinc-400 hover:text-zinc-200 hover:bg-[#161720]'
+              ? 'border-[#424242] text-zinc-400 hover:text-zinc-200 hover:bg-[#161720]'
               : 'border-zinc-200 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
           }`}
         >
@@ -266,7 +266,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
                 <div
                   className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 border ${
                     isDark
-                      ? 'bg-[#1a1b26] border-[#2a2c3d] text-lime-400'
+                      ? 'bg-[#2f2f2f] border-[#2a2c3d] text-lime-400'
                       : 'bg-lime-50 border-lime-200 text-lime-600'
                   }`}
                 >
@@ -302,7 +302,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
               <div
                 className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 border ${
                   isDark
-                    ? 'bg-[#1a1b26] border-[#2a2c3d] text-lime-400'
+                    ? 'bg-[#2f2f2f] border-[#2a2c3d] text-lime-400'
                     : 'bg-lime-50 border-lime-200 text-lime-600'
                 }`}
               >
@@ -325,7 +325,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
         {/* Quick Message Actions Panel (No Typing Bar) */}
         <div
           className={`p-3.5 border-t ${
-            isDark ? 'border-[#20222d] bg-[#0d0e13]' : 'border-zinc-200 bg-zinc-50'
+            isDark ? 'border-[#424242] bg-[#0d0e13]' : 'border-zinc-200 bg-zinc-50'
           }`}
         >
           <div className="flex items-center justify-between mb-2">

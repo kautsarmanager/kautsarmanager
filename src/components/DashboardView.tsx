@@ -137,7 +137,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             onClick={onAddTransaction}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all cursor-pointer active:scale-[0.98] ${
               isDark
-                ? 'bg-[#16171e] hover:bg-[#1d1f27] border-[#242633] text-zinc-300'
+                ? 'bg-[#16171e] hover:bg-[#1d1f27] border-[#424242] text-zinc-300'
                 : 'bg-zinc-50 hover:bg-zinc-100 border-zinc-200 text-zinc-700'
             }`}
           >
@@ -201,7 +201,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div
           className={`p-3.5 rounded-xl border transition-all ${
-            isDark ? 'bg-[#14151b] border-[#20222d]' : 'bg-white border-zinc-200 shadow-2xs'
+            isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-200 shadow-2xs'
           }`}
         >
           <p className={`text-[11px] font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
@@ -214,7 +214,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         <div
           className={`p-3.5 rounded-xl border transition-all ${
-            isDark ? 'bg-[#14151b] border-[#20222d]' : 'bg-white border-zinc-200 shadow-2xs'
+            isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-200 shadow-2xs'
           }`}
         >
           <p className={`text-[11px] font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
@@ -227,7 +227,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         <div
           className={`p-3.5 rounded-xl border transition-all ${
-            isDark ? 'bg-[#14151b] border-[#20222d]' : 'bg-white border-zinc-200 shadow-2xs'
+            isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-200 shadow-2xs'
           }`}
         >
           <p className={`text-[11px] font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
@@ -240,7 +240,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         <div
           className={`p-3.5 rounded-xl border transition-all ${
-            isDark ? 'bg-[#14151b] border-[#20222d]' : 'bg-white border-zinc-200 shadow-2xs'
+            isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-200 shadow-2xs'
           }`}
         >
           <p className={`text-[11px] font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
@@ -257,7 +257,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Left Column: Tasks Section (7 Cols) */}
         <div
           className={`lg:col-span-7 rounded-xl border p-4 sm:p-5 flex flex-col ${
-            isDark ? 'bg-[#14151b] border-[#20222d]' : 'bg-white border-zinc-200 shadow-2xs'
+            isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-200 shadow-2xs'
           }`}
         >
           {/* Header & Minimal Tab Switcher */}
@@ -269,7 +269,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* Linear-style quiet tabs */}
             <div
               className={`flex items-center p-0.5 rounded-lg border text-[11px] ${
-                isDark ? 'bg-[#101116] border-[#222430]' : 'bg-zinc-100 border-zinc-200'
+                isDark ? 'bg-[#171717] border-[#424242]' : 'bg-zinc-100 border-zinc-200'
               }`}
             >
               {urgentTasks.length > 0 && (
@@ -291,7 +291,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 className={`px-2.5 py-1 rounded-md font-medium cursor-pointer transition-colors ${
                   taskTab === 'today'
                     ? isDark
-                      ? 'bg-[#1f202b] text-white'
+                      ? 'bg-[#424242] text-white'
                       : 'bg-white text-zinc-950 shadow-2xs'
                     : 'text-zinc-400 hover:text-zinc-200'
                 }`}
@@ -303,7 +303,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 className={`px-2.5 py-1 rounded-md font-medium cursor-pointer transition-colors ${
                   taskTab === 'all'
                     ? isDark
-                      ? 'bg-[#1f202b] text-white'
+                      ? 'bg-[#424242] text-white'
                       : 'bg-white text-zinc-950 shadow-2xs'
                     : 'text-zinc-400 hover:text-zinc-200'
                 }`}
@@ -315,7 +315,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 className={`px-2.5 py-1 rounded-md font-medium cursor-pointer transition-colors ${
                   taskTab === 'completed'
                     ? isDark
-                      ? 'bg-[#1f202b] text-white'
+                      ? 'bg-[#424242] text-white'
                       : 'bg-white text-zinc-950 shadow-2xs'
                     : 'text-zinc-400 hover:text-zinc-200'
                 }`}
@@ -349,14 +349,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     className={`flex items-start gap-3 p-2.5 rounded-lg border transition-all cursor-pointer group select-none ${
                       isDone
                         ? isDark
-                          ? 'bg-[#101116]/40 border-transparent opacity-50'
+                          ? 'bg-[#171717]/40 border-transparent opacity-50'
                           : 'bg-zinc-50/60 border-transparent opacity-60'
                         : urgency.urgency === 'overdue'
                         ? isDark
                           ? 'bg-rose-500/5 border-rose-500/25 hover:border-rose-500/40'
                           : 'bg-rose-50/50 border-rose-200 hover:border-rose-300'
                         : isDark
-                        ? 'bg-[#181922] border-[#222430] hover:border-zinc-700'
+                        ? 'bg-[#181922] border-[#424242] hover:border-zinc-700'
                         : 'bg-white border-zinc-200 hover:border-zinc-400 shadow-2xs'
                     }`}
                   >
@@ -382,7 +382,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         </span>
                         <span
                           className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
-                            isDark ? 'bg-[#121319] text-zinc-400 border border-[#20222d]' : 'bg-zinc-100 text-zinc-600'
+                            isDark ? 'bg-[#121319] text-zinc-400 border border-[#424242]' : 'bg-zinc-100 text-zinc-600'
                           }`}
                         >
                           {task.category}
@@ -459,7 +459,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {/* Finance Cashflow Card */}
           <div
             className={`rounded-xl border p-4 sm:p-5 ${
-              isDark ? 'bg-[#14151b] border-[#20222d]' : 'bg-white border-zinc-200 shadow-2xs'
+              isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-200 shadow-2xs'
             }`}
           >
             <div className="flex items-center justify-between mb-3">
@@ -477,7 +477,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             <div
               className={`p-3 rounded-lg border font-mono text-xs space-y-1.5 ${
-                isDark ? 'bg-[#101116] border-[#20222d]' : 'bg-zinc-50 border-zinc-200'
+                isDark ? 'bg-[#171717] border-[#424242]' : 'bg-zinc-50 border-zinc-200'
               }`}
             >
               <div className="flex justify-between items-center text-emerald-400">
@@ -490,7 +490,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
               <div
                 className={`pt-2 border-t flex justify-between items-center font-bold text-sm ${
-                  isDark ? 'border-[#222430] text-zinc-100' : 'border-zinc-200 text-zinc-900'
+                  isDark ? 'border-[#424242] text-zinc-100' : 'border-zinc-200 text-zinc-900'
                 }`}
               >
                 <span>= Saldo Total</span>
@@ -502,7 +502,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {/* Wishlist Target Card */}
           <div
             className={`rounded-xl border p-4 sm:p-5 ${
-              isDark ? 'bg-[#14151b] border-[#20222d]' : 'bg-white border-zinc-200 shadow-2xs'
+              isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-200 shadow-2xs'
             }`}
           >
             <div className="flex items-center justify-between mb-3">
@@ -521,7 +521,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {wishlist.length > 0 ? (
               <div
                 className={`p-3 rounded-lg border ${
-                  isDark ? 'bg-[#101116] border-[#20222d]' : 'bg-zinc-50 border-zinc-200'
+                  isDark ? 'bg-[#171717] border-[#424242]' : 'bg-zinc-50 border-zinc-200'
                 }`}
               >
                 <div className="flex items-center justify-between text-xs">
@@ -565,7 +565,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {/* Recent Files Card */}
           <div
             className={`rounded-xl border p-4 sm:p-5 ${
-              isDark ? 'bg-[#14151b] border-[#20222d]' : 'bg-white border-zinc-200 shadow-2xs'
+              isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-200 shadow-2xs'
             }`}
           >
             <div className="flex items-center justify-between mb-2.5">
@@ -586,7 +586,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div
                   key={f.id}
                   className={`flex items-center justify-between p-2 rounded-lg border text-xs ${
-                    isDark ? 'bg-[#101116] border-[#20222d]' : 'bg-zinc-50 border-zinc-200'
+                    isDark ? 'bg-[#171717] border-[#424242]' : 'bg-zinc-50 border-zinc-200'
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">

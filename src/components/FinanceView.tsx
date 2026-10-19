@@ -1,12 +1,12 @@
 import { getLocalDateString } from '../utils/date';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   TrendingUp,
   TrendingDown,
   Plus,
   Trash2,
   Calendar,
-  Wallet,
+  SlidersHorizontal,
   X,
 } from 'lucide-react';
 import { Transaction, TransactionType } from '../types';
@@ -25,6 +25,8 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
+  const [sortMode, setSortMode] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
+  const [cashflowDate, setCashflowDate] = useState<string>(getLocalDateString());
 
   // Form State - all strictly empty by default
   const [type, setType] = useState<TransactionType>('expense');
@@ -45,10 +47,27 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
 
   const currentBalance = totalIncome - totalExpense;
 
-  const filteredTransactions = transactions.filter((t) => {
-    if (filterType !== 'all' && t.type !== filterType) return false;
-    return true;
-  });
+  const filteredTransactions = useMemo(() => {
+    return transactions
+      .filter((t) => filterType === 'all' || t.type === filterType)
+      .sort((a, b) => {
+        const dateComparison = String(a.transaction_date || '').localeCompare(String(b.transaction_date || ''));
+        if (sortMode === 'newest') return -dateComparison || b.amount - a.amount;
+        if (sortMode === 'oldest') return dateComparison || b.amount - a.amount;
+        if (sortMode === 'highest') return b.amount - a.amount || -dateComparison;
+        return a.amount - b.amount || -dateComparison;
+      });
+  }, [transactions, filterType, sortMode]);
+
+  const selectedDayTransactions = useMemo(
+    () => transactions.filter((t) => t.transaction_date === cashflowDate),
+    [transactions, cashflowDate]
+  );
+  const dailyIncome = selectedDayTransactions.filter((t) => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+  const dailyExpense = selectedDayTransactions.filter((t) => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+  const dailyNet = dailyIncome - dailyExpense;
+  const surfaceClass = isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-[#e5e5e5]';
+  const controlClass = isDark ? 'bg-[#212121] border-[#424242] text-zinc-100' : 'bg-white border-zinc-200 text-zinc-800';
 
   const handleCreateTransaction = (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,7 +128,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono">
         <div
           className={`p-4 rounded-xl border ${
-            isDark ? 'bg-[#14151b] border-[#20222d]' : 'bg-white border-zinc-200 shadow-2xs'
+            surfaceClass
           }`}
         >
           <p className={`text-[11px] font-sans ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
@@ -122,7 +141,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
 
         <div
           className={`p-4 rounded-xl border ${
-            isDark ? 'bg-[#14151b] border-[#20222d]' : 'bg-white border-zinc-200 shadow-2xs'
+            surfaceClass
           }`}
         >
           <p className={`text-[11px] font-sans ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
@@ -135,7 +154,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
 
         <div
           className={`p-4 rounded-xl border ${
-            isDark ? 'bg-[#14151b] border-[#20222d]' : 'bg-white border-zinc-200 shadow-2xs'
+            surfaceClass
           }`}
         >
           <p className={`text-[11px] font-sans ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
@@ -147,53 +166,91 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
         </div>
       </div>
 
-      {/* Toolbar */}
-      <div
-        className={`flex items-center justify-between p-2.5 rounded-xl border ${
-          isDark ? 'bg-[#14151b] border-[#20222d]' : 'bg-white border-zinc-200 shadow-2xs'
-        }`}
-      >
-        <div
-          className={`flex items-center p-0.5 rounded-lg border text-[11px] ${
-            isDark ? 'bg-[#101116] border-[#222430]' : 'bg-zinc-100 border-zinc-200'
-          }`}
-        >
-          <button
-            onClick={() => setFilterType('all')}
-            className={`px-3 py-1 rounded-md font-medium cursor-pointer transition-colors ${
-              filterType === 'all'
-                ? isDark
-                  ? 'bg-[#1f202b] text-white'
-                  : 'bg-white text-zinc-950 shadow-2xs'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            Semua ({transactions.length})
-          </button>
-          <button
-            onClick={() => setFilterType('income')}
-            className={`px-3 py-1 rounded-md font-medium cursor-pointer transition-colors ${
-              filterType === 'income'
-                ? isDark
-                  ? 'bg-[#1f202b] text-white'
-                  : 'bg-white text-zinc-950 shadow-2xs'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            Pemasukan
-          </button>
-          <button
-            onClick={() => setFilterType('expense')}
-            className={`px-3 py-1 rounded-md font-medium cursor-pointer transition-colors ${
-              filterType === 'expense'
-                ? isDark
-                  ? 'bg-[#1f202b] text-white'
-                  : 'bg-white text-zinc-950 shadow-2xs'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            Pengeluaran
-          </button>
+      {/* Daily cashflow */}
+      <section className={`rounded-2xl border p-4 sm:p-5 ${surfaceClass}`}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-zinc-400" />
+              <h2 className={`text-sm font-semibold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Cashflow Harian</h2>
+            </div>
+            <p className="text-xs text-zinc-500 mt-1">Ringkasan pemasukan dan pengeluaran pada tanggal yang dipilih.</p>
+          </div>
+          <input
+            type="date"
+            aria-label="Pilih tanggal cashflow harian"
+            value={cashflowDate}
+            onChange={(e) => setCashflowDate(e.target.value)}
+            className={`rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500/30 ${controlClass}`}
+          />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+          <div className={`rounded-xl p-3 ${isDark ? 'bg-[#212121]' : 'bg-[#f7f7f7]'}`}>
+            <p className="text-xs text-zinc-500">Pemasukan hari itu</p>
+            <p className="mt-1 text-base font-semibold text-emerald-500">+ {formatCurrency(dailyIncome)}</p>
+          </div>
+          <div className={`rounded-xl p-3 ${isDark ? 'bg-[#212121]' : 'bg-[#f7f7f7]'}`}>
+            <p className="text-xs text-zinc-500">Pengeluaran hari itu</p>
+            <p className="mt-1 text-base font-semibold text-rose-500">− {formatCurrency(dailyExpense)}</p>
+          </div>
+          <div className={`rounded-xl p-3 ${isDark ? 'bg-[#212121]' : 'bg-[#f7f7f7]'}`}>
+            <p className="text-xs text-zinc-500">Arus kas bersih</p>
+            <p className={`mt-1 text-base font-semibold ${dailyNet >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{dailyNet >= 0 ? '+' : '−'} {formatCurrency(Math.abs(dailyNet))}</p>
+            <p className="text-[11px] text-zinc-500 mt-1">{selectedDayTransactions.length} transaksi</p>
+          </div>
+        </div>
+        <div className={`mt-4 rounded-xl border overflow-hidden ${isDark ? 'border-[#424242]' : 'border-zinc-200'}`}>
+          <div className={`px-3 py-2 text-xs font-medium ${isDark ? 'bg-[#212121] text-zinc-300' : 'bg-[#f7f7f7] text-zinc-600'}`}>
+            Catatan pada {cashflowDate}
+          </div>
+          {selectedDayTransactions.length === 0 ? (
+            <p className="px-3 py-4 text-xs text-zinc-500">Belum ada transaksi pada tanggal ini.</p>
+          ) : (
+            <div className="divide-y divide-zinc-500/10">
+              {[...selectedDayTransactions].sort((a, b) => b.amount - a.amount).map((tx) => (
+                <div key={tx.id} className="flex items-center justify-between gap-3 px-3 py-2.5">
+                  <div className="min-w-0">
+                    <p className={`text-xs font-medium truncate ${isDark ? 'text-zinc-200' : 'text-zinc-800'}`}>{tx.description}</p>
+                    <p className="mt-0.5 text-[11px] text-zinc-500">{tx.category || 'Tanpa kategori'}</p>
+                  </div>
+                  <span className={`shrink-0 text-xs font-semibold ${tx.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    {tx.type === 'income' ? '+' : '−'} {formatCurrency(tx.amount)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Filters and sorting */}
+      <div className={`flex flex-col gap-3 rounded-2xl border p-3 ${surfaceClass}`}>
+        <div className="flex items-center gap-2 text-xs font-medium text-zinc-500">
+          <SlidersHorizontal className="w-3.5 h-3.5" /> Filter & urutkan catatan cashflow
+        </div>
+        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
+          <div className={`flex flex-wrap items-center gap-1 rounded-xl p-1 ${isDark ? 'bg-[#212121]' : 'bg-[#f7f7f7]'}`}>
+            {([
+              ['all', `Semua (${transactions.length})`],
+              ['income', 'Pemasukan'],
+              ['expense', 'Pengeluaran'],
+            ] as const).map(([value, label]) => (
+              <button key={value} onClick={() => setFilterType(value)}
+                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${filterType === value ? (isDark ? 'bg-[#424242] text-white' : 'bg-white text-zinc-900 shadow-sm') : 'text-zinc-500 hover:text-current'}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <label className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs ${controlClass}`}>
+            <SlidersHorizontal className="w-3.5 h-3.5 text-zinc-500" />
+            <span className="whitespace-nowrap text-zinc-500">Urutkan</span>
+            <select aria-label="Urutkan catatan cashflow" value={sortMode} onChange={(e) => setSortMode(e.target.value as 'newest' | 'oldest' | 'highest' | 'lowest')} className="min-w-0 bg-transparent outline-none">
+              <option value="newest">Waktu terbaru</option>
+              <option value="oldest">Waktu terlama</option>
+              <option value="highest">Nominal terbesar</option>
+              <option value="lowest">Nominal terkecil</option>
+            </select>
+          </label>
         </div>
       </div>
 
@@ -202,7 +259,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
         {filteredTransactions.length === 0 ? (
           <div
             className={`p-10 text-center rounded-xl border border-dashed text-xs text-zinc-400 ${
-              isDark ? 'border-[#222430] bg-[#14151b]' : 'border-zinc-300 bg-white'
+              isDark ? 'border-[#424242] bg-[#2f2f2f]' : 'border-zinc-300 bg-white'
             }`}
           >
             Belum ada transaksi pada kategori ini.
@@ -213,7 +270,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
               key={tx.id}
               className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
                 isDark
-                  ? 'bg-[#14151b] border-[#20222d] hover:border-zinc-700'
+                  ? 'bg-[#2f2f2f] border-[#424242] hover:border-zinc-500'
                   : 'bg-white border-zinc-200 hover:border-zinc-400 shadow-2xs'
               }`}
             >
@@ -266,7 +323,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
         <div onMouseDown={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div
             className={`w-full max-w-md border rounded-2xl p-5 shadow-2xl ${
-              isDark ? 'bg-[#15161d] border-[#262836]' : 'bg-white border-zinc-300'
+              isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-300'
             }`}
           >
             <div className="flex items-center justify-between pb-3 border-b border-inherit">
@@ -283,7 +340,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
               {/* Type Switcher */}
               <div
                 className={`grid grid-cols-2 gap-1 p-1 rounded-lg border ${
-                  isDark ? 'bg-[#101116] border-[#222430]' : 'bg-zinc-100 border-zinc-200'
+                  isDark ? 'bg-[#212121] border-[#424242]' : 'bg-zinc-100 border-zinc-200'
                 }`}
               >
                 <button
@@ -323,7 +380,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="Contoh: 50000"
                   className={`w-full px-3 py-2 rounded-lg border font-mono text-sm focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
-                    isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                    isDark ? 'bg-[#212121] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}
                 />
               </div>
@@ -339,7 +396,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Contoh: Makan siang, Gaji Freelance"
                   className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
-                    isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                    isDark ? 'bg-[#212121] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}
                 />
               </div>
@@ -355,7 +412,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                     onChange={(e) => setCategory(e.target.value)}
                     placeholder="Ketik kategori (opsional)"
                     className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden ${
-                      isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                      isDark ? 'bg-[#212121] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
                   />
                 </div>
@@ -370,7 +427,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden ${
-                      isDark ? 'bg-[#101116] border-[#242633] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                      isDark ? 'bg-[#212121] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
                   />
                 </div>

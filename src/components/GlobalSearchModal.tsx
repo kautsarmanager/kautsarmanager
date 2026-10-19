@@ -71,7 +71,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
       <div
         onClick={(e) => e.stopPropagation()}
         className={`w-full max-w-xl border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[75vh] cursor-default ${
-          isDark ? 'bg-[#15161d] border-[#262836]' : 'bg-white border-zinc-300'
+          isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-300'
         }`}
       >
         {/* Search Input Bar (Raycast-like) */}
