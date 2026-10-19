@@ -43,6 +43,7 @@ export default function App() {
     }
   });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => { try { return localStorage.getItem('manager_sidebar_collapsed') === 'true'; } catch { return false; } });
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [initialTaskModalOpen, setInitialTaskModalOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -62,6 +63,8 @@ export default function App() {
   const [activities, setActivities] = useState<ActivityItem[]>(dataService.getActivities());
 
   const isDark = profile.theme !== 'light';
+
+  useEffect(() => { try { localStorage.setItem('manager_sidebar_collapsed', String(sidebarCollapsed)); } catch {} }, [sidebarCollapsed]);
 
   const toggleTheme = () => {
     const next = isDark ? 'light' : 'dark';
@@ -155,7 +158,7 @@ export default function App() {
 
   // Avoid flashing the login screen while the saved cloud session is restored.
   if (authInitializing) {
-    return <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-[#212121] text-zinc-300' : 'bg-[#ffffff] text-zinc-700'}`}><div className="text-sm">Memulihkan sesi akun...</div></div>;
+    return <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-[#212121] text-zinc-300' : 'bg-[#F7F7F8] text-zinc-700'}`}><div className="text-sm">Memulihkan sesi akun...</div></div>;
   }
 
   // If no active session, show authentication screen.
@@ -202,7 +205,7 @@ export default function App() {
   return (
     <div
       className={`min-h-screen flex flex-col font-sans transition-colors duration-150 antialiased ${
-        isDark ? 'bg-[#212121] text-zinc-200' : 'bg-[#ffffff] text-zinc-900'
+        isDark ? 'bg-[#212121] text-zinc-200' : 'bg-[#F7F7F8] text-zinc-900'
       }`}
     >
       {/* Sidebar Navigation */}
@@ -215,6 +218,8 @@ export default function App() {
         profile={profile}
         summary={summary}
         mobileOpen={mobileMenuOpen}
+        collapsed={sidebarCollapsed}
+        onToggleCollapsed={() => setSidebarCollapsed((value) => !value)}
         onCloseMobile={() => setMobileMenuOpen(false)}
         isDark={isDark}
         currentUser={currentUser}
@@ -223,7 +228,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col md:pl-60 min-w-0 pb-16 md:pb-0">
+      <div className={`flex-1 flex flex-col min-w-0 pb-16 md:pb-0 transition-[padding] duration-200 ${sidebarCollapsed ? 'md:pl-[68px]' : 'md:pl-[248px]'}`}>
         <Header
           profile={profile}
           onOpenSearch={() => setSearchModalOpen(true)}

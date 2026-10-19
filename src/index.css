@@ -1,61 +1,70 @@
 @import "tailwindcss";
 
+/* Manager UI system — aligned with the approved UI/UX specification. */
 @layer base {
   :root {
-    --font-sans: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-mono: "Space Grotesk", ui-monospace, monospace;
-    --manager-ink: #202020;
-    --manager-lime: #737373;
-    --manager-bg: #f2f3f5;
-    --manager-white: #ffffff;
+    color-scheme: light;
+    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --bg: #F7F7F8;
+    --sidebar: #F0F0F0;
+    --surface: #FFFFFF;
+    --surface-hover: #EAEAEA;
+    --border: #E5E7EB;
+    --text: #171717;
+    --text-muted: #737373;
+    --accent: #2563EB;
+    --accent-hover: #1D4ED8;
+    --success: #15803D;
+    --danger: #B91C1C;
+    --warning: #92400E;
+    --radius-card: 14px;
+    --pms-radius: 14px;
+    --pms-border-dark: rgba(0,0,0,.10);
+    --pms-border-light: #E5E7EB;
+    --manager-ink: #171717;
+    --manager-bg: #F7F7F8;
+    --manager-white: #FFFFFF;
   }
-
-  html { background: var(--manager-bg); }
+  html { background: var(--bg); }
   body {
+    min-height: 100vh;
     font-family: var(--font-sans);
-    letter-spacing: -0.018em;
+    letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  * { scrollbar-color: rgba(128,128,128,.35) transparent; }
 }
 
 button, a, input, select, textarea {
-  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  transition-duration: 180ms;
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease,
+    box-shadow 160ms ease, opacity 160ms ease, transform 160ms ease;
 }
-
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(32,32,32,.18); border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(32,32,32,.34); }
-
-:root {
-  color-scheme: light;
-  --pms-radius: 16px;
-  --pms-border-dark: rgba(32,32,32,.10);
-  --pms-border-light: rgba(32,32,32,.10);
-}
-
-::selection { background: rgba(115,115,115,.28); color: inherit; }
-
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-  outline: 2px solid #737373;
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #2563EB;
   outline-offset: 2px;
 }
-
 input::placeholder, textarea::placeholder { opacity: .58; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(128,128,128,.30); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,.48); }
+::selection { background: rgba(37,99,235,.20); color: inherit; }
 
-/* ChatGPT-inspired monochrome controls and restrained focus states. */
-.bg-indigo-600, .bg-lime-600 { background-color: #303030 !important; }
-.bg-indigo-500, .bg-lime-500 { background-color: #424242 !important; }
-.text-indigo-400 { color: #e5e5e5 !important; }
-.text-indigo-500 { color: #303030 !important; }
-.text-lime-400, .text-lime-500 { color: #a3a3a3 !important; }
-.border-indigo-500, .border-lime-500 { border-color: #737373 !important; }
-.ring-indigo-500, .ring-lime-500 { --tw-ring-color: #737373 !important; }
-.focus\:border-indigo-500:focus, .focus\:border-lime-500:focus { border-color: #737373 !important; }
+/* Replace the previous monochrome/lime accents with the approved blue accent. */
+.bg-indigo-600, .bg-lime-600 { background-color: #2563EB !important; }
+.bg-indigo-500, .bg-lime-500 { background-color: #3B82F6 !important; }
+.text-indigo-400, .text-lime-300, .text-lime-400, .text-lime-500 { color: #60A5FA !important; }
+.text-indigo-500, .text-lime-600, .text-lime-700 { color: #2563EB !important; }
+.border-indigo-500, .border-lime-500 { border-color: #2563EB !important; }
+.ring-indigo-500, .ring-lime-500 { --tw-ring-color: #2563EB !important; }
+.focus\\:border-indigo-500:focus, .focus\\:border-lime-500:focus { border-color: #2563EB !important; }
 
+/* Consistent neutral cards and readable content surfaces. */
+.rounded-2xl { border-radius: 14px; }
+.rounded-xl { border-radius: 12px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     scroll-behavior: auto !important;
@@ -63,25 +72,4 @@ input::placeholder, textarea::placeholder { opacity: .58; }
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
   }
-}
-
-
-/* ChatGPT-inspired surfaces: calm monochrome, clear hierarchy, soft contrast. */
-:root {
-  --pms-radius: 18px;
-  --pms-border-dark: rgba(255,255,255,.10);
-  --pms-border-light: rgba(0,0,0,.10);
-}
-* { scrollbar-color: rgba(128,128,128,.35) transparent; }
-@layer base {
-  body { min-height: 100vh; }
-  button, a, input, select, textarea { transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
-}
-@layer utilities {
-  .divide-y > :not(:first-child), .divide-x > :not(:first-child) { border-color: rgba(128,128,128,.12) !important; }
-}
-/* Preserve visible keyboard focus and validation states after removing decorative borders. */
-input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
-  outline: 2px solid #737373;
-  outline-offset: 3px;
 }

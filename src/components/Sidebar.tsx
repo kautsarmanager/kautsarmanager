@@ -8,6 +8,8 @@ import {
   Bot,
   Settings,
   X,
+  ChevronLeft,
+  ChevronRight,
   Lock,
   LogOut,
   Smartphone,
@@ -24,6 +26,8 @@ interface SidebarProps {
   profile: UserProfile;
   summary: DashboardSummary;
   mobileOpen: boolean;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
   onCloseMobile: () => void;
   isDark: boolean;
   currentUser?: UserAccount | null;
@@ -37,6 +41,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   profile,
   summary,
   mobileOpen,
+  collapsed,
+  onToggleCollapsed,
   onCloseMobile,
   isDark,
   currentUser,
@@ -98,7 +104,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col w-60 border-r transition-transform duration-200 ease-in-out md:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col border-r transition-all duration-200 ease-in-out md:translate-x-0 ${
+          collapsed ? 'md:w-[68px] w-60' : 'md:w-[248px] w-60'
+        } ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         } ${
           isDark
@@ -116,19 +124,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div
               className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs tracking-wider border shadow-xs ${
                 isDark
-                  ? 'bg-[#2f2f2f] border-[#424242] text-lime-400'
-                  : 'bg-lime-50 border-lime-200 text-lime-600'
+                  ? 'bg-[#2f2f2f] border-[#424242] text-blue-400'
+                  : 'bg-lime-50 border-lime-200 text-blue-600'
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
             </div>
-            <div>
+            <div className={collapsed ? 'md:hidden' : ''}>
               <span className={`text-xs font-semibold tracking-tight ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
                 Manager
               </span>
               <span className="block text-[10px] text-zinc-500 font-mono leading-none">v1.2</span>
             </div>
           </div>
+          <button type="button" onClick={onToggleCollapsed}
+            className={`hidden md:flex p-1 rounded-md ${isDark ? 'text-zinc-400 hover:bg-[#303030]' : 'text-zinc-500 hover:bg-[#EAEAEA]'}`}
+            title={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
+            aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}>
+            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          </button>
           <button
             onClick={onCloseMobile}
             className={`md:hidden p-1 rounded-md ${
@@ -154,8 +168,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
                   isActive
                     ? isDark
-                      ? 'bg-[#1c1d26] text-white font-semibold shadow-xs'
-                      : 'bg-zinc-100 text-zinc-950 font-semibold'
+                      ? 'bg-[#1e3a5f] text-white font-semibold shadow-xs'
+                      : 'bg-blue-50 text-blue-950 font-semibold'
                     : isDark
                     ? 'text-zinc-400 hover:text-zinc-200 hover:bg-[#16171e]'
                     : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
@@ -165,15 +179,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <Icon
                     className={`w-4 h-4 ${
                       isActive
-                        ? 'text-lime-400'
+                        ? 'text-blue-400'
                         : isDark
                         ? 'text-zinc-500'
                         : 'text-zinc-400'
                     }`}
                   />
-                  <span>{item.label}</span>
+                  <span className={collapsed ? 'md:hidden' : ''}>{item.label}</span>
                 </div>
-                {item.badge && (
+                {item.badge && !collapsed && (
                   <span
                     className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
                       isActive
@@ -209,13 +223,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div
                 className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold border shrink-0 ${
                   isDark
-                    ? 'bg-[#181922] border-[#292b38] text-lime-400'
-                    : 'bg-white border-zinc-300 text-lime-600'
+                    ? 'bg-[#181922] border-[#292b38] text-blue-400'
+                    : 'bg-white border-zinc-300 text-blue-600'
                 }`}
               >
                 {(currentUser?.username || profile.name).charAt(0).toUpperCase()}
               </div>
-              <div className="min-w-0 flex-1">
+              <div className={`min-w-0 flex-1 ${collapsed ? 'md:hidden' : ''}`}>
                 <p className={`text-xs font-medium truncate ${isDark ? 'text-zinc-200' : 'text-zinc-800'}`}>
                   {currentUser ? currentUser.username : profile.name}
                 </p>
@@ -227,7 +241,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
 
             {/* Quick Actions: Lock App and Logout */}
-            <div className="flex items-center gap-1 shrink-0">
+            <div className={`flex items-center gap-1 shrink-0 ${collapsed ? 'md:flex-col' : ''}`}>
               {onLockApp && (
                 <button
                   type="button"
