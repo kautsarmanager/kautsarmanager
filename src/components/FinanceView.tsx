@@ -62,8 +62,9 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
     const day = String(t.transaction_date || '').slice(0, 10);
     return cashflowPeriod === 'all' || (day >= periodRange.start && day <= periodRange.end);
   }), [transactions, cashflowPeriod, periodRange]);
-  const totalIncome = periodTransactions.filter((t) => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-  const totalExpense = periodTransactions.filter((t) => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+  // Summary totals follow BOTH the selected date range and transaction-type filter.
+  const totalIncome = periodTransactions.filter((t) => t.type === 'income' && (filterType === 'all' || filterType === 'income')).reduce((acc, t) => acc + t.amount, 0);
+  const totalExpense = periodTransactions.filter((t) => t.type === 'expense' && (filterType === 'all' || filterType === 'expense')).reduce((acc, t) => acc + t.amount, 0);
   const currentBalance = totalIncome - totalExpense;
 
   const formatDateLong = (value: string) => {
@@ -94,7 +95,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
       return a.amount - b.amount || -dateComparison;
     }), [periodTransactions, filterType, sortMode]);
 
-  const selectedDayTransactions = periodTransactions;
+  const selectedDayTransactions = periodTransactions.filter((t) => filterType === 'all' || t.type === filterType);
   const dailyIncome = totalIncome;
   const dailyExpense = totalExpense;
   const dailyNet = currentBalance;
@@ -232,28 +233,6 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
             <p className={`mt-1 text-base font-semibold ${dailyNet >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{dailyNet >= 0 ? '+' : '−'} {formatCurrency(Math.abs(dailyNet))}</p>
             <p className="text-[11px] text-zinc-500 mt-1">{selectedDayTransactions.length} transaksi</p>
           </div>
-        </div>
-        <div className={`mt-4 rounded-xl border overflow-hidden ${isDark ? 'border-[#424242]' : 'border-zinc-200'}`}>
-          <div className={`px-3 py-2 text-xs font-medium ${isDark ? 'bg-[#212121] text-zinc-300' : 'bg-[#f7f7f7] text-zinc-600'}`}>
-            Catatan {formatPeriodLabel()}
-          </div>
-          {selectedDayTransactions.length === 0 ? (
-            <p className="px-3 py-4 text-xs text-zinc-500">Belum ada transaksi pada tanggal ini.</p>
-          ) : (
-            <div className="divide-y divide-zinc-500/10">
-              {[...selectedDayTransactions].sort((a, b) => String(b.transaction_date || '').localeCompare(String(a.transaction_date || ''))).map((tx) => (
-                <div key={tx.id} className="flex items-center justify-between gap-3 px-3 py-2.5">
-                  <div className="min-w-0">
-                    <p className={`text-xs font-medium truncate ${isDark ? 'text-zinc-200' : 'text-zinc-800'}`}>{tx.description}</p>
-                    <p className="mt-0.5 text-[11px] text-zinc-500">{tx.category || 'Tanpa kategori'} • {tx.transaction_date === today ? 'Hari ini' : formatDateLong(String(tx.transaction_date || '').slice(0, 10))}</p>
-                  </div>
-                  <span className={`shrink-0 text-xs font-semibold ${tx.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>
-                    {tx.type === 'income' ? '+' : '−'} {formatCurrency(tx.amount)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
