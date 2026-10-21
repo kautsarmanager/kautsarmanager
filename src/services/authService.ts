@@ -41,7 +41,7 @@ class AuthService {
     const { data, error } = await supabase.auth.getSession();
     if (error) throw error;
     this.currentUser = toUser(data.session?.user);
-    if (this.currentUser) { localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser)); await this.syncPinFromCloud(); if (!this.hasPin()) localStorage.removeItem(LOCK_KEY); }
+    if (this.currentUser) { await this.syncAccountProfileFromCloud(); localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser)); await this.syncPinFromCloud(); if (!this.hasPin()) localStorage.removeItem(LOCK_KEY); }
     else localStorage.removeItem(USER_CACHE_KEY);
     this.initialized = true; this.notify(); return this.currentUser;
   }
@@ -68,7 +68,7 @@ class AuthService {
     const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     if (error) return { success: false, error: error.message };
     const user = toUser(data.user); if (!user) return { success: false, error: 'Data akun tidak ditemukan.' };
-    this.currentUser = user; localStorage.setItem(USER_CACHE_KEY, JSON.stringify(user)); localStorage.removeItem(LOCK_KEY); await this.syncPinFromCloud(); this.notify();
+    this.currentUser = user; await this.syncAccountProfileFromCloud(); localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser || user)); localStorage.removeItem(LOCK_KEY); await this.syncPinFromCloud(); this.notify();
     return { success: true, user };
   }
 
@@ -98,6 +98,8 @@ class AuthService {
     const user = toUser(data.user);
     if (!user) return { success: false, error: 'Username diperbarui tetapi data akun tidak dapat dibaca.' };
     this.currentUser = user;
+    const { error: profileError } = await supabase.from('profiles').upsert({ id: user.id, name: username, email: user.email }, { onConflict: 'id' });
+    if (profileError) return { success: false, error: `Username akun berubah, tetapi profil cloud gagal disinkronkan: ${profileError.message}` };
     localStorage.setItem(USER_CACHE_KEY, JSON.stringify(user));
     this.notify();
     return { success: true, user };
@@ -110,6 +112,16 @@ class AuthService {
 
   private pinKey() { return `pms_app_pin:${this.currentUser?.id || 'no-user'}`; }
   private pinAttemptsKey() { return `pms_app_pin_attempts:${this.currentUser?.id || 'no-user'}`; }
+  private async syncAccountProfileFromCloud(): Promise<void> {
+    if (!supabase || !this.currentUser) return;
+    const { data, error } = await supabase.from('profiles').select('name,email').eq('id', this.currentUser.id).maybeSingle();
+    if (error) { console.warn('Profile sync failed:', error.message); return; }
+    if (data?.name?.trim()) {
+      this.currentUser = { ...this.currentUser, username: data.name.trim(), email: data.email || this.currentUser.email };
+      localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser));
+    }
+  }
+
   private async syncPinFromCloud(): Promise<void> {
     if (!supabase || !this.currentUser) return;
     const { data, error } = await supabase.from('profiles').select('pin_salt,pin_hash,pin_iterations').eq('id', this.currentUser.id).maybeSingle();
@@ -138,7 +150,7 @@ class AuthService {
     const hash = await this.derivePinHash(pin, salt);
     if (!supabase) return { success: false, error: 'Koneksi akun tidak tersedia; PIN belum dapat disinkronkan.' };
     const pinData = { pin_salt: bytesToHex(salt), pin_hash: hash, pin_iterations: PIN_ITERATIONS };
-    const { error } = await supabase.from('profiles').update(pinData).eq('id', this.currentUser.id);
+    const { error } = await supabase.from('profiles').upsert({ id: this.currentUser.id, name: this.currentUser.username, email: this.currentUser.email, ...pinData }, { onConflict: 'id' });
     if (error) return { success: false, error: `PIN gagal disinkronkan: ${error.message}. Pastikan migrasi PIN sudah dijalankan di Supabase.` };
     localStorage.setItem(this.pinKey(), JSON.stringify({ salt: pinData.pin_salt, hash: pinData.pin_hash, iterations: PIN_ITERATIONS }));
     localStorage.removeItem(this.pinAttemptsKey());
