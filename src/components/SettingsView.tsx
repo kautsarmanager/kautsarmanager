@@ -1,5 +1,5 @@
 import { getLocalDateString } from '../utils/date';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   User,
   Shield,
@@ -31,6 +31,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [pinConfigured, setPinConfigured] = useState(authService.hasPin());
   const [pinMessage, setPinMessage] = useState('');
   const [pinError, setPinError] = useState(false);
+
+  useEffect(() => {
+    const refreshPinStatus = () => setPinConfigured(authService.hasPin());
+    const unsubscribe = authService.subscribe(refreshPinStatus);
+    refreshPinStatus();
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    setName(currentUser?.username || profile.name);
+  }, [currentUser?.username, profile.name]);
 
   const isDark = profile.theme !== 'light';
 

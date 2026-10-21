@@ -20,6 +20,8 @@ class AuthService {
   private listeners = new Set<() => void>();
   private currentUser: UserAccount | null = null;
   private initialized = false;
+  private profileRealtimeChannel: any = null;
+  private profileRealtimeUserId: string | null = null;
 
   constructor() {
     if (supabase) {
@@ -28,6 +30,17 @@ class AuthService {
         if (this.currentUser) localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser));
         else localStorage.removeItem(USER_CACHE_KEY);
         this.initialized = true;
+        // Supabase auth callbacks must not perform database requests inline.
+        window.setTimeout(() => {
+          if (this.currentUser) {
+            void this.syncAccountProfileFromCloud().then(() => this.syncPinFromCloud()).then(() => {
+              this.startProfileRealtime();
+              this.notify();
+            });
+          } else {
+            this.stopProfileRealtime();
+          }
+        }, 0);
         this.notify();
       });
     }
@@ -41,7 +54,7 @@ class AuthService {
     const { data, error } = await supabase.auth.getSession();
     if (error) throw error;
     this.currentUser = toUser(data.session?.user);
-    if (this.currentUser) { await this.syncAccountProfileFromCloud(); localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser)); await this.syncPinFromCloud(); if (!this.hasPin()) localStorage.removeItem(LOCK_KEY); }
+    if (this.currentUser) { await this.syncAccountProfileFromCloud(); localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser)); await this.syncPinFromCloud(); this.startProfileRealtime(); if (!this.hasPin()) localStorage.removeItem(LOCK_KEY); }
     else localStorage.removeItem(USER_CACHE_KEY);
     this.initialized = true; this.notify(); return this.currentUser;
   }
@@ -68,7 +81,7 @@ class AuthService {
     const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     if (error) return { success: false, error: error.message };
     const user = toUser(data.user); if (!user) return { success: false, error: 'Data akun tidak ditemukan.' };
-    this.currentUser = user; await this.syncAccountProfileFromCloud(); localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser || user)); localStorage.removeItem(LOCK_KEY); await this.syncPinFromCloud(); this.notify();
+    this.currentUser = user; await this.syncAccountProfileFromCloud(); localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser || user)); localStorage.removeItem(LOCK_KEY); await this.syncPinFromCloud(); this.startProfileRealtime(); this.notify();
     return { success: true, user };
   }
 
@@ -101,13 +114,43 @@ class AuthService {
     const { error: profileError } = await supabase.from('profiles').upsert({ id: user.id, name: username, email: user.email }, { onConflict: 'id' });
     if (profileError) return { success: false, error: `Username akun berubah, tetapi profil cloud gagal disinkronkan: ${profileError.message}` };
     localStorage.setItem(USER_CACHE_KEY, JSON.stringify(user));
+    this.startProfileRealtime();
     this.notify();
     return { success: true, user };
   }
 
   public async logout() {
+    this.stopProfileRealtime();
     if (supabase) await supabase.auth.signOut();
     this.currentUser = null; localStorage.removeItem(USER_CACHE_KEY); localStorage.removeItem(LOCK_KEY); this.notify();
+  }
+
+  private startProfileRealtime() {
+    if (!supabase || !this.currentUser || !isSupabaseConfigured) return;
+    const userId = this.currentUser.id;
+    if (this.profileRealtimeUserId === userId && this.profileRealtimeChannel) return;
+    this.stopProfileRealtime();
+    this.profileRealtimeUserId = userId;
+    this.profileRealtimeChannel = supabase
+      .channel(`pms-profile-auth-${userId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` }, () => {
+        void (async () => {
+          await this.syncAccountProfileFromCloud();
+          await this.syncPinFromCloud();
+          this.notify();
+        })();
+      })
+      .subscribe((status: string, error?: Error) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn(`Profile/PIN realtime status: ${status}`, error || '');
+        }
+      });
+  }
+
+  private stopProfileRealtime() {
+    if (this.profileRealtimeChannel && supabase) void supabase.removeChannel(this.profileRealtimeChannel);
+    this.profileRealtimeChannel = null;
+    this.profileRealtimeUserId = null;
   }
 
   private pinKey() { return `pms_app_pin:${this.currentUser?.id || 'no-user'}`; }
@@ -154,6 +197,7 @@ class AuthService {
     if (error) return { success: false, error: `PIN gagal disinkronkan: ${error.message}. Pastikan migrasi PIN sudah dijalankan di Supabase.` };
     localStorage.setItem(this.pinKey(), JSON.stringify({ salt: pinData.pin_salt, hash: pinData.pin_hash, iterations: PIN_ITERATIONS }));
     localStorage.removeItem(this.pinAttemptsKey());
+    this.notify();
     return { success: true };
   }
 
