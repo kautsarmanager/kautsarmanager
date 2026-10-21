@@ -57,6 +57,9 @@ alter table public.wishlist_items add column if not exists deleted_at timestampt
 alter table public.wishlist_items add column if not exists subtasks jsonb not null default '[]'::jsonb;
 alter table public.wishlist_items add column if not exists base_target_price numeric(15,2) not null default 0;
 alter table public.profiles add column if not exists updated_at timestamptz not null default now();
+alter table public.profiles add column if not exists pin_salt text;
+alter table public.profiles add column if not exists pin_hash text;
+alter table public.profiles add column if not exists pin_iterations integer;
 alter table public.tasks add column if not exists updated_at timestamptz not null default now();
 alter table public.transactions add column if not exists updated_at timestamptz not null default now();
 alter table public.wishlist_items add column if not exists updated_at timestamptz not null default now();

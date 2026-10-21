@@ -41,7 +41,7 @@ class AuthService {
     const { data, error } = await supabase.auth.getSession();
     if (error) throw error;
     this.currentUser = toUser(data.session?.user);
-    if (this.currentUser) localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser));
+    if (this.currentUser) { localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser)); await this.syncPinFromCloud(); if (!this.hasPin()) localStorage.removeItem(LOCK_KEY); }
     else localStorage.removeItem(USER_CACHE_KEY);
     this.initialized = true; this.notify(); return this.currentUser;
   }
@@ -68,7 +68,7 @@ class AuthService {
     const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     if (error) return { success: false, error: error.message };
     const user = toUser(data.user); if (!user) return { success: false, error: 'Data akun tidak ditemukan.' };
-    this.currentUser = user; localStorage.setItem(USER_CACHE_KEY, JSON.stringify(user)); localStorage.removeItem(LOCK_KEY); this.notify();
+    this.currentUser = user; localStorage.setItem(USER_CACHE_KEY, JSON.stringify(user)); localStorage.removeItem(LOCK_KEY); await this.syncPinFromCloud(); this.notify();
     return { success: true, user };
   }
 
@@ -110,6 +110,15 @@ class AuthService {
 
   private pinKey() { return `pms_app_pin:${this.currentUser?.id || 'no-user'}`; }
   private pinAttemptsKey() { return `pms_app_pin_attempts:${this.currentUser?.id || 'no-user'}`; }
+  private async syncPinFromCloud(): Promise<void> {
+    if (!supabase || !this.currentUser) return;
+    const { data, error } = await supabase.from('profiles').select('pin_salt,pin_hash,pin_iterations').eq('id', this.currentUser.id).maybeSingle();
+    if (error) { console.warn('PIN sync failed:', error.message); return; }
+    if (data?.pin_salt && data?.pin_hash) {
+      localStorage.setItem(this.pinKey(), JSON.stringify({ salt: data.pin_salt, hash: data.pin_hash, iterations: data.pin_iterations || PIN_ITERATIONS }));
+    } else { localStorage.removeItem(this.pinKey()); }
+  }
+
   public hasPin(): boolean { return !!this.currentUser && !!localStorage.getItem(this.pinKey()); }
   public isAppLocked(): boolean { return !!this.currentUser && localStorage.getItem(LOCK_KEY) === 'true'; }
   public lockApp(): boolean { if (!this.hasPin()) return false; localStorage.setItem(LOCK_KEY, 'true'); this.notify(); return true; }
@@ -127,12 +136,20 @@ class AuthService {
     if (!crypto?.subtle) return { success: false, error: 'Browser tidak mendukung penyimpanan PIN aman. Gunakan HTTPS atau localhost.' };
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const hash = await this.derivePinHash(pin, salt);
-    localStorage.setItem(this.pinKey(), JSON.stringify({ salt: bytesToHex(salt), hash, iterations: PIN_ITERATIONS }));
+    if (!supabase) return { success: false, error: 'Koneksi akun tidak tersedia; PIN belum dapat disinkronkan.' };
+    const pinData = { pin_salt: bytesToHex(salt), pin_hash: hash, pin_iterations: PIN_ITERATIONS };
+    const { error } = await supabase.from('profiles').update(pinData).eq('id', this.currentUser.id);
+    if (error) return { success: false, error: `PIN gagal disinkronkan: ${error.message}. Pastikan migrasi PIN sudah dijalankan di Supabase.` };
+    localStorage.setItem(this.pinKey(), JSON.stringify({ salt: pinData.pin_salt, hash: pinData.pin_hash, iterations: PIN_ITERATIONS }));
     localStorage.removeItem(this.pinAttemptsKey());
     return { success: true };
   }
 
   public async removePin(): Promise<void> {
+    if (supabase && this.currentUser) {
+      const { error } = await supabase.from('profiles').update({ pin_salt: null, pin_hash: null, pin_iterations: null }).eq('id', this.currentUser.id);
+      if (error) throw new Error(`PIN gagal dihapus dari akun: ${error.message}`);
+    }
     localStorage.removeItem(this.pinKey()); localStorage.removeItem(this.pinAttemptsKey());
     localStorage.removeItem(LOCK_KEY); this.notify();
   }
