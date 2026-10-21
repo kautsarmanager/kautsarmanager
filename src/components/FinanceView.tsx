@@ -65,10 +65,24 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
     const day = String(t.transaction_date || '').slice(0, 10);
     return cashflowPeriod === 'all' || (day >= periodRange.start && day <= periodRange.end);
   }), [transactions, cashflowPeriod, periodRange]);
-  // Summary totals follow BOTH the selected date range and transaction-type filter.
-  const totalIncome = periodTransactions.filter((t) => t.type === 'income' && (filterType === 'all' || filterType === 'income')).reduce((acc, t) => acc + t.amount, 0);
-  const totalExpense = periodTransactions.filter((t) => t.type === 'expense' && (filterType === 'all' || filterType === 'expense')).reduce((acc, t) => acc + t.amount, 0);
+  // Ringkasan Finance di bagian atas selalu menghitung seluruh transaksi,
+  // tanpa terpengaruh filter periode Cashflow maupun filter jenis transaksi.
+  const totalIncome = transactions
+    .filter((t) => t.type === 'income')
+    .reduce((acc, t) => acc + t.amount, 0);
+  const totalExpense = transactions
+    .filter((t) => t.type === 'expense')
+    .reduce((acc, t) => acc + t.amount, 0);
   const currentBalance = totalIncome - totalExpense;
+
+  // Ringkasan Cashflow di bawah mengikuti rentang tanggal yang dipilih.
+  const dailyIncome = periodTransactions
+    .filter((t) => t.type === 'income')
+    .reduce((acc, t) => acc + t.amount, 0);
+  const dailyExpense = periodTransactions
+    .filter((t) => t.type === 'expense')
+    .reduce((acc, t) => acc + t.amount, 0);
+  const dailyNet = dailyIncome - dailyExpense;
 
   const formatDateLong = (value: string) => {
     if (value === today) return 'Hari ini';
@@ -104,9 +118,6 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
     }), [periodTransactions, filterType, sortMode]);
 
   const selectedDayTransactions = periodTransactions.filter((t) => filterType === 'all' || t.type === filterType);
-  const dailyIncome = totalIncome;
-  const dailyExpense = totalExpense;
-  const dailyNet = currentBalance;
   const surfaceClass = isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-[#e5e5e5]';
   const controlClass = isDark ? 'bg-[#212121] border-[#424242] text-zinc-100' : 'bg-white border-zinc-200 text-zinc-800';
 
