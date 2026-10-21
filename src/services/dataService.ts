@@ -1,3 +1,4 @@
+import { formatCurrency } from '../utils/preferences';
 import { getLocalDateString } from '../utils/date';
 import {
   Task,
@@ -431,7 +432,7 @@ class DataService {
     localStorage.setItem(this.key(STORAGE_KEYS.TRANSACTIONS), JSON.stringify(list));
     this.logActivity(
       'finance',
-      `Catatan ${newTx.type === 'income' ? 'pemasukan' : 'pengeluaran'}: Rp${newTx.amount.toLocaleString('id-ID')} (${newTx.description})`,
+      `Catatan ${newTx.type === 'income' ? 'pemasukan' : 'pengeluaran'}: ${formatCurrency(newTx.amount)} (${newTx.description})`,
       'created'
     );
     this.notify();
@@ -706,7 +707,7 @@ class DataService {
     localStorage.setItem(this.key(STORAGE_KEYS.WISHLIST), JSON.stringify(list));
     this.logActivity(
       'wishlist',
-      `Menambah tabungan untuk "${current.name}": +Rp${additionalAmount.toLocaleString('id-ID')}`,
+      `Menambah tabungan untuk "${current.name}": +${formatCurrency(additionalAmount)}`,
       'updated'
     );
     this.notify();

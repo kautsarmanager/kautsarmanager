@@ -1,3 +1,4 @@
+import { formatCurrency } from '../utils/preferences';
 import React, { useState, useEffect } from 'react';
 import {
   Search,
@@ -175,7 +176,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                             tx.type === 'income' ? 'text-emerald-400' : 'text-rose-400'
                           }`}
                         >
-                          {tx.type === 'income' ? '+' : '-'} Rp{tx.amount.toLocaleString('id-ID')}
+                          {tx.type === 'income' ? '+' : '-'} {formatCurrency(tx.amount)}
                         </span>
                       </div>
                     ))}
@@ -233,7 +234,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                         <div className="min-w-0 flex-1">
                           <p className="font-medium truncate text-zinc-200">{w.name}</p>
                           <p className="text-[10px] text-zinc-500 font-mono">
-                            Target: Rp{w.target_price.toLocaleString('id-ID')}
+                            Target: {formatCurrency(w.target_price)}
                           </p>
                         </div>
                         <span className="text-xs font-mono font-bold text-lime-400 ml-2">

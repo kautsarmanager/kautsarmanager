@@ -1,6 +1,10 @@
+import { getUserPreferences } from './preferences';
+
 export function getLocalDateString(date = new Date()): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const timezone = getUserPreferences().timezone;
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(date);
+  const part = (type: string) => parts.find((entry) => entry.type === type)?.value || '00';
+  return `${part('year')}-${part('month')}-${part('day')}`;
 }

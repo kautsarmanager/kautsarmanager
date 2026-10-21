@@ -1,3 +1,4 @@
+import { formatCurrency } from '../utils/preferences';
 import React, { useState } from 'react';
 import {
   Heart,
@@ -32,7 +33,6 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
   const [initialSaved, setInitialSaved] = useState('');
   const [deadline, setDeadline] = useState('');
 
-  const formatCurrency = (val: number) => 'Rp' + val.toLocaleString('id-ID');
 
   const handleCreateWishlist = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +95,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
 
     try {
       await dataService.updateWishlistDeposit(depositModalItem.id, add);
-      onShowToast?.(`Tabungan +Rp${add.toLocaleString('id-ID')} untuk "${depositModalItem.name}" tersimpan di Supabase`, 'success');
+      onShowToast?.(`Tabungan +${formatCurrency(add)} untuk "${depositModalItem.name}" tersimpan di Supabase`, 'success');
       setDepositModalItem(null);
       setDepositAmount('100000');
     } catch (error) {
@@ -295,7 +295,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
 
               <div>
                 <label className="block text-[11px] font-medium text-zinc-400 mb-1">
-                  Nominal Tambahan (Rp)
+                  Nominal Tambahan
                 </label>
                 <input
                   type="number"
@@ -400,7 +400,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-medium text-zinc-400 mb-1">
-                    Dana utama (Rp) — opsional
+                    Dana utama — opsional
                   </label>
                   <input
                     type="number"
@@ -417,7 +417,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
 
                 <div>
                   <label className="block text-[11px] font-medium text-zinc-400 mb-1">
-                    Tabungan Awal (Rp)
+                    Tabungan Awal
                   </label>
                   <input
                     type="number"
@@ -473,7 +473,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                 {subtargets.map((subtarget, index) => (
                   <div key={subtarget.id} className="grid grid-cols-[minmax(0,1fr)_120px_28px] gap-2 items-center">
                     <input value={subtarget.title} onChange={(e) => setSubtargets((current) => current.map((entry) => entry.id === subtarget.id ? { ...entry, title: e.target.value } : entry))} placeholder={index === 0 ? 'Dana bensin' : 'Nama sub-target'} className={`min-w-0 px-2.5 py-2 rounded-lg border text-xs ${isDark ? 'bg-[#0c0d12] border-[#292c3a] text-zinc-100' : 'bg-white border-zinc-200 text-zinc-900'}`} />
-                    <input type="number" min="0" step="1000" value={subtarget.amount ?? ''} onChange={(e) => setSubtargets((current) => current.map((entry) => entry.id === subtarget.id ? { ...entry, amount: e.target.value === '' ? null : Math.max(0, Number(e.target.value)) } : entry))} placeholder="Dana (Rp)" aria-label={`Dana sub-target ${index + 1}`} className={`w-full px-2 py-2 rounded-lg border text-xs font-mono ${isDark ? 'bg-[#0c0d12] border-[#292c3a] text-zinc-100' : 'bg-white border-zinc-200 text-zinc-900'}`} />
+                    <input type="number" min="0" step="1000" value={subtarget.amount ?? ''} onChange={(e) => setSubtargets((current) => current.map((entry) => entry.id === subtarget.id ? { ...entry, amount: e.target.value === '' ? null : Math.max(0, Number(e.target.value)) } : entry))} placeholder="Nominal dana" aria-label={`Dana sub-target ${index + 1}`} className={`w-full px-2 py-2 rounded-lg border text-xs font-mono ${isDark ? 'bg-[#0c0d12] border-[#292c3a] text-zinc-100' : 'bg-white border-zinc-200 text-zinc-900'}`} />
                     <button type="button" onClick={() => setSubtargets((current) => current.filter((entry) => entry.id !== subtarget.id))} title="Hapus sub-target" className="p-1 text-zinc-500 hover:text-rose-400"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 ))}

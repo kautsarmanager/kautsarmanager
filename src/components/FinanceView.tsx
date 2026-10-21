@@ -1,3 +1,4 @@
+import { formatCurrency } from '../utils/preferences';
 import { getLocalDateString } from '../utils/date';
 import React, { useMemo, useState } from 'react';
 import {
@@ -40,7 +41,6 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
   const [description, setDescription] = useState<string>('');
   const [date, setDate] = useState<string>(getLocalDateString());
 
-  const formatCurrency = (val: number) => 'Rp' + val.toLocaleString('id-ID');
 
   const today = getLocalDateString();
   const dateFromLocal = (value: string) => new Date(`${value}T00:00:00`);
@@ -125,7 +125,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
 
     if (onShowToast) {
       onShowToast(
-        `Transaksi Rp${numAmount.toLocaleString('id-ID')} dicatat`,
+        `Transaksi ${formatCurrency(numAmount)} dicatat`,
         'success'
       );
     }
@@ -411,7 +411,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
 
               <div>
                 <label className="block text-[11px] font-medium text-zinc-400 mb-1">
-                  Nominal (Rp) *
+                  Nominal *
                 </label>
                 <input
                   type="number"

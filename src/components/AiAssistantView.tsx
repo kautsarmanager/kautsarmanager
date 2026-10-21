@@ -1,3 +1,4 @@
+import { formatCurrency } from '../utils/preferences';
 import { getLocalDateString } from '../utils/date';
 import React, { useState, useRef, useEffect } from 'react';
 import {
@@ -123,11 +124,11 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
       const incomes = transactions.filter((t) => t.type === 'income');
 
       let res = `💰 **Ringkasan Finansial & Arus Kas:**\n\n`;
-      res += `• **Saldo Bersih Total:** Rp${summary.current_balance.toLocaleString('id-ID')}\n`;
-      res += `• **Total Pemasukan:** +Rp${summary.total_income.toLocaleString('id-ID')} (${incomes.length} transaksi)\n`;
-      res += `• **Total Pengeluaran:** -Rp${summary.total_expense.toLocaleString('id-ID')} (${expenses.length} transaksi)\n`;
-      res += `• **Pemasukan Hari Ini:** +Rp${summary.income_today.toLocaleString('id-ID')}\n`;
-      res += `• **Pengeluaran Hari Ini:** -Rp${summary.expense_today.toLocaleString('id-ID')}\n\n`;
+      res += `• **Saldo Bersih Total:** ${formatCurrency(summary.current_balance)}\n`;
+      res += `• **Total Pemasukan:** +${formatCurrency(summary.total_income)} (${incomes.length} transaksi)\n`;
+      res += `• **Total Pengeluaran:** -${formatCurrency(summary.total_expense)} (${expenses.length} transaksi)\n`;
+      res += `• **Pemasukan Hari Ini:** +${formatCurrency(summary.income_today)}\n`;
+      res += `• **Pengeluaran Hari Ini:** -${formatCurrency(summary.expense_today)}\n\n`;
 
       if (transactions.length === 0) {
         res += `Catatan kas Anda masih kosong. Silakan catat transaksi pertama Anda di tab Finance!\n`;
@@ -149,11 +150,11 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
         const pct = Math.min(100, Math.round((w.saved_amount / (w.target_price || 1)) * 100));
         const sisa = Math.max(0, w.target_price - w.saved_amount);
         res += `${i + 1}. **${w.name}** [${pct}%]\n`;
-        res += `   • Terkumpul: Rp${w.saved_amount.toLocaleString('id-ID')} / Rp${w.target_price.toLocaleString('id-ID')}\n`;
-        res += `   • Sisa yang dibutuhkan: Rp${sisa.toLocaleString('id-ID')}\n`;
+        res += `   • Terkumpul: ${formatCurrency(w.saved_amount)} / ${formatCurrency(w.target_price)}\n`;
+        res += `   • Sisa yang dibutuhkan: ${formatCurrency(sisa)}\n`;
       });
 
-      res += `\n💡 **Tips:** Lakukan setoran tabungan rutin Rp50.000 setiap ada sisa dana di tab Wishlist!`;
+      res += `\n💡 **Tips:** Lakukan setoran tabungan rutin ${formatCurrency(50000)} setiap ada sisa dana di tab Wishlist!`;
       return res;
     }
 

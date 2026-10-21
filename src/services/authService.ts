@@ -72,6 +72,20 @@ class AuthService {
     return { success: true, user };
   }
 
+  public async updateUsername(usernameValue: string): Promise<{ success: boolean; error?: string; user?: UserAccount }> {
+    const username = usernameValue.trim();
+    if (!this.currentUser || !supabase) return { success: false, error: 'Sesi akun tidak ditemukan.' };
+    if (username.length < 3) return { success: false, error: 'Username minimal 3 karakter.' };
+    const { data, error } = await supabase.auth.updateUser({ data: { username } });
+    if (error) return { success: false, error: error.message };
+    const user = toUser(data.user);
+    if (!user) return { success: false, error: 'Username diperbarui tetapi data akun tidak dapat dibaca.' };
+    this.currentUser = user;
+    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(user));
+    this.notify();
+    return { success: true, user };
+  }
+
   public async logout() {
     if (supabase) await supabase.auth.signOut();
     this.currentUser = null; localStorage.removeItem(USER_CACHE_KEY); localStorage.removeItem(LOCK_KEY); this.notify();

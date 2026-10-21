@@ -1,3 +1,4 @@
+import { formatCurrency } from '../utils/preferences';
 import { getLocalDateString } from '../utils/date';
 import React, { useState } from 'react';
 import {
@@ -74,7 +75,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       ? 'Selamat Sore'
       : 'Selamat Malam';
 
-  const formatCurrency = (val: number) => 'Rp' + val.toLocaleString('id-ID');
 
   const urgentCounts = notificationService.getUrgentCounts(tasks);
   const urgentTasks = tasks.filter((t) => {

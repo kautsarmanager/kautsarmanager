@@ -3,15 +3,9 @@ import React, { useState } from 'react';
 import {
   User,
   Shield,
-  Database,
-  Moon,
-  Sun,
-  Clock,
-  Coins,
   RefreshCw,
   Download,
   CheckCircle2,
-  Palette,
 } from 'lucide-react';
 import { UserProfile, UserAccount } from '../types';
 import { dataService } from '../services/dataService';
@@ -30,10 +24,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   currentUser,
   onLogout,
 }) => {
-  const [name, setName] = useState(profile.name);
+  const [name, setName] = useState(currentUser?.username || profile.name);
   const [currency, setCurrency] = useState(profile.currency);
   const [timezone, setTimezone] = useState(profile.timezone);
-  const [theme, setTheme] = useState<'dark' | 'light'>(profile.theme || 'dark');
   const [savedMessage, setSavedMessage] = useState(false);
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
@@ -43,16 +36,25 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   const isDark = profile.theme !== 'light';
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    dataService.updateProfile({
-      name,
-      currency,
-      timezone,
-      theme,
-    });
+    const username = name.trim();
+    if (username.length < 3) {
+      setSavedMessage(false);
+      window.alert('Username minimal 3 karakter.');
+      return;
+    }
+    if (currentUser && username !== currentUser.username) {
+      const result = await authService.updateUsername(username);
+      if (!result.success) {
+        window.alert(result.error || 'Username akun gagal diperbarui.');
+        return;
+      }
+    }
+    dataService.updateProfile({ name: username, currency, timezone });
+    setName(username);
     setSavedMessage(true);
-    setTimeout(() => setSavedMessage(false), 3000);
+    window.setTimeout(() => setSavedMessage(false), 3000);
   };
 
   const handleResetData = () => {
@@ -97,68 +99,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           Pengaturan & Preferensi
         </h2>
         <p className={`text-xs mt-0.5 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-          Konfigurasi tema tampilan, profil pengguna, dan manajemen cadangan data.
+          Atur username akun, mata uang, zona waktu, keamanan, dan cadangan data.
         </p>
       </div>
 
       {savedMessage && (
         <div className="flex items-center gap-2 p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-medium">
           <CheckCircle2 className="w-4 h-4" />
-          <span>Pengaturan profil dan tema berhasil disimpan!</span>
+          <span>Username, mata uang, dan zona waktu tersimpan. Sinkronisasi akun sedang diproses.</span>
         </div>
       )}
-
-      {/* Theme Quick Switcher Card */}
-      <div
-        className={`p-5 rounded-2xl border transition-all ${
-          isDark ? 'bg-[#171822] border-[#272938]' : 'bg-white border-[#e5e7ef] shadow-xs'
-        }`}
-      >
-        <div className={`flex items-center gap-2 pb-3 mb-4 border-b ${isDark ? 'border-[#242634]' : 'border-[#e8ebf2]'}`}>
-          <Palette className="w-4 h-4 text-lime-400" />
-          <h3 className={`text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
-            Mode Tampilan (Tema)
-          </h3>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3.5">
-          <button
-            type="button"
-            onClick={() => {
-              setTheme('dark');
-              dataService.updateProfile({ theme: 'dark' });
-            }}
-            className={`flex items-center justify-center gap-2.5 p-3.5 rounded-xl border font-semibold text-xs transition-all ${
-              theme === 'dark'
-                ? 'bg-zinc-800 text-white border-zinc-500 shadow-xs'
-                : isDark
-                ? 'bg-[#121319] text-zinc-400 border-[#262837] hover:text-white'
-                : 'bg-zinc-100 text-zinc-600 border-zinc-200 hover:text-black'
-            }`}
-          >
-            <Moon className="w-4 h-4 text-lime-400" />
-            <span>Mode Gelap (Dark Grey)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setTheme('light');
-              dataService.updateProfile({ theme: 'light' });
-            }}
-            className={`flex items-center justify-center gap-2.5 p-3.5 rounded-xl border font-semibold text-xs transition-all ${
-              theme === 'light'
-                ? 'bg-lime-50 text-lime-900 border-lime-300 shadow-xs'
-                : isDark
-                ? 'bg-[#121319] text-zinc-400 border-[#262837] hover:text-white'
-                : 'bg-zinc-100 text-zinc-600 border-zinc-200 hover:text-black'
-            }`}
-          >
-            <Sun className="w-4 h-4 text-amber-500" />
-            <span>Mode Cerah (Light Mode)</span>
-          </button>
-        </div>
-      </div>
 
       {/* Profile Form */}
       <div
@@ -177,12 +127,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={`block text-[11px] font-semibold mb-1 ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
-                Nama Lengkap
+                Username
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                minLength={3}
+                required
                 className={`w-full px-3.5 py-2.5 rounded-xl border focus:outline-hidden ${
                   isDark
                     ? 'bg-[#13141b] border-[#292c3a] text-zinc-100 focus:border-lime-400'
@@ -229,7 +181,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
             <div>
               <label className={`block text-[11px] font-semibold mb-1 ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
-                Zona Waktu
+                Zona Waktu (memengaruhi tanggal hari ini dan tanggal baru)
               </label>
               <select
                 value={timezone.replace(/\s*\([^)]*\)/, '')}
