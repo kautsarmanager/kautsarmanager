@@ -25,8 +25,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onLogout,
 }) => {
   const [name, setName] = useState(currentUser?.username || profile.name);
-  const [currency, setCurrency] = useState(profile.currency);
-  const [timezone, setTimezone] = useState(profile.timezone);
   const [savedMessage, setSavedMessage] = useState(false);
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
@@ -51,7 +49,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         return;
       }
     }
-    dataService.updateProfile({ name: username, currency, timezone });
+    dataService.updateProfile({ name: username });
     setName(username);
     setSavedMessage(true);
     window.setTimeout(() => setSavedMessage(false), 3000);
@@ -99,14 +97,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           Pengaturan & Preferensi
         </h2>
         <p className={`text-xs mt-0.5 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-          Atur username akun, mata uang, zona waktu, keamanan, dan cadangan data.
+          Atur username akun, keamanan, dan cadangan data.
         </p>
       </div>
 
       {savedMessage && (
         <div className="flex items-center gap-2 p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-medium">
           <CheckCircle2 className="w-4 h-4" />
-          <span>Username, mata uang, dan zona waktu tersimpan. Sinkronisasi akun sedang diproses.</span>
+          <span>Username berhasil disimpan dan disinkronkan dengan akun.</span>
         </div>
       )}
 
@@ -161,42 +159,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={`block text-[11px] font-semibold mb-1 ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
-                Mata Uang
-              </label>
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className={`w-full px-3.5 py-2.5 rounded-xl border focus:outline-hidden ${
-                  isDark
-                    ? 'bg-[#13141b] border-[#292c3a] text-zinc-100'
-                    : 'bg-[#f8f9fc] border-[#e2e5ef] text-zinc-900'
-                }`}
-              >
-                {[['IDR','IDR — Rupiah Indonesia'],['USD','USD — US Dollar'],['EUR','EUR — Euro'],['GBP','GBP — Pound Sterling'],['JPY','JPY — Yen Jepang'],['CNY','CNY — Yuan Tiongkok'],['SGD','SGD — Dolar Singapura'],['MYR','MYR — Ringgit Malaysia'],['AUD','AUD — Dolar Australia'],['CAD','CAD — Dolar Kanada'],['INR','INR — Rupee India'],['KRW','KRW — Won Korea Selatan'],['SAR','SAR — Riyal Saudi'],['THB','THB — Baht Thailand'],['CHF','CHF — Franc Swiss']].map(([code,label]) => <option key={code} value={code}>{label}</option>)}
-              </select>
-            </div>
-
-            <div>
-              <label className={`block text-[11px] font-semibold mb-1 ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
-                Zona Waktu (memengaruhi tanggal hari ini dan tanggal baru)
-              </label>
-              <select
-                value={timezone.replace(/\s*\([^)]*\)/, '')}
-                onChange={(e) => setTimezone(e.target.value)}
-                className={`w-full px-3.5 py-2.5 rounded-xl border focus:outline-hidden ${
-                  isDark
-                    ? 'bg-[#13141b] border-[#292c3a] text-zinc-100'
-                    : 'bg-[#f8f9fc] border-[#e2e5ef] text-zinc-900'
-                }`}
-              >
-                {['Pacific/Honolulu','America/Los_Angeles','America/Denver','America/Chicago','America/New_York','America/Sao_Paulo','Europe/London','Europe/Paris','Europe/Berlin','Africa/Cairo','Asia/Dubai','Asia/Kolkata','Asia/Bangkok','Asia/Jakarta','Asia/Makassar','Asia/Jayapura','Asia/Singapore','Asia/Tokyo','Asia/Seoul','Asia/Shanghai','Australia/Sydney','Pacific/Auckland'].map((zone) => <option key={zone} value={zone}>{zone}</option>)}
-              </select>
-            </div>
-          </div>
-
           <div className="flex justify-end pt-2">
             <button
               type="submit"
@@ -206,7 +168,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   : 'bg-zinc-900 hover:bg-zinc-800 text-white'
               }`}
             >
-              Simpan Profil
+              Simpan Username
             </button>
           </div>
         </form>

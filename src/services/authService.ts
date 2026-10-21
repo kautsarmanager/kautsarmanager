@@ -74,10 +74,27 @@ class AuthService {
 
   public async updateUsername(usernameValue: string): Promise<{ success: boolean; error?: string; user?: UserAccount }> {
     const username = usernameValue.trim();
-    if (!this.currentUser || !supabase) return { success: false, error: 'Sesi akun tidak ditemukan.' };
     if (username.length < 3) return { success: false, error: 'Username minimal 3 karakter.' };
+    if (!supabase || !isSupabaseConfigured) return { success: false, error: 'Koneksi Supabase belum tersedia.' };
+
+    // A cached user is not proof of an active Supabase session. Check the real
+    // session first, then try refreshing it before updating auth metadata.
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) return { success: false, error: `Gagal memeriksa sesi login: ${sessionError.message}` };
+    if (!sessionData.session) {
+      const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError || !refreshed.session) {
+        return { success: false, error: 'Sesi login tidak aktif. Silakan login kembali dengan email dan password, lalu simpan username.' };
+      }
+    }
+
     const { data, error } = await supabase.auth.updateUser({ data: { username } });
-    if (error) return { success: false, error: error.message };
+    if (error) {
+      const message = error.message === 'Auth session missing!'
+        ? 'Sesi login tidak aktif. Silakan login kembali dengan email dan password, lalu simpan username.'
+        : error.message;
+      return { success: false, error: message };
+    }
     const user = toUser(data.user);
     if (!user) return { success: false, error: 'Username diperbarui tetapi data akun tidak dapat dibaca.' };
     this.currentUser = user;
