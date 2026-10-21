@@ -96,6 +96,34 @@ export default function App() {
     return () => { mounted = false; unsub(); };
   }, []);
 
+  // Auto-lock with PIN after the app stays in the background for 5 minutes.
+  // The timestamp is persisted because mobile browsers may suspend JavaScript while backgrounded.
+  useEffect(() => {
+    const BACKGROUND_AT_KEY = 'kautsarmanager_background_at';
+    const AUTO_LOCK_AFTER_MS = 5 * 60 * 1000;
+    if (!currentUser || !authService.hasPin() || isAppLocked) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        try { localStorage.setItem(BACKGROUND_AT_KEY, String(Date.now())); } catch { /* Ignore storage restrictions. */ }
+        return;
+      }
+
+      try {
+        const backgroundAt = Number(localStorage.getItem(BACKGROUND_AT_KEY) || 0);
+        localStorage.removeItem(BACKGROUND_AT_KEY);
+        if (backgroundAt > 0 && Date.now() - backgroundAt >= AUTO_LOCK_AFTER_MS) {
+          authService.lockApp();
+        }
+      } catch { /* Ignore storage restrictions. */ }
+    };
+
+    // Also checks a timestamp left behind if the browser suspended or reloaded the app.
+    handleVisibilityChange();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [currentUser, isAppLocked]);
+
   // Keep the current section when the user refreshes the page (F5).
   useEffect(() => {
     try {
@@ -187,11 +215,6 @@ export default function App() {
           currentUser={currentUser}
           onUnlocked={() => {
             setIsAppLocked(false);
-          }}
-          onLogout={() => {
-            if (!window.confirm('Keluar dari akun sekarang?')) return;
-            void authService.logout();
-            setCurrentUser(null);
           }}
           isDark={isDark}
           onShowToast={showToast}

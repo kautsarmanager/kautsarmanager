@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Lock, LogOut } from 'lucide-react';
+import { Lock, LogIn } from 'lucide-react';
 import type { UserAccount } from '../types';
 import { PinInput } from './PinInput';
 import { authService } from '../services/authService';
@@ -7,12 +7,11 @@ import { authService } from '../services/authService';
 interface AppLockScreenProps {
   currentUser: UserAccount;
   onUnlocked: () => void;
-  onLogout: () => void;
   isDark: boolean;
   onShowToast?: (msg: string, type?: 'success' | 'info' | 'error') => void;
 }
 
-export const AppLockScreen: React.FC<AppLockScreenProps> = ({ currentUser, onUnlocked, onLogout, isDark, onShowToast }) => {
+export const AppLockScreen: React.FC<AppLockScreenProps> = ({ currentUser, onUnlocked, isDark, onShowToast }) => {
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState(authService.getSecurityState().remainingLockSeconds);
@@ -45,7 +44,7 @@ export const AppLockScreen: React.FC<AppLockScreenProps> = ({ currentUser, onUnl
         <div className="w-full mt-3">
           <PinInput pin={pin} onChange={setPin} onSubmit={() => { void submitPin(); }} isLocked={isLocked} remainingSeconds={remainingSeconds} isDark={isDark} error={error} />
         </div>
-        <button type="button" onClick={onLogout} className="w-full mt-5 py-3 text-sm font-semibold rounded-xl border border-zinc-500/30 hover:bg-zinc-500/10 flex items-center justify-center gap-2"><LogOut className="w-4 h-4" />Keluar akun</button>
+        <button type="button" onClick={() => { void submitPin(); }} disabled={pin.length !== 6 || isLocked} className="w-full mt-5 py-3 text-sm font-semibold rounded-xl bg-lime-500 text-zinc-950 hover:bg-lime-400 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"><LogIn className="w-4 h-4" />Masuk</button>
       </div>
     </div>
   );
