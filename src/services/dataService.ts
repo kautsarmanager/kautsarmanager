@@ -245,6 +245,8 @@ class DataService {
                 description: String(source.description ?? ''),
                 category: String(source.category ?? 'Umum'),
                 target_price: Number(source.target_price ?? 0),
+                base_target_price: Number(source.base_target_price ?? source.target_price ?? 0),
+                subtasks: Array.isArray(source.subtasks) ? source.subtasks : [],
                 saved_amount: Number(source.saved_amount ?? 0),
                 deadline: source.deadline || null,
                 completed: Boolean(source.completed),
@@ -601,8 +603,10 @@ class DataService {
         const item = entry.payload;
         const result = await supabase.from('wishlist_items').upsert({
           id: item.id, user_id: userId, name: item.name, description: item.description || '',
-          category: item.category || 'Umum', target_price: item.target_price, saved_amount: item.saved_amount,
-          deadline: item.deadline || null, completed: item.completed,
+          category: item.category || 'Umum', target_price: item.target_price,
+          base_target_price: item.base_target_price ?? item.target_price,
+          subtasks: Array.isArray(item.subtasks) ? item.subtasks : [],
+          saved_amount: item.saved_amount, deadline: item.deadline || null, completed: item.completed,
           created_at: item.created_at, updated_at: item.updated_at,
         }, { onConflict: 'id' }).select('id');
         error = result.error;

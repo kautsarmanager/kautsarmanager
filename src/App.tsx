@@ -186,7 +186,6 @@ export default function App() {
         <AppLockScreen
           currentUser={currentUser}
           onUnlocked={() => {
-            authService.unlockAppWithoutPin();
             setIsAppLocked(false);
           }}
           onLogout={() => {
@@ -223,7 +222,9 @@ export default function App() {
         onCloseMobile={() => setMobileMenuOpen(false)}
         isDark={isDark}
         currentUser={currentUser}
-        onLockApp={() => authService.lockApp()}
+        onLockApp={() => {
+          if (!authService.lockApp()) showToast('Atur PIN 6 digit terlebih dahulu di Pengaturan > Keamanan Akun.', 'info');
+        }}
         onLogout={() => { if (window.confirm('Keluar dari akun sekarang?')) void authService.logout(); }}
       />
 
@@ -240,7 +241,9 @@ export default function App() {
           onNavigateToTasks={() => setActiveTab('tasks')}
           onShowToast={showToast}
           currentUser={currentUser}
-          onLockApp={() => authService.lockApp()}
+          onLockApp={() => {
+          if (!authService.lockApp()) showToast('Atur PIN 6 digit terlebih dahulu di Pengaturan > Keamanan Akun.', 'info');
+        }}
         />
 
         <main className="flex-1 p-4 sm:p-6 overflow-y-auto">

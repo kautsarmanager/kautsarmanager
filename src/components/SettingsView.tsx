@@ -16,7 +16,8 @@ import {
 import { UserProfile, UserAccount } from '../types';
 import { dataService } from '../services/dataService';
 import { PWAInstallButton } from './PWAInstallButton';
-import { KeyRound, Smartphone, LogOut } from 'lucide-react';
+import { KeyRound, Smartphone, LogOut, LockKeyhole } from 'lucide-react';
+import { authService } from '../services/authService';
 
 interface SettingsViewProps {
   profile: UserProfile;
@@ -34,6 +35,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [timezone, setTimezone] = useState(profile.timezone);
   const [theme, setTheme] = useState<'dark' | 'light'>(profile.theme || 'dark');
   const [savedMessage, setSavedMessage] = useState(false);
+  const [pin, setPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [pinConfigured, setPinConfigured] = useState(authService.hasPin());
+  const [pinMessage, setPinMessage] = useState('');
+  const [pinError, setPinError] = useState(false);
 
   const isDark = profile.theme !== 'light';
 
@@ -282,6 +288,33 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <p className="text-[10px] uppercase font-mono text-zinc-500 font-semibold">Akun aktif</p>
           <p className="text-sm font-bold text-lime-400 mt-1">{currentUser?.email || profile.email || 'Belum tersedia'}</p>
           <p className="text-[10px] text-zinc-400 mt-0.5">Autentikasi dan sesi dikelola oleh Supabase Auth.</p>
+        </div>
+
+        <div className={`p-3.5 rounded-xl border ${isDark ? 'bg-[#13141b] border-[#222432]' : 'bg-zinc-50 border-zinc-200'}`}>
+          <div className="flex items-center gap-2 mb-2">
+            <LockKeyhole className="w-4 h-4 text-lime-400" />
+            <p className="font-semibold">PIN kunci aplikasi</p>
+            <span className={`ml-auto text-[10px] font-semibold ${pinConfigured ? 'text-emerald-400' : 'text-amber-400'}`}>{pinConfigured ? 'Aktif' : 'Belum diatur'}</span>
+          </div>
+          <p className="text-[11px] text-zinc-400 mb-3">Gunakan PIN 6 digit untuk membuka aplikasi tanpa mengetik password akun setiap kali aplikasi dikunci. PIN disimpan sebagai hash di perangkat ini.</p>
+          <form onSubmit={async (e) => {
+            e.preventDefault(); setPinMessage(''); setPinError(false);
+            if (!/^\d{6}$/.test(pin)) { setPinMessage('PIN harus terdiri dari 6 angka.'); setPinError(true); return; }
+            if (pin !== confirmPin) { setPinMessage('Konfirmasi PIN tidak sama.'); setPinError(true); return; }
+            const result = await authService.setPin(pin);
+            if (!result.success) { setPinMessage(result.error || 'Gagal menyimpan PIN.'); setPinError(true); return; }
+            setPinConfigured(true); setPin(''); setConfirmPin(''); setPinMessage('PIN berhasil disimpan di perangkat ini.');
+          }} className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input aria-label="PIN baru" inputMode="numeric" autoComplete="new-password" maxLength={6} pattern="[0-9]{6}" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="PIN baru (6 digit)" className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isDark ? 'bg-[#0d0e14] border-[#303241] text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'}`} />
+              <input aria-label="Konfirmasi PIN" inputMode="numeric" autoComplete="new-password" maxLength={6} pattern="[0-9]{6}" value={confirmPin} onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="Ulangi PIN" className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isDark ? 'bg-[#0d0e14] border-[#303241] text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'}`} />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button type="submit" className="px-3 py-2 rounded-lg bg-lime-500 hover:bg-lime-400 text-zinc-950 font-semibold text-xs">{pinConfigured ? 'Ganti PIN' : 'Atur PIN'}</button>
+              {pinConfigured && <button type="button" onClick={async () => { if (!window.confirm('Hapus PIN kunci aplikasi dari perangkat ini?')) return; await authService.removePin(); setPinConfigured(false); setPinMessage('PIN berhasil dihapus.'); setPinError(false); }} className="px-3 py-2 rounded-lg border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 font-semibold text-xs">Hapus PIN</button>}
+            </div>
+            {pinMessage && <p className={`text-[11px] ${pinError ? 'text-rose-400' : 'text-emerald-400'}`}>{pinMessage}</p>}
+          </form>
         </div>
 
         {/* PWA Mobile App Section */}
