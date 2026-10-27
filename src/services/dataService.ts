@@ -187,7 +187,17 @@ class DataService {
         pendingWishlistDeletes = new Set(wishlistPending.filter((entry) => entry.operation === 'soft_delete').map((entry) => entry.recordId).filter((id): id is string => Boolean(id)));
       } catch { /* Keep cloud snapshot usable even if the outbox cache is malformed. */ }
       const localWishlist = this.readArray<WishlistItem>(STORAGE_KEYS.WISHLIST);
-      const mergedWishlist = wishlistCloud.filter((cloudItem) => !pendingWishlistDeletes.has(cloudItem.id));
+      const mergedWishlist = wishlistCloud
+        .filter((cloudItem) => !pendingWishlistDeletes.has(cloudItem.id))
+        .map((cloudItem) => {
+          const local = localWishlist.find((l) => l.id === cloudItem.id);
+          // If the cloud table lacks optional columns, keep locally cached sub-target data.
+          return local ? {
+            ...cloudItem,
+            subtasks: cloudItem.subtasks ?? local.subtasks,
+            base_target_price: cloudItem.base_target_price ?? local.base_target_price,
+          } : cloudItem;
+        });
       for (const localItem of localWishlist) {
         if (pendingWishlistIds.has(localItem.id) && !mergedWishlist.some((cloudItem) => cloudItem.id === localItem.id)) mergedWishlist.push(localItem);
       }
@@ -255,7 +265,9 @@ class DataService {
                 updated_at: new Date().toISOString(),
               };
             }
-            const result = await supabase.from(item.table).upsert(payload, { onConflict: 'id' });
+            const result = item.table === 'wishlist_items'
+              ? await this.upsertWishlistRow(payload)
+              : await supabase.from(item.table).upsert(payload, { onConflict: 'id' });
             error = result.error;
           } else if (item.operation === 'delete') {
             const ownerColumn = item.table === 'profiles' ? 'id' : 'user_id';
@@ -586,6 +598,19 @@ class DataService {
     return true;
   }
 
+  // Upsert Wishlist; if the live table lacks the optional columns (PGRST204 / schema cache error),
+  // retry with core columns only so the item still syncs across devices.
+  private async upsertWishlistRow(row: Record<string, unknown>): Promise<{ data: Array<{ id: string }> | null; error: any }> {
+    if (!supabase) return { data: null, error: new Error('Supabase belum dikonfigurasi.') };
+    const first = await supabase.from('wishlist_items').upsert(row, { onConflict: 'id' }).select('id');
+    const msg = String(first.error?.message || '');
+    const missingColumn = first.error && (first.error.code === 'PGRST204' || /base_target_price|subtasks|schema cache/i.test(msg));
+    if (!missingColumn) return first as any;
+    const { base_target_price: _b, subtasks: _s, ...core } = row;
+    console.warn('Kolom wishlist opsional belum ada di Supabase; menyimpan kolom dasar. Jalankan migrasi 202610140001_wishlist_subtargets.sql agar sub-target ikut sinkron.');
+    return await supabase.from('wishlist_items').upsert(core, { onConflict: 'id' }).select('id') as any;
+  }
+
   private async persistWishlistMutation(entry: { operation: 'upsert' | 'soft_delete'; payload?: WishlistItem; recordId?: string }): Promise<void> {
     const userId = this.activeUserId;
     if (!userId) throw new Error('Sesi pengguna belum siap. Silakan masuk kembali.');
@@ -602,14 +627,14 @@ class DataService {
       if (entry.operation === 'upsert' && entry.payload) {
         // Send only columns defined by public.wishlist_items; never trust a cached owner id.
         const item = entry.payload;
-        const result = await supabase.from('wishlist_items').upsert({
+        const result = await this.upsertWishlistRow({
           id: item.id, user_id: userId, name: item.name, description: item.description || '',
           category: item.category || 'Umum', target_price: item.target_price,
           base_target_price: item.base_target_price ?? item.target_price,
           subtasks: Array.isArray(item.subtasks) ? item.subtasks : [],
           saved_amount: item.saved_amount, deadline: item.deadline || null, completed: item.completed,
           created_at: item.created_at, updated_at: item.updated_at,
-        }, { onConflict: 'id' }).select('id');
+        });
         error = result.error;
         if (!error && (!result.data || result.data.length === 0)) error = new Error('Supabase tidak mengembalikan baris tersimpan; periksa kebijakan RLS dan hak akses.');
       } else if (entry.operation === 'soft_delete' && entry.recordId) {
