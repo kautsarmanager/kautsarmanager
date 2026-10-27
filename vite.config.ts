@@ -13,6 +13,7 @@ export default defineConfig(() => ({
       '@': path.resolve(configDir, '.'),
     },
   },
+  build: { sourcemap: false },
   server: {
     // HMR can be disabled in constrained development environments.
     hmr: process.env.DISABLE_HMR !== 'true',

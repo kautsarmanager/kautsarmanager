@@ -14,8 +14,6 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess, isDark, o
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [emailReady, setEmailReady] = useState(false);
-  const [passwordReady, setPasswordReady] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -52,16 +50,16 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess, isDark, o
         <p className={`text-xs mt-1 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Satu akun untuk semua perangkat dan data Anda</p>
       </div>
       <div className={`flex p-1 rounded-xl border text-xs font-medium mb-5 ${isDark ? 'bg-[#0c0d12] border-[#1e202c]' : 'bg-zinc-100 border-zinc-200'}`}>
-        {(['login', 'register'] as const).map((value) => <button key={value} type="button" onClick={() => { setTab(value); setErrorMessage(''); setNotice(''); setEmail(''); setPassword(''); setConfirmPassword(''); setUsername(''); setEmailReady(false); setPasswordReady(false); }} className={`flex-1 py-2 rounded-lg ${tab === value ? (isDark ? 'bg-[#252635] text-white' : 'bg-white text-zinc-900 shadow-sm') : 'text-zinc-500'}`}>{value === 'login' ? 'Masuk' : 'Daftar akun'}</button>)}
+        {(['login', 'register'] as const).map((value) => <button key={value} type="button" onClick={() => { setTab(value); setErrorMessage(''); setNotice(''); setEmail(''); setPassword(''); setConfirmPassword(''); setUsername(''); }} className={`flex-1 py-2 rounded-lg ${tab === value ? (isDark ? 'bg-[#252635] text-white' : 'bg-white text-zinc-900 shadow-sm') : 'text-zinc-500'}`}>{value === 'login' ? 'Masuk' : 'Daftar akun'}</button>)}
       </div>
       {errorMessage && <div role="alert" className="mb-4 p-3 rounded-xl border border-rose-500/25 bg-rose-500/10 text-rose-400 text-xs flex gap-2"><AlertCircle className="w-4 h-4 shrink-0" /><span>{errorMessage}</span></div>}
       {notice && <div role="status" className="mb-4 p-3 rounded-xl border border-emerald-500/25 bg-emerald-500/10 text-emerald-400 text-xs">{notice}</div>}
       {!authService.isConfigured() && <div className="mb-4 p-3 rounded-xl border border-amber-500/25 bg-amber-500/10 text-amber-300 text-xs">Supabase belum dikonfigurasi. Buat <code>.env.local</code> dari <code>.env.example</code>, isi URL dan publishable/anon key, lalu restart server.</div>}
-      <form onSubmit={handleSubmit} autoComplete="off" className="space-y-3.5">
-        {tab === 'register' && <div className="relative"><UserRound className="absolute left-3.5 top-3.5 w-4 h-4 text-zinc-500" /><input autoComplete="name" required minLength={3} value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Nama pengguna" className={inputClass} /></div>}
-        <div className="relative"><Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-zinc-500" /><input type="email" autoComplete="off" autoCapitalize="none" spellCheck={false} readOnly={!emailReady} onFocus={() => setEmailReady(true)} required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className={inputClass} /></div>
-        <div className="relative"><LockKeyhole className="absolute left-3.5 top-3.5 w-4 h-4 text-zinc-500" /><input type="password" autoComplete="new-password" readOnly={!passwordReady} onFocus={() => setPasswordReady(true)} required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password (minimal 8 karakter)" className={inputClass} /></div>
-        {tab === 'register' && <div className="relative"><LockKeyhole className="absolute left-3.5 top-3.5 w-4 h-4 text-zinc-500" /><input type="password" autoComplete="new-password" required minLength={8} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Ulangi password" className={inputClass} /></div>}
+      <form onSubmit={handleSubmit} className="space-y-3.5">
+        {tab === 'register' && <div className="relative"><UserRound className="absolute left-3.5 top-3.5 w-4 h-4 text-zinc-500" /><input name="username" autoComplete="username" required minLength={3} maxLength={80} value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Nama pengguna" className={inputClass} /></div>}
+        <div className="relative"><Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-zinc-500" /><input type="email" name="email" autoComplete="email" autoCapitalize="none" spellCheck={false} required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className={inputClass} /></div>
+        <div className="relative"><LockKeyhole className="absolute left-3.5 top-3.5 w-4 h-4 text-zinc-500" /><input type="password" name="password" autoComplete={tab === 'login' ? 'current-password' : 'new-password'} required minLength={8} maxLength={128} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password (minimal 8 karakter)" className={inputClass} /></div>
+        {tab === 'register' && <div className="relative"><LockKeyhole className="absolute left-3.5 top-3.5 w-4 h-4 text-zinc-500" /><input type="password" name="confirm-password" autoComplete="new-password" required minLength={8} maxLength={128} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Ulangi password" className={inputClass} /></div>}
         <button disabled={isLoading || !authService.isConfigured()} type="submit" className="w-full flex items-center justify-center gap-2 rounded-xl py-3 bg-lime-600 hover:bg-lime-500 text-white text-sm font-semibold disabled:opacity-50">
           {isLoading ? <LoaderCircle className="w-4 h-4 animate-spin" /> : <>{tab === 'login' ? 'Masuk ke aplikasi' : 'Buat akun'} <ArrowRight className="w-4 h-4" /></>}
         </button>

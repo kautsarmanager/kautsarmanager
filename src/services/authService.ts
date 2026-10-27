@@ -1,42 +1,64 @@
+import type { RealtimeChannel, User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import type { UserAccount } from '../types';
 
 const LOCK_KEY = 'pms_is_app_locked';
 const USER_CACHE_KEY = 'pms_auth_user_cache';
-const PIN_ATTEMPTS_LIMIT = 5;
-const PIN_LOCK_SECONDS = 60;
-const PIN_ITERATIONS = 120_000;
+const PIN_FLAG_PREFIX = 'pms_app_pin_enabled:';
 
-function toUser(user: any): UserAccount | null {
-  if (!user?.id) return null;
-  const username = String(user.user_metadata?.username || user.email?.split('@')[0] || 'Pengguna');
-  return { id: user.id, username, email: user.email || '', created_at: user.created_at || new Date().toISOString(), avatar_url: user.user_metadata?.avatar_url };
+export interface PinResult {
+  success: boolean;
+  error?: string;
+  isLocked?: boolean;
+  remainingLockSeconds?: number;
+  attemptsLeft?: number;
 }
 
-function bytesToHex(bytes: Uint8Array): string { return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join(''); }
-function hexToBytes(hex: string): Uint8Array { return new Uint8Array((hex.match(/.{1,2}/g) || []).map((byte) => parseInt(byte, 16))); }
+interface PinRpcResponse {
+  ok?: boolean;
+  reason?: 'no_pin' | 'locked' | 'wrong_pin' | 'invalid_format';
+  retry_after?: number;
+  attempts_left?: number;
+}
+
+function toUser(user: User | null | undefined): UserAccount | null {
+  if (!user?.id) return null;
+  const meta = (user.user_metadata || {}) as Record<string, unknown>;
+  const username = String(meta.username || user.email?.split('@')[0] || 'Pengguna');
+  return {
+    id: user.id,
+    username,
+    email: user.email || '',
+    created_at: user.created_at || new Date().toISOString(),
+    avatar_url: typeof meta.avatar_url === 'string' ? meta.avatar_url : undefined,
+  };
+}
+
+function safeSet(key: string, value: string) { try { localStorage.setItem(key, value); } catch { /* storage penuh/diblokir */ } }
+function safeRemove(key: string) { try { localStorage.removeItem(key); } catch { /* ignore */ } }
+function safeGet(key: string): string | null { try { return localStorage.getItem(key); } catch { return null; } }
 
 class AuthService {
   private listeners = new Set<() => void>();
   private currentUser: UserAccount | null = null;
   private initialized = false;
-  private profileRealtimeChannel: any = null;
+  private profileRealtimeChannel: RealtimeChannel | null = null;
   private profileRealtimeUserId: string | null = null;
+  private pinEnabled = false;
 
   constructor() {
     if (supabase) {
       supabase.auth.onAuthStateChange((_event, session) => {
         this.currentUser = toUser(session?.user);
-        if (this.currentUser) localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser));
-        else localStorage.removeItem(USER_CACHE_KEY);
+        if (this.currentUser) safeSet(USER_CACHE_KEY, JSON.stringify(this.currentUser));
+        else { safeRemove(USER_CACHE_KEY); this.pinEnabled = false; }
         this.initialized = true;
-        // Supabase auth callbacks must not perform database requests inline.
+        // Callback auth Supabase tidak boleh memanggil request database secara inline.
         window.setTimeout(() => {
           if (this.currentUser) {
-            void this.syncAccountProfileFromCloud().then(() => this.syncPinFromCloud()).then(() => {
-              this.startProfileRealtime();
-              this.notify();
-            });
+            void this.syncAccountProfileFromCloud()
+              .then(() => this.syncPinStatus())
+              .then(() => { this.startProfileRealtime(); this.notify(); });
           } else {
             this.stopProfileRealtime();
           }
@@ -46,7 +68,7 @@ class AuthService {
     }
   }
 
-  public subscribe(listener: () => void): () => void { this.listeners.add(listener); return () => this.listeners.delete(listener); }
+  public subscribe(listener: () => void): () => void { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; }
   private notify() { this.listeners.forEach((listener) => listener()); }
 
   public async initialize(): Promise<UserAccount | null> {
@@ -54,8 +76,15 @@ class AuthService {
     const { data, error } = await supabase.auth.getSession();
     if (error) throw error;
     this.currentUser = toUser(data.session?.user);
-    if (this.currentUser) { await this.syncAccountProfileFromCloud(); localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser)); await this.syncPinFromCloud(); this.startProfileRealtime(); if (!this.hasPin()) localStorage.removeItem(LOCK_KEY); }
-    else localStorage.removeItem(USER_CACHE_KEY);
+    if (this.currentUser) {
+      safeSet(USER_CACHE_KEY, JSON.stringify(this.currentUser));
+      await this.syncAccountProfileFromCloud();
+      await this.syncPinStatus();
+      this.startProfileRealtime();
+      if (!this.hasPin()) safeRemove(LOCK_KEY);
+    } else {
+      safeRemove(USER_CACHE_KEY);
+    }
     this.initialized = true; this.notify(); return this.currentUser;
   }
 
@@ -66,13 +95,14 @@ class AuthService {
   public async register(params: { username: string; email: string; password: string }): Promise<{ success: boolean; user?: UserAccount; error?: string; needsEmailConfirmation?: boolean }> {
     if (!supabase || !isSupabaseConfigured) return { success: false, error: 'Supabase belum dikonfigurasi. Isi VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY di file .env.local.' };
     const username = params.username.trim(); const email = params.email.trim().toLowerCase();
-    if (username.length < 3) return { success: false, error: 'Nama pengguna minimal 3 karakter.' };
+    if (username.length < 3 || username.length > 80) return { success: false, error: 'Nama pengguna harus 3–80 karakter.' };
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { success: false, error: 'Format email tidak valid.' };
     if (params.password.length < 8) return { success: false, error: 'Password minimal 8 karakter.' };
+    if (params.password.length > 128) return { success: false, error: 'Password maksimal 128 karakter.' };
     const { data, error } = await supabase.auth.signUp({ email, password: params.password, options: { data: { username } } });
     if (error) return { success: false, error: error.message };
     const user = toUser(data.user); if (!user) return { success: false, error: 'Akun belum berhasil dibuat.' };
-    if (data.session) { this.currentUser = user; localStorage.setItem(USER_CACHE_KEY, JSON.stringify(user)); this.notify(); return { success: true, user }; }
+    if (data.session) { this.currentUser = user; safeSet(USER_CACHE_KEY, JSON.stringify(user)); this.notify(); return { success: true, user }; }
     return { success: true, user, needsEmailConfirmation: true };
   }
 
@@ -81,17 +111,22 @@ class AuthService {
     const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     if (error) return { success: false, error: error.message };
     const user = toUser(data.user); if (!user) return { success: false, error: 'Data akun tidak ditemukan.' };
-    this.currentUser = user; await this.syncAccountProfileFromCloud(); localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser || user)); localStorage.removeItem(LOCK_KEY); await this.syncPinFromCloud(); this.startProfileRealtime(); this.notify();
-    return { success: true, user };
+    this.currentUser = user;
+    await this.syncAccountProfileFromCloud();
+    safeSet(USER_CACHE_KEY, JSON.stringify(this.currentUser || user));
+    safeRemove(LOCK_KEY); // login dengan password sudah membuktikan identitas
+    await this.syncPinStatus();
+    this.startProfileRealtime();
+    this.notify();
+    return { success: true, user: this.currentUser || user };
   }
 
   public async updateUsername(usernameValue: string): Promise<{ success: boolean; error?: string; user?: UserAccount }> {
     const username = usernameValue.trim();
-    if (username.length < 3) return { success: false, error: 'Username minimal 3 karakter.' };
+    if (username.length < 3 || username.length > 80) return { success: false, error: 'Username harus 3–80 karakter.' };
     if (!supabase || !isSupabaseConfigured) return { success: false, error: 'Koneksi Supabase belum tersedia.' };
 
-    // A cached user is not proof of an active Supabase session. Check the real
-    // session first, then try refreshing it before updating auth metadata.
+    // User dalam cache bukan bukti sesi aktif: periksa sesi nyata, lalu coba refresh.
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     if (sessionError) return { success: false, error: `Gagal memeriksa sesi login: ${sessionError.message}` };
     if (!sessionData.session) {
@@ -113,7 +148,7 @@ class AuthService {
     this.currentUser = user;
     const { error: profileError } = await supabase.from('profiles').upsert({ id: user.id, name: username, email: user.email }, { onConflict: 'id' });
     if (profileError) return { success: false, error: `Username akun berubah, tetapi profil cloud gagal disinkronkan: ${profileError.message}` };
-    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(user));
+    safeSet(USER_CACHE_KEY, JSON.stringify(user));
     this.startProfileRealtime();
     this.notify();
     return { success: true, user };
@@ -121,8 +156,14 @@ class AuthService {
 
   public async logout() {
     this.stopProfileRealtime();
-    if (supabase) await supabase.auth.signOut();
-    this.currentUser = null; localStorage.removeItem(USER_CACHE_KEY); localStorage.removeItem(LOCK_KEY); this.notify();
+    const userId = this.currentUser?.id;
+    if (supabase) {
+      try { await supabase.auth.signOut(); } catch (error) { console.warn('Sign out gagal; sesi lokal tetap dibersihkan.', error); }
+    }
+    this.currentUser = null; this.pinEnabled = false;
+    safeRemove(USER_CACHE_KEY); safeRemove(LOCK_KEY);
+    if (userId) safeRemove(PIN_FLAG_PREFIX + userId);
+    this.notify();
   }
 
   private startProfileRealtime() {
@@ -136,13 +177,13 @@ class AuthService {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` }, () => {
         void (async () => {
           await this.syncAccountProfileFromCloud();
-          await this.syncPinFromCloud();
+          await this.syncPinStatus();
           this.notify();
         })();
       })
       .subscribe((status: string, error?: Error) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.warn(`Profile/PIN realtime status: ${status}`, error || '');
+          console.warn(`Profile realtime status: ${status}`, error || '');
         }
       });
   }
@@ -153,97 +194,84 @@ class AuthService {
     this.profileRealtimeUserId = null;
   }
 
-  private pinKey() { return `pms_app_pin:${this.currentUser?.id || 'no-user'}`; }
-  private pinAttemptsKey() { return `pms_app_pin_attempts:${this.currentUser?.id || 'no-user'}`; }
+  private pinFlagKey() { return `${PIN_FLAG_PREFIX}${this.currentUser?.id || 'no-user'}`; }
+
   private async syncAccountProfileFromCloud(): Promise<void> {
     if (!supabase || !this.currentUser) return;
     const { data, error } = await supabase.from('profiles').select('name,email').eq('id', this.currentUser.id).maybeSingle();
     if (error) { console.warn('Profile sync failed:', error.message); return; }
     if (data?.name?.trim()) {
       this.currentUser = { ...this.currentUser, username: data.name.trim(), email: data.email || this.currentUser.email };
-      localStorage.setItem(USER_CACHE_KEY, JSON.stringify(this.currentUser));
+      safeSet(USER_CACHE_KEY, JSON.stringify(this.currentUser));
     }
   }
 
-  private async syncPinFromCloud(): Promise<void> {
+  /** Status PIN (ada/tidak) diambil dari server; hash PIN tidak pernah dikirim ke klien. */
+  private async syncPinStatus(): Promise<void> {
     if (!supabase || !this.currentUser) return;
-    const { data, error } = await supabase.from('profiles').select('pin_salt,pin_hash,pin_iterations').eq('id', this.currentUser.id).maybeSingle();
-    if (error) { console.warn('PIN sync failed:', error.message); return; }
-    if (data?.pin_salt && data?.pin_hash) {
-      localStorage.setItem(this.pinKey(), JSON.stringify({ salt: data.pin_salt, hash: data.pin_hash, iterations: data.pin_iterations || PIN_ITERATIONS }));
-    } else { localStorage.removeItem(this.pinKey()); }
+    const { data, error } = await supabase.rpc('has_app_pin');
+    if (error) { console.warn('Status PIN gagal disinkronkan:', error.message); this.pinEnabled = safeGet(this.pinFlagKey()) === 'true'; return; }
+    this.pinEnabled = data === true;
+    if (this.pinEnabled) safeSet(this.pinFlagKey(), 'true'); else { safeRemove(this.pinFlagKey()); safeRemove(LOCK_KEY); }
   }
 
-  public hasPin(): boolean { return !!this.currentUser && !!localStorage.getItem(this.pinKey()); }
-  public isAppLocked(): boolean { return !!this.currentUser && localStorage.getItem(LOCK_KEY) === 'true'; }
-  public lockApp(): boolean { if (!this.hasPin()) return false; localStorage.setItem(LOCK_KEY, 'true'); this.notify(); return true; }
-  public unlockAppWithoutPin() { localStorage.removeItem(LOCK_KEY); this.notify(); }
+  public hasPin(): boolean {
+    return !!this.currentUser && (this.pinEnabled || safeGet(this.pinFlagKey()) === 'true');
+  }
+  public isAppLocked(): boolean { return !!this.currentUser && safeGet(LOCK_KEY) === 'true'; }
+  public lockApp(): boolean { if (!this.hasPin()) return false; safeSet(LOCK_KEY, 'true'); this.notify(); return true; }
+  public unlockAppWithoutPin() { safeRemove(LOCK_KEY); this.notify(); }
 
-  private async derivePinHash(pin: string, salt: Uint8Array): Promise<string> {
-    const keyMaterial = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveBits']);
-    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: PIN_ITERATIONS, hash: 'SHA-256' }, keyMaterial, 256);
-    return bytesToHex(new Uint8Array(bits));
+  private mapPinResponse(res: PinRpcResponse | null): PinResult {
+    if (!res) return { success: false, error: 'Respons server tidak valid.' };
+    if (res.ok) return { success: true };
+    switch (res.reason) {
+      case 'locked': {
+        const wait = Number(res.retry_after) || 60;
+        return { success: false, isLocked: true, remainingLockSeconds: wait, error: `Terlalu banyak percobaan. Coba lagi dalam ${wait} detik.` };
+      }
+      case 'wrong_pin': {
+        const left = Number(res.attempts_left ?? 0);
+        return { success: false, attemptsLeft: left, error: `PIN salah. Sisa percobaan: ${left}.` };
+      }
+      case 'invalid_format': return { success: false, error: 'PIN harus terdiri dari 6 angka.' };
+      case 'no_pin': return { success: false, error: 'PIN belum diatur untuk akun ini.' };
+      default: return { success: false, error: 'PIN tidak dapat diverifikasi.' };
+    }
   }
 
-  public async setPin(pin: string): Promise<{ success: boolean; error?: string }> {
-    if (!this.currentUser) return { success: false, error: 'Sesi akun tidak ditemukan.' };
+  private async callPinRpc(fn: 'verify_app_pin' | 'set_app_pin' | 'remove_app_pin', args: Record<string, string | null>): Promise<PinResult> {
+    if (!supabase || !this.currentUser) return { success: false, error: 'Sesi akun tidak ditemukan.' };
+    if (!navigator.onLine) return { success: false, error: 'Verifikasi PIN memerlukan koneksi internet. Sambungkan perangkat atau masuk dengan password.' };
+    const { data, error } = await supabase.rpc(fn, args);
+    if (error) {
+      const missing = /function|schema cache|does not exist/i.test(error.message);
+      return { success: false, error: missing ? 'Fitur PIN belum aktif di server. Jalankan migrasi 202610280001_server_side_pin_and_hardening.sql.' : `Gagal memproses PIN: ${error.message}` };
+    }
+    return this.mapPinResponse(data as PinRpcResponse);
+  }
+
+  public async setPin(pin: string, currentPin?: string): Promise<PinResult> {
     if (!/^\d{6}$/.test(pin)) return { success: false, error: 'PIN harus terdiri dari 6 angka.' };
-    if (!crypto?.subtle) return { success: false, error: 'Browser tidak mendukung penyimpanan PIN aman. Gunakan HTTPS atau localhost.' };
-    const salt = crypto.getRandomValues(new Uint8Array(16));
-    const hash = await this.derivePinHash(pin, salt);
-    if (!supabase) return { success: false, error: 'Koneksi akun tidak tersedia; PIN belum dapat disinkronkan.' };
-    const pinData = { pin_salt: bytesToHex(salt), pin_hash: hash, pin_iterations: PIN_ITERATIONS };
-    const { error } = await supabase.from('profiles').upsert({ id: this.currentUser.id, name: this.currentUser.username, email: this.currentUser.email, ...pinData }, { onConflict: 'id' });
-    if (error) return { success: false, error: `PIN gagal disinkronkan: ${error.message}. Pastikan migrasi PIN sudah dijalankan di Supabase.` };
-    localStorage.setItem(this.pinKey(), JSON.stringify({ salt: pinData.pin_salt, hash: pinData.pin_hash, iterations: PIN_ITERATIONS }));
-    localStorage.removeItem(this.pinAttemptsKey());
-    this.notify();
-    return { success: true };
+    if (this.hasPin() && !/^\d{6}$/.test(currentPin || '')) return { success: false, error: 'Masukkan PIN saat ini untuk mengganti PIN.' };
+    const result = await this.callPinRpc('set_app_pin', { p_new: pin, p_current: currentPin || null });
+    if (result.success) { this.pinEnabled = true; safeSet(this.pinFlagKey(), 'true'); this.notify(); }
+    return result;
   }
 
-  public async removePin(): Promise<void> {
-    if (supabase && this.currentUser) {
-      const { error } = await supabase.from('profiles').update({ pin_salt: null, pin_hash: null, pin_iterations: null }).eq('id', this.currentUser.id);
-      if (error) throw new Error(`PIN gagal dihapus dari akun: ${error.message}`);
-    }
-    localStorage.removeItem(this.pinKey()); localStorage.removeItem(this.pinAttemptsKey());
-    localStorage.removeItem(LOCK_KEY); this.notify();
+  public async removePin(currentPin: string): Promise<PinResult> {
+    if (!/^\d{6}$/.test(currentPin)) return { success: false, error: 'Masukkan PIN saat ini (6 digit).' };
+    const result = await this.callPinRpc('remove_app_pin', { p_current: currentPin });
+    if (result.success) { this.pinEnabled = false; safeRemove(this.pinFlagKey()); safeRemove(LOCK_KEY); this.notify(); }
+    return result;
   }
 
-  public getSecurityState() {
-    let state = { failedAttempts: 0, lockedUntil: 0 };
-    try { state = { ...state, ...JSON.parse(localStorage.getItem(this.pinAttemptsKey()) || '{}') }; } catch { /* Reset malformed local state. */ }
-    const remainingLockSeconds = Math.max(0, Math.ceil((Number(state.lockedUntil) - Date.now()) / 1000));
-    return { failedAttempts: Number(state.failedAttempts) || 0, isLocked: remainingLockSeconds > 0, remainingLockSeconds, attemptsRemainingBeforeLock: Math.max(0, PIN_ATTEMPTS_LIMIT - (Number(state.failedAttempts) || 0)) };
-  }
-
-  public recordFailedPinAttempt() {
-    const current = this.getSecurityState();
-    if (current.isLocked) return { isLocked: true, remainingLockSeconds: current.remainingLockSeconds, attemptsLeft: 0 };
-    const failedAttempts = current.failedAttempts + 1;
-    const lockedUntil = failedAttempts >= PIN_ATTEMPTS_LIMIT ? Date.now() + PIN_LOCK_SECONDS * 1000 : 0;
-    localStorage.setItem(this.pinAttemptsKey(), JSON.stringify({ failedAttempts: lockedUntil ? 0 : failedAttempts, lockedUntil }));
-    return { isLocked: !!lockedUntil, remainingLockSeconds: lockedUntil ? PIN_LOCK_SECONDS : 0, attemptsLeft: lockedUntil ? 0 : PIN_ATTEMPTS_LIMIT - failedAttempts };
-  }
-
-  public resetPinSecurity() { localStorage.removeItem(this.pinAttemptsKey()); }
-
-  public async unlockWithPin(pin: string): Promise<{ success: boolean; error?: string; isLocked?: boolean; remainingLockSeconds?: number }> {
+  public async unlockWithPin(pin: string): Promise<PinResult> {
     if (!this.currentUser || !this.hasPin()) return { success: false, error: 'PIN belum diatur. Masuk kembali lalu atur PIN di Pengaturan.' };
-    const state = this.getSecurityState();
-    if (state.isLocked) return { success: false, error: `Terlalu banyak percobaan. Coba lagi dalam ${state.remainingLockSeconds} detik.`, isLocked: true, remainingLockSeconds: state.remainingLockSeconds };
-    let stored: { salt: string; hash: string; iterations?: number };
-    try { stored = JSON.parse(localStorage.getItem(this.pinKey()) || 'null'); } catch { return { success: false, error: 'Data PIN rusak. Silakan masuk kembali.' }; }
-    if (!stored?.salt || !stored?.hash) return { success: false, error: 'Data PIN tidak valid. Silakan masuk kembali.' };
-    const keyMaterial = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveBits']);
-    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: hexToBytes(stored.salt), iterations: stored.iterations || PIN_ITERATIONS, hash: 'SHA-256' }, keyMaterial, 256);
-    const actual = bytesToHex(new Uint8Array(bits));
-    if (actual !== stored.hash) {
-      const failed = this.recordFailedPinAttempt();
-      return { success: false, error: failed.isLocked ? `Terlalu banyak percobaan. Aplikasi terkunci ${failed.remainingLockSeconds} detik.` : `PIN salah. Sisa percobaan: ${failed.attemptsLeft}.`, isLocked: failed.isLocked, remainingLockSeconds: failed.remainingLockSeconds };
-    }
-    this.resetPinSecurity(); this.unlockAppWithoutPin();
-    return { success: true };
+    if (!/^\d{6}$/.test(pin)) return { success: false, error: 'PIN harus terdiri dari 6 angka.' };
+    const result = await this.callPinRpc('verify_app_pin', { p_pin: pin });
+    if (result.success) this.unlockAppWithoutPin();
+    return result;
   }
 }
 

@@ -4,6 +4,7 @@ import { UserProfile, Task, UserAccount } from '../types';
 import { notificationService } from '../services/notificationService';
 import { NotificationPanel } from './NotificationPanel';
 import { PWAInstallButton } from './PWAInstallButton';
+import { formatDateInUserTimezone } from '../utils/preferences';
 
 interface HeaderProps {
   onOpenSearch: () => void;
@@ -34,11 +35,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [notificationOpen, setNotificationOpen] = useState(false);
 
-  const todayFormatted = new Intl.DateTimeFormat('id-ID', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date());
+  const todayFormatted = formatDateInUserTimezone(new Date(), { day: 'numeric', month: 'short', year: 'numeric' });
 
   const counts = notificationService.getUrgentCounts(tasks);
 

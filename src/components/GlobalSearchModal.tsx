@@ -9,12 +9,13 @@ import {
   Heart,
 } from 'lucide-react';
 import { dataService } from '../services/dataService';
+import type { NavTab } from './Sidebar';
 import { Task, Transaction, FileItem, WishlistItem } from '../types';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onNavigateTab: (tab: any) => void;
+  onNavigateTab: (tab: NavTab) => void;
   isDark?: boolean;
 }
 

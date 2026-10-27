@@ -104,13 +104,4 @@ export interface UserAccount {
   created_at: string;
   email?: string;
   avatar_url?: string;
-  // Legacy optional fields retained only for compatibility with older UI components.
-  pin_hash?: string;
-  salt?: string;
-  referral_code?: string;
-}
-
-export interface PinSecurityState {
-  failedAttempts: number;
-  lockedUntil: number | null;
 }

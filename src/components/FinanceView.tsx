@@ -124,15 +124,22 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
   const handleCreateTransaction = (e: React.FormEvent) => {
     e.preventDefault();
     const numAmount = parseFloat(amount);
-    if (isNaN(numAmount) || numAmount <= 0) return;
+    if (!Number.isFinite(numAmount) || numAmount <= 0) return;
+    if (numAmount > 9_999_999_999_999) { onShowToast?.('Nominal terlalu besar.', 'error'); return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { onShowToast?.('Tanggal transaksi tidak valid.', 'error'); return; }
 
-    dataService.createTransaction({
-      type,
-      amount: numAmount,
-      category: category.trim(),
-      description: description.trim() || (type === 'income' ? 'Pemasukan' : 'Pengeluaran'),
-      transaction_date: date,
-    });
+    try {
+      dataService.createTransaction({
+        type,
+        amount: numAmount,
+        category: category.trim(),
+        description: description.trim() || (type === 'income' ? 'Pemasukan' : 'Pengeluaran'),
+        transaction_date: date,
+      });
+    } catch (error) {
+      onShowToast?.(error instanceof Error ? error.message : 'Transaksi gagal dicatat.', 'error');
+      return;
+    }
 
     if (onShowToast) {
       onShowToast(

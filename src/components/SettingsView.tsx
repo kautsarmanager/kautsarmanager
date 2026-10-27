@@ -28,6 +28,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [savedMessage, setSavedMessage] = useState(false);
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
+  const [currentPin, setCurrentPin] = useState('');
+  const [syncStatus, setSyncStatus] = useState(dataService.getSyncStatus());
   const [pinConfigured, setPinConfigured] = useState(authService.hasPin());
   const [pinMessage, setPinMessage] = useState('');
   const [pinError, setPinError] = useState(false);
@@ -37,6 +39,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const unsubscribe = authService.subscribe(refreshPinStatus);
     refreshPinStatus();
     return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const refresh = () => setSyncStatus(dataService.getSyncStatus());
+    refresh();
+    const unsubscribe = dataService.subscribe(refresh);
+    const timer = window.setInterval(refresh, 5000);
+    return () => { unsubscribe(); window.clearInterval(timer); };
   }, []);
 
   useEffect(() => {
@@ -67,37 +77,54 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   const handleResetData = () => {
-    if (
-      window.confirm(
-        'Apakah Anda yakin ingin menghapus data lokal untuk akun ini? Pastikan data cloud sudah tersinkron dan Anda memiliki cadangan. Tindakan ini tidak dapat dibatalkan.'
-      )
-    ) {
+    const answer = window.prompt(
+      'PERHATIAN: tindakan ini menghapus SEMUA tugas, transaksi, file, dan wishlist akun ini, termasuk di cloud dan semua perangkat lain. Unduh cadangan JSON terlebih dahulu.\n\nKetik HAPUS untuk melanjutkan.'
+    );
+    if (answer?.trim() === 'HAPUS') {
       dataService.resetData();
     }
   };
 
   const handleExportJSON = () => {
-    const backup = {
+    // Cadangan tidak boleh memuat kredensial; kolom bernama pin_* dan token sesi dibuang.
+    const stripSensitive = (value: unknown): unknown => {
+      if (Array.isArray(value)) return value.map(stripSensitive);
+      if (value && typeof value === 'object') {
+        return Object.fromEntries(
+          Object.entries(value as Record<string, unknown>)
+            .filter(([key]) => !/^pin_|token|password|secret/i.test(key))
+            .map(([key, entry]) => [key, stripSensitive(entry)])
+        );
+      }
+      return value;
+    };
+    const userId = currentUser?.id;
+    const readKey = (key: string) => { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; } };
+    const backup = stripSensitive({
       profile: dataService.getProfile(),
       tasks: dataService.getTasks(),
       transactions: dataService.getTransactions(),
-      files: dataService.getFiles(),
+      files: dataService.getFiles().map(({ url: _url, ...file }) => file),
       wishlist: dataService.getWishlist(),
       activities: dataService.getActivities(),
+      pending_sync: userId ? readKey(`pms_sync_outbox:${userId}`) : null,
+      failed_sync: userId ? readKey(`pms_sync_dead:${userId}`) : null,
       exported_at: new Date().toISOString(),
       legacy_local_data: Object.fromEntries(
         Object.keys(localStorage)
-          .filter((key) => /^pms_(tasks|transactions|files|wishlist|profile|activities)(:.*)?$/.test(key))
-          .map((key) => [key, localStorage.getItem(key)])
+          .filter((key) => /^pms_(tasks|transactions|files|wishlist|activities)$/.test(key))
+          .map((key) => [key, readKey(key)])
       ),
-    };
+    });
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `pms-backup-${getLocalDateString()}.json`;
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   return (
@@ -221,24 +248,35 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <p className="font-semibold">PIN kunci aplikasi</p>
             <span className={`ml-auto text-[10px] font-semibold ${pinConfigured ? 'text-emerald-400' : 'text-amber-400'}`}>{pinConfigured ? 'Aktif' : 'Belum diatur'}</span>
           </div>
-          <p className="text-[11px] text-zinc-400 mb-3">Gunakan PIN 6 digit untuk membuka aplikasi tanpa mengetik password akun setiap kali aplikasi dikunci. PIN disimpan sebagai hash di akun dan disinkronkan ke perangkat lain.</p>
+          <p className="text-[11px] text-zinc-400 mb-3">Gunakan PIN 6 digit untuk membuka aplikasi tanpa mengetik password akun setiap kali aplikasi dikunci. PIN diverifikasi di server (hash tidak pernah dikirim ke perangkat) dan berlaku di semua perangkat. PIN adalah kunci kenyamanan, bukan pengganti password akun.</p>
           <form onSubmit={async (e) => {
             e.preventDefault(); setPinMessage(''); setPinError(false);
             if (!/^\d{6}$/.test(pin)) { setPinMessage('PIN harus terdiri dari 6 angka.'); setPinError(true); return; }
             if (pin !== confirmPin) { setPinMessage('Konfirmasi PIN tidak sama.'); setPinError(true); return; }
-            const result = await authService.setPin(pin);
+            if (pinConfigured && !/^\d{6}$/.test(currentPin)) { setPinMessage('Masukkan PIN saat ini (6 digit) untuk mengganti PIN.'); setPinError(true); return; }
+            const result = await authService.setPin(pin, pinConfigured ? currentPin : undefined);
             if (!result.success) { setPinMessage(result.error || 'Gagal menyimpan PIN.'); setPinError(true); return; }
-            setPinConfigured(true); setPin(''); setConfirmPin(''); setPinMessage('PIN berhasil disimpan ke akun dan disinkronkan.');
+            setPinConfigured(true); setPin(''); setConfirmPin(''); setCurrentPin(''); setPinMessage('PIN berhasil disimpan ke akun dan disinkronkan.');
           }} className="space-y-2">
+            {pinConfigured && (
+              <input aria-label="PIN saat ini" type="password" inputMode="numeric" autoComplete="off" maxLength={6} pattern="[0-9]{6}" value={currentPin} onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="PIN saat ini" className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isDark ? 'bg-[#0d0e14] border-[#303241] text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'}`} />
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <input aria-label="PIN baru" inputMode="numeric" autoComplete="new-password" maxLength={6} pattern="[0-9]{6}" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="PIN baru (6 digit)" className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isDark ? 'bg-[#0d0e14] border-[#303241] text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'}`} />
-              <input aria-label="Konfirmasi PIN" inputMode="numeric" autoComplete="new-password" maxLength={6} pattern="[0-9]{6}" value={confirmPin} onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="Ulangi PIN" className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isDark ? 'bg-[#0d0e14] border-[#303241] text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'}`} />
+              <input aria-label="PIN baru" type="password" inputMode="numeric" autoComplete="off" maxLength={6} pattern="[0-9]{6}" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="PIN baru (6 digit)" className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isDark ? 'bg-[#0d0e14] border-[#303241] text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'}`} />
+              <input aria-label="Konfirmasi PIN" type="password" inputMode="numeric" autoComplete="off" maxLength={6} pattern="[0-9]{6}" value={confirmPin} onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="Ulangi PIN" className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isDark ? 'bg-[#0d0e14] border-[#303241] text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'}`} />
             </div>
             <div className="flex flex-wrap gap-2">
               <button type="submit" className="px-3 py-2 rounded-lg bg-lime-500 hover:bg-lime-400 text-zinc-950 font-semibold text-xs">{pinConfigured ? 'Ganti PIN' : 'Atur PIN'}</button>
-              {pinConfigured && <button type="button" onClick={async () => { if (!window.confirm('Hapus PIN kunci aplikasi dari perangkat ini?')) return; await authService.removePin(); setPinConfigured(false); setPinMessage('PIN berhasil dihapus dari akun dan semua perangkat.'); setPinError(false); }} className="px-3 py-2 rounded-lg border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 font-semibold text-xs">Hapus PIN</button>}
+              {pinConfigured && <button type="button" onClick={async () => {
+                setPinMessage(''); setPinError(false);
+                if (!/^\d{6}$/.test(currentPin)) { setPinMessage('Masukkan PIN saat ini (6 digit) pada kolom "PIN saat ini" untuk menghapus PIN.'); setPinError(true); return; }
+                if (!window.confirm('Hapus PIN kunci aplikasi dari akun ini di semua perangkat?')) return;
+                const result = await authService.removePin(currentPin);
+                if (!result.success) { setPinMessage(result.error || 'PIN gagal dihapus.'); setPinError(true); return; }
+                setPinConfigured(false); setCurrentPin(''); setPinMessage('PIN berhasil dihapus dari akun dan semua perangkat.');
+              }} className="px-3 py-2 rounded-lg border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 font-semibold text-xs">Hapus PIN</button>}
             </div>
-            {pinMessage && <p className={`text-[11px] ${pinError ? 'text-rose-400' : 'text-emerald-400'}`}>{pinMessage}</p>}
+            {pinMessage && <p role="status" className={`text-[11px] ${pinError ? 'text-rose-400' : 'text-emerald-400'}`}>{pinMessage}</p>}
           </form>
         </div>
 
@@ -274,6 +312,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </h3>
         </div>
 
+        <div role="status" className={`p-3 rounded-xl border text-[11px] ${syncStatus.failed > 0 ? 'border-rose-500/30 text-rose-400' : syncStatus.pending > 0 ? 'border-amber-500/30 text-amber-400' : isDark ? 'border-[#252837] text-emerald-400' : 'border-zinc-200 text-emerald-600'}`}>
+          {syncStatus.failed > 0
+            ? `${syncStatus.failed} perubahan gagal disinkronkan secara permanen. Ekspor cadangan JSON (berisi daftar failed_sync) dan hubungi pengelola.`
+            : syncStatus.pending > 0
+              ? `${syncStatus.pending} perubahan menunggu sinkronisasi ke cloud.`
+              : 'Semua perubahan sudah tersinkron ke cloud.'}
+        </div>
+
         <div
           className={`flex flex-col sm:flex-row items-center justify-between gap-4 p-3.5 rounded-xl border ${
             isDark
@@ -286,7 +332,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               Ekspor Cadangan (Backup JSON)
             </p>
             <p className={`text-[11px] mt-0.5 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-              Unduh salinan seluruh data offline Anda ke file JSON di komputer.
+              Unduh salinan seluruh data akun ke file JSON (tanpa kredensial).
             </p>
           </div>
           <button
@@ -304,9 +350,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20">
           <div>
-            <p className="font-semibold text-rose-400">Reset ke Data Demo Awal</p>
+            <p className="font-semibold text-rose-400">Hapus Semua Data Akun</p>
             <p className="text-[11px] text-zinc-400 mt-0.5">
-              Mengembalikan tugas, keuangan, file, dan wishlist ke contoh data awal.
+              Menghapus seluruh tugas, keuangan, file, dan wishlist di cloud dan semua perangkat. Tidak dapat dibatalkan.
             </p>
           </div>
           <button
@@ -314,7 +360,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-semibold transition-all shrink-0 cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>Reset Data</span>
+            <span>Hapus Data</span>
           </button>
         </div>
       </div>

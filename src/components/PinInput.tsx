@@ -4,7 +4,7 @@ import { Delete, Lock, ShieldAlert } from 'lucide-react';
 interface PinInputProps {
   pin: string;
   onChange: (pin: string) => void;
-  onSubmit?: () => void;
+  onSubmit?: (pin: string) => void;
   isLocked?: boolean;
   remainingSeconds?: number;
   isDark: boolean;
@@ -28,19 +28,21 @@ export const PinInput: React.FC<PinInputProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isLocked) return;
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
 
       if (e.key >= '0' && e.key <= '9') {
         if (pin.length < length) {
           const next = pin + e.key;
           onChange(next);
           if (next.length === length && onSubmit) {
-            setTimeout(onSubmit, 50);
+            onSubmit(next);
           }
         }
       } else if (e.key === 'Backspace') {
         onChange(pin.slice(0, -1));
       } else if (e.key === 'Enter' && pin.length === length && onSubmit) {
-        onSubmit();
+        onSubmit(pin);
       }
     };
 
@@ -54,7 +56,7 @@ export const PinInput: React.FC<PinInputProps> = ({
       const next = pin + num;
       onChange(next);
       if (next.length === length && onSubmit) {
-        setTimeout(onSubmit, 80);
+        onSubmit(next);
       }
     }
   };
@@ -94,7 +96,7 @@ export const PinInput: React.FC<PinInputProps> = ({
       {isLocked ? (
         <div className="w-full my-3 p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs text-center flex flex-col items-center gap-1.5 animate-pulse">
           <ShieldAlert className="w-5 h-5 text-rose-400" />
-          <span className="font-semibold">Anti-Brute Force Aktif</span>
+          <span className="font-semibold">Terlalu banyak percobaan</span>
           <span className="text-[11px] opacity-90">
             Terkunci selama <strong className="font-mono text-white text-xs">{remainingSeconds} detik</strong>
           </span>

@@ -1,4 +1,5 @@
 import { Task } from '../types';
+import { getLocalDateString } from '../utils/date';
 
 export type DeadlineUrgency = 'overdue' | 'today' | 'tomorrow' | 'soon' | 'future';
 
@@ -35,12 +36,14 @@ export function parseLocalDate(dateStr: string): Date {
  * > 1: Future
  */
 export function getDaysDifference(deadlineStr: string): number {
-  const deadline = parseLocalDate(deadlineStr);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const diffTime = deadline.getTime() - today.getTime();
-  return Math.round(diffTime / (1000 * 60 * 60 * 24));
+  // "Hari ini" mengikuti zona waktu di profil (sama dengan Dashboard), dan selisih dihitung
+  // pada tanggal kalender (UTC) agar tidak bergeser saat DST atau zona waktu perangkat berbeda.
+  const toUtcDay = (value: string) => {
+    const [year, month, day] = value.split('-').map(Number);
+    return Date.UTC(year, (month || 1) - 1, day || 1);
+  };
+  if (!/^\d{4}-\d{2}-\d{2}/.test(deadlineStr || '')) return 0;
+  return Math.round((toUtcDay(deadlineStr.slice(0, 10)) - toUtcDay(getLocalDateString())) / 86400000);
 }
 
 /**

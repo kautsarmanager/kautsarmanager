@@ -1,5 +1,5 @@
 import { getLocalDateString } from '../utils/date';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Plus,
   CheckCircle2,
@@ -47,6 +47,9 @@ export const TasksView: React.FC<TasksViewProps> = ({
   const [priority, setPriority] = useState<Priority>('medium');
   const [category, setCategory] = useState('');
   const [reminder, setReminder] = useState('');
+
+  // Quick-add dari Header saat tab Tugas sudah terbuka harus tetap membuka modal.
+  useEffect(() => { if (initialCreateOpen) setIsModalOpen(true); }, [initialCreateOpen]);
 
   const categories = Array.from(new Set(tasks.map((t) => t.category).filter(Boolean)));
 
@@ -135,8 +138,10 @@ export const TasksView: React.FC<TasksViewProps> = ({
   };
 
   const setQuickDeadline = (days: number) => {
-    const d = new Date(Date.now() + days * 86400000);
-    setDeadline(getLocalDateString(d));
+    // Tambah hari pada tanggal kalender (bukan +24 jam) agar aman saat pergantian DST/zona waktu.
+    const [y, m, day] = getLocalDateString().split('-').map(Number);
+    const d = new Date(Date.UTC(y, m - 1, day + days, 12));
+    setDeadline(d.toISOString().slice(0, 10));
   };
 
   return (
@@ -231,7 +236,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
           {/* Deadline Filter */}
           <select
             value={filterDeadline}
-            onChange={(e) => setFilterDeadline(e.target.value as any)}
+            onChange={(e) => setFilterDeadline(e.target.value as 'all' | 'overdue' | 'today' | 'soon')}
             className={`border rounded-lg px-2.5 py-1.5 text-xs focus:outline-hidden ${
               isDark
                 ? 'bg-[#171717] border-[#424242] text-zinc-300'

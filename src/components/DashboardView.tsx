@@ -30,6 +30,7 @@ import {
 } from '../types';
 import { dataService } from '../services/dataService';
 import { notificationService, evaluateTaskUrgency } from '../services/notificationService';
+import type { NavTab } from './Sidebar';
 
 interface DashboardViewProps {
   profile: UserProfile;
@@ -40,7 +41,7 @@ interface DashboardViewProps {
   files: FileItem[];
   wishlist: WishlistItem[];
   activities: ActivityItem[];
-  onNavigate: (tab: any) => void;
+  onNavigate: (tab: NavTab) => void;
   onAddTask: () => void;
   onAddTransaction: () => void;
   isDark: boolean;

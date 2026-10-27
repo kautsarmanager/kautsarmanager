@@ -4,11 +4,13 @@
   "version": "1.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
+    "dev": "vite --port=3000",
     "build": "vite build",
     "preview": "vite preview",
-    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
-    "lint": "tsc --noEmit"
+    "clean": "node -e \"import('node:fs').then(f=>f.rmSync('dist',{recursive:true,force:true}))\"",
+    "lint": "tsc --noEmit",
+    "dev:lan": "vite --port=3000 --host=0.0.0.0",
+    "audit:prod": "npm audit --omit=dev"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

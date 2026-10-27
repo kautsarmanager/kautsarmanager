@@ -35,8 +35,10 @@ import {
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>(() => {
     try {
-      const saved = sessionStorage.getItem('kautsarmanager_active_tab');
       const validTabs: NavTab[] = ['dashboard', 'tasks', 'finance', 'files', 'wishlist', 'ai', 'settings'];
+      const fromUrl = new URLSearchParams(window.location.search).get('tab');
+      if (fromUrl && validTabs.includes(fromUrl as NavTab)) return fromUrl as NavTab;
+      const saved = sessionStorage.getItem('kautsarmanager_active_tab');
       return saved && validTabs.includes(saved as NavTab) ? (saved as NavTab) : 'dashboard';
     } catch {
       return 'dashboard';
@@ -72,11 +74,11 @@ export default function App() {
   };
 
   const showToast = (title: string, type: 'success' | 'info' | 'error' = 'success') => {
-    const id = `t-${Date.now()}`;
-    setToasts((prev) => [...prev, { id, title, type }]);
+    const id = `t-${crypto.randomUUID()}`;
+    setToasts((prev) => [...prev.slice(-4), { id, title, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 2800);
+    }, type === 'error' ? 7000 : 2800);
   };
 
   const dismissToast = (id: string) => {
@@ -175,6 +177,20 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Flag "buka modal tugas" tidak boleh bertahan setelah pengguna pindah tab.
+  useEffect(() => { if (activeTab !== 'tasks') setInitialTaskModalOpen(false); }, [activeTab]);
+
+  const handleLogout = async () => {
+    if (!window.confirm('Keluar dari akun sekarang?')) return;
+    try {
+      const { pending } = await dataService.prepareForSignOut();
+      if (pending > 0 && !window.confirm(`${pending} perubahan belum tersinkron ke cloud dan hanya ada di perangkat ini. Keluar tetap akan menyimpannya di perangkat, tetapi tidak muncul di perangkat lain sampai Anda masuk lagi dan online. Lanjutkan keluar?`)) return;
+    } catch (error) {
+      console.warn('Persiapan logout gagal:', error);
+    }
+    await authService.logout();
+  };
+
   const handleQuickAddTask = () => {
     setActiveTab('tasks');
     setInitialTaskModalOpen(true);
@@ -216,6 +232,7 @@ export default function App() {
           onUnlocked={() => {
             setIsAppLocked(false);
           }}
+          onForgotPin={() => { void authService.logout(); }}
           isDark={isDark}
           onShowToast={showToast}
         />
@@ -248,7 +265,7 @@ export default function App() {
         onLockApp={() => {
           if (!authService.lockApp()) showToast('Atur PIN 6 digit terlebih dahulu di Pengaturan > Keamanan Akun.', 'info');
         }}
-        onLogout={() => { if (window.confirm('Keluar dari akun sekarang?')) void authService.logout(); }}
+        onLogout={() => { void handleLogout(); }}
       />
 
       {/* Main Content Area */}
@@ -328,7 +345,7 @@ export default function App() {
             <SettingsView
               profile={profile}
               currentUser={currentUser}
-              onLogout={() => { if (window.confirm('Keluar dari akun sekarang?')) void authService.logout(); }}
+              onLogout={() => { void handleLogout(); }}
             />
           )}
           </div>
