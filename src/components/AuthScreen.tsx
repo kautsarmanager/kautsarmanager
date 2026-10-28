@@ -19,7 +19,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess, isDark, o
   const [isLoading, setIsLoading] = useState(false);
   const [notice, setNotice] = useState('');
 
-  const inputClass = `w-full rounded-xl border py-3 pl-10 pr-3 text-sm outline-none focus:border-lime-500 ${isDark ? 'bg-[#0c0d12] border-[#292c3a] text-zinc-100 placeholder:text-zinc-600' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400'}`;
+  const inputClass = `w-full rounded-xl border py-3 pl-10 pr-3 text-sm outline-none focus:border-lime-500 ${isDark ? 'bg-[#0E0E10] border-[#26272B] text-zinc-100 placeholder:text-zinc-600' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400'}`;
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault(); setErrorMessage(''); setNotice(''); setIsLoading(true);
     try {
@@ -43,14 +43,14 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess, isDark, o
   };
 
   return <div className={`min-h-screen flex items-center justify-center p-4 ${isDark ? 'bg-[#0a0b0e] text-zinc-100' : 'bg-[#f4f5f8] text-zinc-900'}`}>
-    <div className={`w-full max-w-md rounded-2xl border p-6 sm:p-8 shadow-2xl ${isDark ? 'bg-[#121319] border-[#222432] shadow-black/80' : 'bg-white border-zinc-200 shadow-xl'}`}>
+    <div className={`w-full max-w-md rounded-2xl border p-6 sm:p-8 shadow-2xl ${isDark ? 'bg-[#0E0E10] border-[#26272B] shadow-black/80' : 'bg-white border-zinc-200 shadow-xl'}`}>
       <div className="flex flex-col items-center text-center mb-6">
         <div className="w-12 h-12 rounded-2xl bg-lime-600/15 border border-lime-500/30 flex items-center justify-center text-lime-400 mb-3"><ShieldCheck className="w-6 h-6" /></div>
         <h1 className="text-lg font-bold tracking-tight">Manager</h1>
         <p className={`text-xs mt-1 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Satu akun untuk semua perangkat dan data Anda</p>
       </div>
-      <div className={`flex p-1 rounded-xl border text-xs font-medium mb-5 ${isDark ? 'bg-[#0c0d12] border-[#1e202c]' : 'bg-zinc-100 border-zinc-200'}`}>
-        {(['login', 'register'] as const).map((value) => <button key={value} type="button" onClick={() => { setTab(value); setErrorMessage(''); setNotice(''); setEmail(''); setPassword(''); setConfirmPassword(''); setUsername(''); }} className={`flex-1 py-2 rounded-lg ${tab === value ? (isDark ? 'bg-[#252635] text-white' : 'bg-white text-zinc-900 shadow-sm') : 'text-zinc-500'}`}>{value === 'login' ? 'Masuk' : 'Daftar akun'}</button>)}
+      <div className={`flex p-1 rounded-xl border text-xs font-medium mb-5 ${isDark ? 'bg-[#0E0E10] border-[#1A1B1E]' : 'bg-zinc-100 border-zinc-200'}`}>
+        {(['login', 'register'] as const).map((value) => <button key={value} type="button" onClick={() => { setTab(value); setErrorMessage(''); setNotice(''); setEmail(''); setPassword(''); setConfirmPassword(''); setUsername(''); }} className={`flex-1 py-2 rounded-lg ${tab === value ? (isDark ? 'bg-[#26272B] text-white' : 'bg-white text-zinc-900 shadow-sm') : 'text-zinc-500'}`}>{value === 'login' ? 'Masuk' : 'Daftar akun'}</button>)}
       </div>
       {errorMessage && <div role="alert" className="mb-4 p-3 rounded-xl border border-rose-500/25 bg-rose-500/10 text-rose-400 text-xs flex gap-2"><AlertCircle className="w-4 h-4 shrink-0" /><span>{errorMessage}</span></div>}
       {notice && <div role="status" className="mb-4 p-3 rounded-xl border border-emerald-500/25 bg-emerald-500/10 text-emerald-400 text-xs">{notice}</div>}

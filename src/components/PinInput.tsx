@@ -84,7 +84,7 @@ export const PinInput: React.FC<PinInputProps> = ({
                 isFilled
                   ? 'bg-lime-500 border-lime-400 scale-110 shadow-xs shadow-lime-500/50'
                   : isDark
-                  ? 'border-zinc-700 bg-[#161720]'
+                  ? 'border-zinc-700 bg-[#1A1B1E]'
                   : 'border-zinc-300 bg-zinc-100'
               }`}
             />
@@ -121,7 +121,7 @@ export const PinInput: React.FC<PinInputProps> = ({
             onClick={() => handleKeyPress(num)}
             className={`h-12 rounded-xl text-base font-semibold font-mono transition-all flex items-center justify-center cursor-pointer active:scale-95 disabled:opacity-30 disabled:pointer-events-none ${
               isDark
-                ? 'bg-[#181923] hover:bg-[#202230] text-zinc-100 border border-[#262837]'
+                ? 'bg-[#1A1B1E] hover:bg-[#1A1B1E] text-zinc-100 border border-[#26272B]'
                 : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border border-zinc-200'
             }`}
           >
@@ -146,7 +146,7 @@ export const PinInput: React.FC<PinInputProps> = ({
           onClick={() => handleKeyPress('0')}
           className={`h-12 rounded-xl text-base font-semibold font-mono transition-all flex items-center justify-center cursor-pointer active:scale-95 disabled:opacity-30 disabled:pointer-events-none ${
             isDark
-              ? 'bg-[#181923] hover:bg-[#202230] text-zinc-100 border border-[#262837]'
+              ? 'bg-[#1A1B1E] hover:bg-[#1A1B1E] text-zinc-100 border border-[#26272B]'
               : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border border-zinc-200'
           }`}
         >
@@ -159,7 +159,7 @@ export const PinInput: React.FC<PinInputProps> = ({
           onClick={handleBackspace}
           className={`h-12 rounded-xl text-xs font-medium transition-all flex items-center justify-center cursor-pointer active:scale-95 disabled:opacity-20 disabled:pointer-events-none ${
             isDark
-              ? 'bg-[#181923] hover:bg-[#202230] text-zinc-400 hover:text-zinc-200 border border-[#262837]'
+              ? 'bg-[#1A1B1E] hover:bg-[#1A1B1E] text-zinc-400 hover:text-zinc-200 border border-[#26272B]'
               : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-600 hover:text-zinc-900 border border-zinc-200'
           }`}
           aria-label="Hapus digit"

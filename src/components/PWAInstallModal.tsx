@@ -41,7 +41,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
       <div
         className={`w-full max-w-md rounded-2xl border shadow-2xl p-5 sm:p-6 transition-all ${
           isDark
-            ? 'bg-[#13141b] border-[#252735] text-zinc-100 shadow-black/80'
+            ? 'bg-[#0E0E10] border-[#26272B] text-zinc-100 shadow-black/80'
             : 'bg-white border-zinc-200 text-zinc-900 shadow-xl'
         }`}
       >
@@ -62,7 +62,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
           <button
             onClick={onClose}
             className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-              isDark ? 'text-zinc-400 hover:text-white hover:bg-[#1f202c]' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
+              isDark ? 'text-zinc-400 hover:text-white hover:bg-[#1A1B1E]' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
             }`}
           >
             <X className="w-4 h-4" />
@@ -95,7 +95,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
             className={`flex-1 py-1.5 rounded-lg text-center transition-all cursor-pointer ${
               platform === 'android'
                 ? isDark
-                  ? 'bg-[#1f212d] text-white shadow-xs'
+                  ? 'bg-[#1A1B1E] text-white shadow-xs'
                   : 'bg-white text-zinc-950 shadow-2xs'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
@@ -107,7 +107,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
             className={`flex-1 py-1.5 rounded-lg text-center transition-all cursor-pointer ${
               platform === 'ios'
                 ? isDark
-                  ? 'bg-[#1f212d] text-white shadow-xs'
+                  ? 'bg-[#1A1B1E] text-white shadow-xs'
                   : 'bg-white text-zinc-950 shadow-2xs'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
@@ -122,7 +122,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
             <>
               <div
                 className={`p-3 rounded-xl border flex items-start gap-3 ${
-                  isDark ? 'bg-[#171822] border-[#222432]' : 'bg-zinc-50 border-zinc-200'
+                  isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-zinc-50 border-zinc-200'
                 }`}
               >
                 <div className="w-5 h-5 rounded-full bg-lime-500/20 text-lime-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
@@ -138,7 +138,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
 
               <div
                 className={`p-3 rounded-xl border flex items-start gap-3 ${
-                  isDark ? 'bg-[#171822] border-[#222432]' : 'bg-zinc-50 border-zinc-200'
+                  isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-zinc-50 border-zinc-200'
                 }`}
               >
                 <div className="w-5 h-5 rounded-full bg-lime-500/20 text-lime-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
@@ -156,7 +156,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
 
               <div
                 className={`p-3 rounded-xl border flex items-start gap-3 ${
-                  isDark ? 'bg-[#171822] border-[#222432]' : 'bg-zinc-50 border-zinc-200'
+                  isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-zinc-50 border-zinc-200'
                 }`}
               >
                 <div className="w-5 h-5 rounded-full bg-lime-500/20 text-lime-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
@@ -174,7 +174,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
             <>
               <div
                 className={`p-3 rounded-xl border flex items-start gap-3 ${
-                  isDark ? 'bg-[#171822] border-[#222432]' : 'bg-zinc-50 border-zinc-200'
+                  isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-zinc-50 border-zinc-200'
                 }`}
               >
                 <div className="w-5 h-5 rounded-full bg-lime-500/20 text-lime-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
@@ -190,7 +190,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
 
               <div
                 className={`p-3 rounded-xl border flex items-start gap-3 ${
-                  isDark ? 'bg-[#171822] border-[#222432]' : 'bg-zinc-50 border-zinc-200'
+                  isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-zinc-50 border-zinc-200'
                 }`}
               >
                 <div className="w-5 h-5 rounded-full bg-lime-500/20 text-lime-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
@@ -208,7 +208,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
 
               <div
                 className={`p-3 rounded-xl border flex items-start gap-3 ${
-                  isDark ? 'bg-[#171822] border-[#222432]' : 'bg-zinc-50 border-zinc-200'
+                  isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-zinc-50 border-zinc-200'
                 }`}
               >
                 <div className="w-5 h-5 rounded-full bg-lime-500/20 text-lime-400 font-mono text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
@@ -228,7 +228,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
         {/* Benefits Footnote */}
         <div
           className={`mt-4 p-3 rounded-xl border text-[11px] flex items-center gap-2.5 ${
-            isDark ? 'bg-[#151620] border-[#20222f] text-zinc-400' : 'bg-zinc-50 border-zinc-200 text-zinc-600'
+            isDark ? 'bg-[#1A1B1E] border-[#26272B] text-zinc-400' : 'bg-zinc-50 border-zinc-200 text-zinc-600'
           }`}
         >
           <Zap className="w-4 h-4 text-emerald-400 shrink-0" />

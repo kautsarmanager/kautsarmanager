@@ -239,7 +239,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
           onClick={handleClearChat}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer self-start sm:self-auto ${
             isDark
-              ? 'border-[#424242] text-zinc-400 hover:text-zinc-200 hover:bg-[#161720]'
+              ? 'border-[#26272B] text-zinc-400 hover:text-zinc-200 hover:bg-[#1A1B1E]'
               : 'border-zinc-200 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
           }`}
         >
@@ -251,7 +251,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
       {/* Chat Container */}
       <div
         className={`rounded-2xl border flex flex-col h-[580px] shadow-xs overflow-hidden transition-all ${
-          isDark ? 'bg-[#121319] border-[#222432]' : 'bg-white border-zinc-200'
+          isDark ? 'bg-[#0E0E10] border-[#26272B]' : 'bg-white border-zinc-200'
         }`}
       >
         {/* Messages Feed */}
@@ -267,7 +267,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
                 <div
                   className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 border ${
                     isDark
-                      ? 'bg-[#2f2f2f] border-[#2a2c3d] text-lime-400'
+                      ? 'bg-[#1A1B1E] border-[#26272B] text-lime-400'
                       : 'bg-lime-50 border-lime-200 text-lime-600'
                   }`}
                 >
@@ -280,7 +280,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
                   m.sender === 'user'
                     ? 'bg-lime-600 text-white rounded-tr-xs'
                     : isDark
-                    ? 'bg-[#171822] border border-[#232533] text-zinc-200 rounded-tl-xs shadow-2xs'
+                    ? 'bg-[#1A1B1E] border border-[#26272B] text-zinc-200 rounded-tl-xs shadow-2xs'
                     : 'bg-zinc-50 border border-zinc-200 text-zinc-800 rounded-tl-xs'
                 }`}
               >
@@ -303,7 +303,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
               <div
                 className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 border ${
                   isDark
-                    ? 'bg-[#2f2f2f] border-[#2a2c3d] text-lime-400'
+                    ? 'bg-[#1A1B1E] border-[#26272B] text-lime-400'
                     : 'bg-lime-50 border-lime-200 text-lime-600'
                 }`}
               >
@@ -311,7 +311,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
               </div>
               <div
                 className={`p-3 rounded-xl border flex items-center gap-2 ${
-                  isDark ? 'bg-[#171822] border-[#232533] text-zinc-400' : 'bg-zinc-100 border-zinc-200 text-zinc-600'
+                  isDark ? 'bg-[#1A1B1E] border-[#26272B] text-zinc-400' : 'bg-zinc-100 border-zinc-200 text-zinc-600'
                 }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-lime-500 animate-bounce" />
@@ -326,7 +326,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
         {/* Quick Message Actions Panel (No Typing Bar) */}
         <div
           className={`p-3.5 border-t ${
-            isDark ? 'border-[#424242] bg-[#0d0e13]' : 'border-zinc-200 bg-zinc-50'
+            isDark ? 'border-[#26272B] bg-[#0d0e13]' : 'border-zinc-200 bg-zinc-50'
           }`}
         >
           <div className="flex items-center justify-between mb-2">
@@ -349,7 +349,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
                   onClick={() => handleQuickClick(action)}
                   className={`flex items-center gap-2 p-2.5 rounded-xl border text-left text-xs font-medium transition-all cursor-pointer active:scale-98 disabled:opacity-40 ${
                     isDark
-                      ? 'bg-[#14151e] hover:bg-[#1c1d29] border-[#252737] text-zinc-200 hover:border-lime-500/40'
+                      ? 'bg-[#14151e] hover:bg-[#1A1B1E] border-[#26272B] text-zinc-200 hover:border-lime-500/40'
                       : 'bg-white hover:bg-zinc-100 border-zinc-200 text-zinc-800 hover:border-zinc-300 shadow-2xs'
                   }`}
                 >

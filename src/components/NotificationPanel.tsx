@@ -163,16 +163,16 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
   return (
     <div
       ref={panelRef}
-      className={`fixed sm:absolute top-14 right-2 sm:right-4 z-50 w-[calc(100vw-1rem)] sm:w-[420px] max-h-[85vh] flex flex-col rounded-2xl border shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 ${
+      className={`fixed sm:absolute top-[calc(3.5rem+env(safe-area-inset-top,0px))] sm:top-12 right-2 sm:right-0 z-50 w-[calc(100vw-1rem)] sm:w-[420px] max-h-[calc(100dvh-5.5rem)] flex flex-col rounded-2xl border shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 ${
         isDark
-          ? 'bg-[#121319]/95 border-[#424242] text-zinc-100 shadow-black/60'
+          ? 'bg-[#0E0E10]/95 border-[#26272B] text-zinc-100 shadow-black/60'
           : 'bg-white/95 border-zinc-200 text-zinc-900 shadow-xl'
       }`}
     >
       {/* Header */}
       <div
         className={`flex items-center justify-between px-4 py-3 border-b ${
-          isDark ? 'border-[#1f212c]' : 'border-zinc-200'
+          isDark ? 'border-[#26272B]' : 'border-zinc-200'
         }`}
       >
         <div className="flex items-center gap-2">
@@ -192,7 +192,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
             onClick={handleTestSound}
             className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
               isDark
-                ? 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1c1d26]'
+                ? 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1A1B1E]'
                 : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100'
             }`}
             title="Tes Suara Pengingat"
@@ -204,7 +204,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
             onClick={onClose}
             className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
               isDark
-                ? 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1c1d26]'
+                ? 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1A1B1E]'
                 : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100'
             }`}
             aria-label="Tutup"
@@ -217,7 +217,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
       {/* Browser Notification Banner / Setting */}
       <div
         className={`px-3.5 py-2 text-[11px] border-b flex items-center justify-between gap-2 ${
-          isDark ? 'bg-[#151620] border-[#1f212c]' : 'bg-zinc-50 border-zinc-200'
+          isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-zinc-50 border-zinc-200'
         }`}
       >
         <div className="flex items-center gap-1.5 min-w-0">
@@ -248,7 +248,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
       {/* Filter Tabs */}
       <div
         className={`flex items-center gap-1 p-2 border-b text-xs ${
-          isDark ? 'border-[#1f212c] bg-[#0f1015]' : 'border-zinc-200 bg-zinc-50/50'
+          isDark ? 'border-[#26272B] bg-[#0f1015]' : 'border-zinc-200 bg-zinc-50/50'
         }`}
       >
         <button
@@ -256,7 +256,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
           className={`flex-1 py-1 px-2 rounded-lg text-[11px] font-medium text-center transition-colors cursor-pointer ${
             filter === 'all'
               ? isDark
-                ? 'bg-[#1c1d27] text-white'
+                ? 'bg-[#1A1B1E] text-white'
                 : 'bg-white text-zinc-950 shadow-2xs'
               : 'text-zinc-400 hover:text-zinc-200'
           }`}
@@ -295,7 +295,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
           className={`flex-1 py-1 px-2 rounded-lg text-[11px] font-medium text-center transition-colors cursor-pointer ${
             filter === 'soon'
               ? isDark
-                ? 'bg-[#1c1d27] text-white'
+                ? 'bg-[#1A1B1E] text-white'
                 : 'bg-white text-zinc-950 shadow-2xs'
               : 'text-zinc-400 hover:text-zinc-200'
           }`}
@@ -332,7 +332,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                       ? 'bg-amber-500/5 border-amber-500/20 hover:border-amber-500/40'
                       : 'bg-amber-50/40 border-amber-200 hover:border-amber-300'
                     : isDark
-                    ? 'bg-[#151620] border-[#20222f] hover:border-zinc-700'
+                    ? 'bg-[#1A1B1E] border-[#26272B] hover:border-zinc-700'
                     : 'bg-white border-zinc-200 hover:border-zinc-300 shadow-2xs'
                 }`}
               >
@@ -343,7 +343,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                       <span
                         className={`text-[9px] font-mono px-1.5 py-0.2 rounded border ${
                           isDark
-                            ? 'bg-[#171717] text-zinc-400 border-[#424242]'
+                            ? 'bg-[#111113] text-zinc-400 border-[#26272B]'
                             : 'bg-zinc-100 text-zinc-600 border-zinc-200'
                         }`}
                       >
@@ -414,7 +414,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
       {/* Footer */}
       <div
         className={`flex items-center justify-between px-3.5 py-2.5 border-t text-xs ${
-          isDark ? 'border-[#1f212c] bg-[#0e0f14]' : 'border-zinc-200 bg-zinc-50'
+          isDark ? 'border-[#26272B] bg-[#0e0f14]' : 'border-zinc-200 bg-zinc-50'
         }`}
       >
         <button

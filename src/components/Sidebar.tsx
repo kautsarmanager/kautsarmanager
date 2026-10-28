@@ -14,6 +14,8 @@ import {
   LogOut,
   Smartphone,
   ShieldCheck,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { UserProfile, DashboardSummary, UserAccount } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -33,6 +35,7 @@ interface SidebarProps {
   currentUser?: UserAccount | null;
   onLockApp?: () => void;
   onLogout?: () => void;
+  onToggleTheme?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -48,6 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentUser,
   onLockApp,
   onLogout,
+  onToggleTheme,
 }) => {
   const navItems = [
     {
@@ -104,41 +108,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col border-r transition-all duration-200 ease-in-out md:translate-x-0 ${
-          collapsed ? 'md:w-[68px] w-60' : 'md:w-[248px] w-60'
+        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col border-r pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] transition-all duration-200 ease-in-out md:translate-x-0 ${
+          collapsed ? 'md:w-[68px] w-[272px] max-w-[85vw]' : 'md:w-[248px] w-[272px] max-w-[85vw]'
         } ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         } ${
           isDark
-            ? 'bg-[#171717] border-[#424242] text-zinc-300'
+            ? 'bg-[#111113] border-[#26272B] text-zinc-300'
             : 'bg-white border-zinc-200 text-zinc-700 shadow-2xs'
         }`}
       >
         {/* Workspace Brand (Linear / Raycast Style) */}
         <div
           className={`flex items-center justify-between px-4 h-14 border-b ${
-            isDark ? 'border-[#424242]' : 'border-zinc-200'
+            isDark ? 'border-[#26272B]' : 'border-zinc-200'
           }`}
         >
           <div className="flex items-center gap-2.5">
             <div
               className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs tracking-wider border shadow-xs ${
                 isDark
-                  ? 'bg-[#2f2f2f] border-[#424242] text-blue-400'
+                  ? 'bg-[#1A1B1E] border-[#26272B] text-blue-400'
                   : 'bg-lime-50 border-lime-200 text-blue-600'
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
             </div>
             <div className={collapsed ? 'md:hidden' : ''}>
-              <span className={`text-xs font-semibold tracking-tight ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
+              <span className={`text-sm font-semibold tracking-tight ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
                 Manager
               </span>
               <span className="block text-[10px] text-zinc-500 font-mono leading-none">v1.2</span>
             </div>
           </div>
           <button type="button" onClick={onToggleCollapsed}
-            className={`hidden md:flex p-1 rounded-md ${isDark ? 'text-zinc-400 hover:bg-[#303030]' : 'text-zinc-500 hover:bg-[#EAEAEA]'}`}
+            className={`hidden md:flex p-1 rounded-md ${isDark ? 'text-zinc-400 hover:bg-[#1F2024]' : 'text-zinc-500 hover:bg-[#EAEAEA]'}`}
             title={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
             aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}>
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -165,13 +169,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onTabChange(item.id);
                   onCloseMobile();
                 }}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
+                className={`w-full flex items-center justify-between px-3 py-2.5 md:py-2 rounded-lg text-[13px] font-medium cursor-pointer ${
                   isActive
                     ? isDark
-                      ? 'bg-[#1e3a5f] text-white font-semibold shadow-xs'
+                      ? 'bg-[#172A5C] text-white font-semibold shadow-xs'
                       : 'bg-blue-50 text-blue-950 font-semibold'
                     : isDark
-                    ? 'text-zinc-400 hover:text-zinc-200 hover:bg-[#16171e]'
+                    ? 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1A1B1E]'
                     : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
                 }`}
               >
@@ -195,7 +199,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           ? 'bg-lime-500/20 text-lime-300'
                           : 'bg-lime-100 text-lime-700'
                         : isDark
-                        ? 'bg-[#2f2f2f] text-zinc-500'
+                        ? 'bg-[#1A1B1E] text-zinc-500'
                         : 'bg-zinc-200 text-zinc-600'
                     }`}
                   >
@@ -210,7 +214,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Minimal User Profile, PWA, & System Status */}
         <div
           className={`p-3 border-t space-y-2.5 ${
-            isDark ? 'border-[#424242] bg-[#0c0d11]' : 'border-zinc-200 bg-zinc-50'
+            isDark ? 'border-[#26272B] bg-[#0E0E10]' : 'border-zinc-200 bg-zinc-50'
           }`}
         >
           {/* PWA Mobile App Install Button */}
@@ -218,12 +222,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <PWAInstallButton isDark={isDark} />
           </div>
 
+          {onToggleTheme && (
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              className={`w-full flex items-center gap-2.5 px-3 py-2.5 md:py-2 rounded-lg text-[13px] font-medium cursor-pointer md:hidden ${
+                isDark ? 'text-zinc-300 hover:bg-[#1A1B1E]' : 'text-zinc-700 hover:bg-zinc-100'
+              }`}
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <span>{isDark ? 'Mode terang' : 'Mode gelap'}</span>
+            </button>
+          )}
+
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <div
                 className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold border shrink-0 ${
                   isDark
-                    ? 'bg-[#181922] border-[#292b38] text-blue-400'
+                    ? 'bg-[#1A1B1E] border-[#26272B] text-blue-400'
                     : 'bg-white border-zinc-300 text-blue-600'
                 }`}
               >
@@ -247,7 +264,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   type="button"
                   onClick={onLockApp}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                    isDark ? 'text-zinc-400 hover:text-white hover:bg-[#2f2f2f]' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200'
+                    isDark ? 'text-zinc-400 hover:text-white hover:bg-[#1A1B1E]' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200'
                   }`}
                   title="Kunci Aplikasi dengan PIN"
                   aria-label="Kunci aplikasi"
@@ -261,7 +278,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   type="button"
                   onClick={onLogout}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                    isDark ? 'text-zinc-400 hover:text-rose-400 hover:bg-[#2f2f2f]' : 'text-zinc-500 hover:text-rose-600 hover:bg-zinc-200'
+                    isDark ? 'text-zinc-400 hover:text-rose-400 hover:bg-[#1A1B1E]' : 'text-zinc-500 hover:text-rose-600 hover:bg-zinc-200'
                   }`}
                   title="Keluar Akun"
                   aria-label="Keluar akun"

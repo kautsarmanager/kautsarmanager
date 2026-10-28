@@ -149,10 +149,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {/* Profile Form */}
       <div
         className={`p-5 rounded-2xl border transition-all ${
-          isDark ? 'bg-[#171822] border-[#272938]' : 'bg-white border-[#e5e7ef] shadow-xs'
+          isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-white border-[#e5e7ef] shadow-xs'
         }`}
       >
-        <div className={`flex items-center gap-2 pb-3 mb-4 border-b ${isDark ? 'border-[#242634]' : 'border-[#e8ebf2]'}`}>
+        <div className={`flex items-center gap-2 pb-3 mb-4 border-b ${isDark ? 'border-[#26272B]' : 'border-[#e8ebf2]'}`}>
           <User className="w-4 h-4 text-zinc-400" />
           <h3 className={`text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
             Profil Pengguna
@@ -173,7 +173,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 required
                 className={`w-full px-3.5 py-2.5 rounded-xl border focus:outline-hidden ${
                   isDark
-                    ? 'bg-[#13141b] border-[#292c3a] text-zinc-100 focus:border-lime-400'
+                    ? 'bg-[#0E0E10] border-[#26272B] text-zinc-100 focus:border-lime-400'
                     : 'bg-[#f8f9fc] border-[#e2e5ef] text-zinc-900 focus:border-lime-500'
                 }`}
               />
@@ -190,7 +190,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 aria-readonly="true"
                 className={`w-full px-3.5 py-2.5 rounded-xl border focus:outline-hidden ${
                   isDark
-                    ? 'bg-[#13141b] border-[#292c3a] text-zinc-100 focus:border-lime-400'
+                    ? 'bg-[#0E0E10] border-[#26272B] text-zinc-100 focus:border-lime-400'
                     : 'bg-[#f8f9fc] border-[#e2e5ef] text-zinc-900 focus:border-lime-500'
                 }`}
               />
@@ -215,10 +215,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {/* Account, Referral & PIN Security Section */}
       <div
         className={`p-5 rounded-2xl border text-xs space-y-4 transition-all ${
-          isDark ? 'bg-[#171822] border-[#272938]' : 'bg-white border-[#e5e7ef] shadow-xs'
+          isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-white border-[#e5e7ef] shadow-xs'
         }`}
       >
-        <div className={`flex items-center justify-between pb-3 border-b ${isDark ? 'border-[#242634]' : 'border-[#e8ebf2]'}`}>
+        <div className={`flex items-center justify-between pb-3 border-b ${isDark ? 'border-[#26272B]' : 'border-[#e8ebf2]'}`}>
           <div className="flex items-center gap-2">
             <KeyRound className="w-4 h-4 text-lime-400" />
             <h3 className={`text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
@@ -236,13 +236,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           )}
         </div>
 
-        <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#13141b] border-[#222432]' : 'bg-zinc-50 border-zinc-200'}`}>
+        <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#0E0E10] border-[#26272B]' : 'bg-zinc-50 border-zinc-200'}`}>
           <p className="text-[10px] uppercase font-mono text-zinc-500 font-semibold">Akun aktif</p>
           <p className="text-sm font-bold text-lime-400 mt-1">{currentUser?.email || profile.email || 'Belum tersedia'}</p>
           <p className="text-[10px] text-zinc-400 mt-0.5">Autentikasi dan sesi dikelola oleh Supabase Auth.</p>
         </div>
 
-        <div className={`p-3.5 rounded-xl border ${isDark ? 'bg-[#13141b] border-[#222432]' : 'bg-zinc-50 border-zinc-200'}`}>
+        <div className={`p-3.5 rounded-xl border ${isDark ? 'bg-[#0E0E10] border-[#26272B]' : 'bg-zinc-50 border-zinc-200'}`}>
           <div className="flex items-center gap-2 mb-2">
             <LockKeyhole className="w-4 h-4 text-lime-400" />
             <p className="font-semibold">PIN kunci aplikasi</p>
@@ -259,11 +259,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             setPinConfigured(true); setPin(''); setConfirmPin(''); setCurrentPin(''); setPinMessage('PIN berhasil disimpan ke akun dan disinkronkan.');
           }} className="space-y-2">
             {pinConfigured && (
-              <input aria-label="PIN saat ini" type="password" inputMode="numeric" autoComplete="off" maxLength={6} pattern="[0-9]{6}" value={currentPin} onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="PIN saat ini" className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isDark ? 'bg-[#0d0e14] border-[#303241] text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'}`} />
+              <input aria-label="PIN saat ini" type="password" inputMode="numeric" autoComplete="off" maxLength={6} pattern="[0-9]{6}" value={currentPin} onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="PIN saat ini" className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isDark ? 'bg-[#0E0E10] border-[#26272B] text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'}`} />
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <input aria-label="PIN baru" type="password" inputMode="numeric" autoComplete="off" maxLength={6} pattern="[0-9]{6}" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="PIN baru (6 digit)" className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isDark ? 'bg-[#0d0e14] border-[#303241] text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'}`} />
-              <input aria-label="Konfirmasi PIN" type="password" inputMode="numeric" autoComplete="off" maxLength={6} pattern="[0-9]{6}" value={confirmPin} onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="Ulangi PIN" className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isDark ? 'bg-[#0d0e14] border-[#303241] text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'}`} />
+              <input aria-label="PIN baru" type="password" inputMode="numeric" autoComplete="off" maxLength={6} pattern="[0-9]{6}" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="PIN baru (6 digit)" className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isDark ? 'bg-[#0E0E10] border-[#26272B] text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'}`} />
+              <input aria-label="Konfirmasi PIN" type="password" inputMode="numeric" autoComplete="off" maxLength={6} pattern="[0-9]{6}" value={confirmPin} onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="Ulangi PIN" className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isDark ? 'bg-[#0E0E10] border-[#26272B] text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'}`} />
             </div>
             <div className="flex flex-wrap gap-2">
               <button type="submit" className="px-3 py-2 rounded-lg bg-lime-500 hover:bg-lime-400 text-zinc-950 font-semibold text-xs">{pinConfigured ? 'Ganti PIN' : 'Atur PIN'}</button>
@@ -282,7 +282,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         {/* PWA Mobile App Section */}
         <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
-          isDark ? 'bg-[#13141b] border-[#222432]' : 'bg-zinc-50 border-zinc-200'
+          isDark ? 'bg-[#0E0E10] border-[#26272B]' : 'bg-zinc-50 border-zinc-200'
         }`}>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-lime-500/15 text-lime-400 flex items-center justify-center shrink-0">
@@ -302,17 +302,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {/* Backup & Reset Data */}
       <div
         className={`p-5 rounded-2xl border text-xs space-y-4 transition-all ${
-          isDark ? 'bg-[#171822] border-[#272938]' : 'bg-white border-[#e5e7ef] shadow-xs'
+          isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-white border-[#e5e7ef] shadow-xs'
         }`}
       >
-        <div className={`flex items-center gap-2 pb-3 border-b ${isDark ? 'border-[#242634]' : 'border-[#e8ebf2]'}`}>
+        <div className={`flex items-center gap-2 pb-3 border-b ${isDark ? 'border-[#26272B]' : 'border-[#e8ebf2]'}`}>
           <Shield className="w-4 h-4 text-amber-500" />
           <h3 className={`text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
             Cadangan & Reset Data
           </h3>
         </div>
 
-        <div role="status" className={`p-3 rounded-xl border text-[11px] ${syncStatus.failed > 0 ? 'border-rose-500/30 text-rose-400' : syncStatus.pending > 0 ? 'border-amber-500/30 text-amber-400' : isDark ? 'border-[#252837] text-emerald-400' : 'border-zinc-200 text-emerald-600'}`}>
+        <div role="status" className={`p-3 rounded-xl border text-[11px] ${syncStatus.failed > 0 ? 'border-rose-500/30 text-rose-400' : syncStatus.pending > 0 ? 'border-amber-500/30 text-amber-400' : isDark ? 'border-[#26272B] text-emerald-400' : 'border-zinc-200 text-emerald-600'}`}>
           {syncStatus.failed > 0
             ? `${syncStatus.failed} perubahan gagal disinkronkan secara permanen. Ekspor cadangan JSON (berisi daftar failed_sync) dan hubungi pengelola.`
             : syncStatus.pending > 0
@@ -323,7 +323,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <div
           className={`flex flex-col sm:flex-row items-center justify-between gap-4 p-3.5 rounded-xl border ${
             isDark
-              ? 'bg-[#13141b] border-[#252837]'
+              ? 'bg-[#0E0E10] border-[#26272B]'
               : 'bg-[#f8f9fc] border-[#e2e5ef]'
           }`}
         >

@@ -1,5 +1,5 @@
 // Personal Management System - PWA Service Worker
-const CACHE_NAME = 'pms-cache-v2';
+const CACHE_NAME = 'pms-cache-v3';
 const ASSETS_TO_CACHE = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg'];
 
 self.addEventListener('install', (event) => {

@@ -73,7 +73,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
       <div
         onClick={(e) => e.stopPropagation()}
         className={`w-full max-w-xl border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[75vh] cursor-default ${
-          isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-300'
+          isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-white border-zinc-300'
         }`}
       >
         {/* Search Input Bar (Raycast-like) */}
@@ -131,7 +131,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                           onClose();
                         }}
                         className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
-                          isDark ? 'hover:bg-[#1d1f2a]' : 'hover:bg-zinc-100'
+                          isDark ? 'hover:bg-[#1A1B1E]' : 'hover:bg-zinc-100'
                         }`}
                       >
                         <div className="min-w-0 flex-1">
@@ -163,7 +163,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                           onClose();
                         }}
                         className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
-                          isDark ? 'hover:bg-[#1d1f2a]' : 'hover:bg-zinc-100'
+                          isDark ? 'hover:bg-[#1A1B1E]' : 'hover:bg-zinc-100'
                         }`}
                       >
                         <div className="min-w-0 flex-1">
@@ -199,7 +199,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                           onClose();
                         }}
                         className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
-                          isDark ? 'hover:bg-[#1d1f2a]' : 'hover:bg-zinc-100'
+                          isDark ? 'hover:bg-[#1A1B1E]' : 'hover:bg-zinc-100'
                         }`}
                       >
                         <div className="min-w-0 flex-1">
@@ -229,7 +229,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                           onClose();
                         }}
                         className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
-                          isDark ? 'hover:bg-[#1d1f2a]' : 'hover:bg-zinc-100'
+                          isDark ? 'hover:bg-[#1A1B1E]' : 'hover:bg-zinc-100'
                         }`}
                       >
                         <div className="min-w-0 flex-1">

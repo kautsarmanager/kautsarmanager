@@ -1,70 +1,111 @@
 @import "tailwindcss";
 
-/* Manager UI system — aligned with the approved UI/UX specification. */
-@layer base {
-  :root {
-    color-scheme: light;
-    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    --bg: #F7F7F8;
-    --sidebar: #F0F0F0;
-    --surface: #FFFFFF;
-    --surface-hover: #EAEAEA;
-    --border: #E5E7EB;
-    --text: #171717;
-    --text-muted: #737373;
-    --accent: #2563EB;
-    --accent-hover: #1D4ED8;
-    --success: #15803D;
-    --danger: #B91C1C;
-    --warning: #92400E;
-    --radius-card: 14px;
-    --pms-radius: 14px;
-    --pms-border-dark: rgba(0,0,0,.10);
-    --pms-border-light: #E5E7EB;
-    --manager-ink: #171717;
-    --manager-bg: #F7F7F8;
-    --manager-white: #FFFFFF;
-  }
-  html { background: var(--bg); }
-  body {
-    min-height: 100vh;
-    font-family: var(--font-sans);
-    letter-spacing: -0.01em;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  * { scrollbar-color: rgba(128,128,128,.35) transparent; }
+/* ------------------------------------------------------------------
+   Manager UI - dark, minimal, clean.
+   Palette: black / gray / white / navy blue.
+   Re-mapping the Tailwind lime / indigo / blue scales to navy means every
+   existing accent class (bg-lime-600, text-lime-400, border-lime-500/50 ...)
+   follows the new palette automatically, including opacity variants.
+------------------------------------------------------------------- */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --color-lime-50:  #EEF2FF;
+  --color-lime-100: #E0E7FF;
+  --color-lime-200: #C7D2FE;
+  --color-lime-300: #A5BBF8;
+  --color-lime-400: #7C9CF5;
+  --color-lime-500: #2D50B5;
+  --color-lime-600: #1E3A8A;
+  --color-lime-700: #172E6E;
+  --color-lime-800: #11235A;
+  --color-lime-900: #0B1741;
+
+  --color-indigo-50:  #EEF2FF;
+  --color-indigo-100: #E0E7FF;
+  --color-indigo-200: #C7D2FE;
+  --color-indigo-300: #A5BBF8;
+  --color-indigo-400: #7C9CF5;
+  --color-indigo-500: #2D50B5;
+  --color-indigo-600: #1E3A8A;
+  --color-indigo-700: #172E6E;
+
+  --color-blue-50:  #EEF2FF;
+  --color-blue-100: #E0E7FF;
+  --color-blue-200: #C7D2FE;
+  --color-blue-300: #A5BBF8;
+  --color-blue-400: #7C9CF5;
+  --color-blue-500: #4A6CD0;
+  --color-blue-600: #1E3A8A;
+  --color-blue-700: #172E6E;
+  --color-blue-950: #0B1741;
 }
 
+@layer base {
+  :root {
+    color-scheme: dark light;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --bg: #0A0A0B;
+    --surface: #111113;
+    --surface-2: #1A1B1E;
+    --surface-hover: #1F2024;
+    --border: #26272B;
+    --text: #FAFAFA;
+    --text-muted: #9CA3AF;
+    --accent: #1E3A8A;
+    --accent-soft: #7C9CF5;
+
+    --radius-card: 14px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --bottom-nav-h: 64px;
+  }
+
+  html {
+    background: var(--bg);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    letter-spacing: -0.005em;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  * { scrollbar-color: rgba(156,163,175,.28) transparent; }
+}
+
+/* ---------- Interaction polish ---------- */
 button, a, input, select, textarea {
   transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease,
     box-shadow 160ms ease, opacity 160ms ease, transform 160ms ease;
 }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid #2563EB;
+  outline: 2px solid #7C9CF5;
   outline-offset: 2px;
 }
-input::placeholder, textarea::placeholder { opacity: .58; }
+input::placeholder, textarea::placeholder { opacity: .55; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(128,128,128,.30); border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,.48); }
-::selection { background: rgba(37,99,235,.20); color: inherit; }
+::-webkit-scrollbar-thumb { background: rgba(156,163,175,.26); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(156,163,175,.45); }
+::selection { background: rgba(124,156,245,.30); color: inherit; }
 
-/* Replace the previous monochrome/lime accents with the approved blue accent. */
-.bg-indigo-600, .bg-lime-600 { background-color: #2563EB !important; }
-.bg-indigo-500, .bg-lime-500 { background-color: #3B82F6 !important; }
-.text-indigo-400, .text-lime-300, .text-lime-400, .text-lime-500 { color: #60A5FA !important; }
-.text-indigo-500, .text-lime-600, .text-lime-700 { color: #2563EB !important; }
-.border-indigo-500, .border-lime-500 { border-color: #2563EB !important; }
-.ring-indigo-500, .ring-lime-500 { --tw-ring-color: #2563EB !important; }
-.focus\\:border-indigo-500:focus, .focus\\:border-lime-500:focus { border-color: #2563EB !important; }
+/* Navy buttons get a hairline so they stay visible on near-black. */
+.bg-lime-600 { box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
 
-/* Consistent neutral cards and readable content surfaces. */
 .rounded-2xl { border-radius: 14px; }
 .rounded-xl { border-radius: 12px; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     scroll-behavior: auto !important;
@@ -74,37 +115,62 @@ input::placeholder, textarea::placeholder { opacity: .58; }
   }
 }
 
-/* Responsive consistency layer: keep layouts usable from small phones to desktop. */
+/* ---------- Typography: one family, one scale, on every device ---------- */
+/* Mono was used for dates/counters, which made small labels look mismatched.
+   Keep Inter everywhere and use tabular figures so numbers still align. */
+.font-mono {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+/* Floor for tiny text so it stays legible on phones (was 9-11px). */
+.text-\[9px\]  { font-size: 11px; line-height: 1.35; }
+.text-\[10px\] { font-size: 11px; line-height: 1.35; }
+.text-\[11px\] { font-size: 12px; line-height: 1.4; }
+.text-xs       { font-size: 12.5px; line-height: 1.45; }
+.text-sm       { font-size: 14px; line-height: 1.5; }
+h1, h2, h3, h4 { letter-spacing: -0.015em; text-wrap: balance; }
+p { text-wrap: pretty; }
+td, th, .tabular-nums { font-variant-numeric: tabular-nums; }
+
+/* ---------- Icons: even optical size (14px and 12px icons become 16px/14px) ---------- */
+svg.w-3 { width: 14px; height: 14px; }
+svg.w-3\.5 { width: 16px; height: 16px; }
+svg[class*="lucide"] { flex-shrink: 0; }
+
+/* ---------- Responsive foundation ---------- */
 *, *::before, *::after { box-sizing: border-box; }
 html, body, #root { width: 100%; min-width: 0; }
 body { overflow-x: hidden; }
 img, video, canvas, svg { max-width: 100%; }
-/* Flex/grid children must be allowed to shrink instead of stretching panels. */
 .flex > *, .grid > * { min-width: 0; }
-/* Long labels, IDs and user-entered content must not force a wider viewport. */
 .break-words, p, h1, h2, h3, h4, label { overflow-wrap: anywhere; }
-/* Tables retain their columns and scroll inside their own region on narrow screens. */
 :where(.overflow-x-auto, .overflow-auto) { max-width: 100%; -webkit-overflow-scrolling: touch; }
 table { max-width: 100%; }
-/* Inputs remain inside cards and comfortable to use on touch devices. */
 input, select, textarea { max-width: 100%; min-width: 0; }
 button, [role="button"] { touch-action: manipulation; }
 
-@media (max-width: 640px) {
-  body { font-size: 14px; }
-  main { min-width: 0; }
-  /* Avoid fixed/min-content controls pushing cards beyond the viewport. */
-  .flex, .inline-flex, .grid { min-width: 0; }
-  .flex-wrap { row-gap: .5rem; }
-  /* Forms stack cleanly on phones unless a component explicitly controls layout. */
-  input:not([type="checkbox"]):not([type="radio"]), select, textarea {
-    font-size: 16px; /* avoids iOS zoom when focusing inputs */
+/* App shell: content clears the bottom navigation + home indicator on phones. */
+.app-main { padding-bottom: calc(var(--bottom-nav-h) + var(--safe-bottom) + 12px); }
+@media (min-width: 768px) { .app-main { padding-bottom: 0; } }
+
+/* Touch devices: icon-only buttons get a proper 40px target and even spacing. */
+@media (pointer: coarse) {
+  button:has(> svg:only-child) {
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
-  /* Keep controls readable and tappable without forcing oversized panels. */
-  button { max-width: 100%; }
-  .overflow-x-auto { overscroll-behavior-x: contain; }
 }
 
-@media (min-width: 641px) and (max-width: 1023px) {
+@media (max-width: 640px) {
   main { min-width: 0; }
+  .flex, .inline-flex, .grid { min-width: 0; }
+  .flex-wrap { row-gap: .5rem; }
+  /* 16px prevents iOS from zooming the page when an input gets focus. */
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px; }
+  button { max-width: 100%; }
+  .overflow-x-auto { overscroll-behavior-x: contain; }
 }

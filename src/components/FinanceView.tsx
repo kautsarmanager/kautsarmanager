@@ -118,8 +118,8 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
     }), [periodTransactions, filterType, sortMode]);
 
   const selectedDayTransactions = periodTransactions.filter((t) => filterType === 'all' || t.type === filterType);
-  const surfaceClass = isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-[#e5e5e5]';
-  const controlClass = isDark ? 'bg-[#212121] border-[#424242] text-zinc-100' : 'bg-white border-zinc-200 text-zinc-800';
+  const surfaceClass = isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-white border-[#e5e5e5]';
+  const controlClass = isDark ? 'bg-[#0A0A0B] border-[#26272B] text-zinc-100' : 'bg-white border-zinc-200 text-zinc-800';
 
   const handleCreateTransaction = (e: React.FormEvent) => {
     e.preventDefault();
@@ -235,47 +235,47 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
             </div>
             <p className="text-xs text-zinc-500 mt-1">Ringkasan dan daftar transaksi mengikuti rentang waktu yang dipilih.</p>
           </div>
-          <div className="flex flex-wrap items-center gap-1">
-            <div className="flex items-center gap-2" aria-label="Pilih tanggal cashflow">
-              <button type="button" onClick={() => { const d = dateFromLocal(selectedDay); d.setDate(d.getDate() - 1); setSelectedDay(dateKey(d)); setCashflowPeriod('today'); }} aria-label="Hari sebelumnya" title="Hari sebelumnya" className={`h-10 w-10 shrink-0 rounded-lg border flex items-center justify-center ${isDark ? 'border-[#424242] bg-[#212121] hover:bg-[#383838]' : 'border-zinc-200 bg-white hover:bg-zinc-100'}`}><ChevronLeft className="h-4 w-4" /></button>
-              <div className={`flex h-10 w-[250px] max-w-[calc(100vw-190px)] min-w-0 items-center justify-center rounded-lg border px-3 text-center ${isDark ? 'border-[#424242] bg-[#212121]' : 'border-zinc-200 bg-white'}`}>
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-2 w-full sm:w-auto" aria-label="Pilih tanggal cashflow">
+              <button type="button" onClick={() => { const d = dateFromLocal(selectedDay); d.setDate(d.getDate() - 1); setSelectedDay(dateKey(d)); setCashflowPeriod('today'); }} aria-label="Hari sebelumnya" title="Hari sebelumnya" className={`h-10 w-10 shrink-0 rounded-lg border flex items-center justify-center ${isDark ? 'border-[#26272B] bg-[#0A0A0B] hover:bg-[#232428]' : 'border-zinc-200 bg-white hover:bg-zinc-100'}`}><ChevronLeft className="h-4 w-4" /></button>
+              <div className={`flex h-10 flex-1 sm:flex-none sm:w-[250px] min-w-0 items-center justify-center rounded-lg border px-3 text-center ${isDark ? 'border-[#26272B] bg-[#0A0A0B]' : 'border-zinc-200 bg-white'}`}>
                 <span className={`truncate text-xs font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-800'}`}>{selectedDay === today ? 'Hari ini' : formatDateLong(selectedDay)}</span>
               </div>
-              <button type="button" onClick={() => { const d = dateFromLocal(selectedDay); d.setDate(d.getDate() + 1); setSelectedDay(dateKey(d)); setCashflowPeriod('today'); }} aria-label="Hari berikutnya" title="Hari berikutnya" className={`h-10 w-10 shrink-0 rounded-lg border flex items-center justify-center ${isDark ? 'border-[#424242] bg-[#212121] hover:bg-[#383838]' : 'border-zinc-200 bg-white hover:bg-zinc-100'}`}><ChevronRight className="h-4 w-4" /></button>
-              <label className={`relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border ${isDark ? 'border-[#424242] bg-[#212121] hover:bg-[#383838]' : 'border-zinc-200 bg-white hover:bg-zinc-100'}`} title="Pilih tanggal tertentu" aria-label="Pilih tanggal tertentu">
+              <button type="button" onClick={() => { const d = dateFromLocal(selectedDay); d.setDate(d.getDate() + 1); setSelectedDay(dateKey(d)); setCashflowPeriod('today'); }} aria-label="Hari berikutnya" title="Hari berikutnya" className={`h-10 w-10 shrink-0 rounded-lg border flex items-center justify-center ${isDark ? 'border-[#26272B] bg-[#0A0A0B] hover:bg-[#232428]' : 'border-zinc-200 bg-white hover:bg-zinc-100'}`}><ChevronRight className="h-4 w-4" /></button>
+              <label className={`relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border ${isDark ? 'border-[#26272B] bg-[#0A0A0B] hover:bg-[#232428]' : 'border-zinc-200 bg-white hover:bg-zinc-100'}`} title="Pilih tanggal tertentu" aria-label="Pilih tanggal tertentu">
                 <Calendar className="h-4 w-4 text-zinc-400" />
                 <input type="date" aria-label="Pilih tanggal cashflow" value={selectedDay} onChange={(e) => { if (e.target.value) { setSelectedDay(e.target.value); setCashflowPeriod('today'); } }} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
               </label>
             </div>
             {([['week', 'Minggu ini'], ['month', 'Bulanan'], ['year', 'Tahunan'], ['all', 'All time']] as const).map(([value, label]) => (
-              <button key={value} onClick={() => setCashflowPeriod(value)} className={`rounded-lg px-3 py-2 text-xs font-medium ${cashflowPeriod === value ? 'bg-lime-600 text-white' : isDark ? 'bg-[#212121] text-zinc-300' : 'bg-zinc-100 text-zinc-700'}`}>{label}</button>
+              <button key={value} onClick={() => setCashflowPeriod(value)} className={`rounded-lg px-3 py-2 text-xs font-medium ${cashflowPeriod === value ? 'bg-lime-600 text-white' : isDark ? 'bg-[#0A0A0B] text-zinc-300' : 'bg-zinc-100 text-zinc-700'}`}>{label}</button>
             ))}
-            <button type="button" onClick={() => setCashflowPeriod('custom')} className={`rounded-lg px-3 py-2 text-xs font-medium ${cashflowPeriod === 'custom' ? 'bg-lime-600 text-white' : isDark ? 'bg-[#212121] text-zinc-300' : 'bg-zinc-100 text-zinc-700'}`}>Kustom</button>
+            <button type="button" onClick={() => setCashflowPeriod('custom')} className={`rounded-lg px-3 py-2 text-xs font-medium ${cashflowPeriod === 'custom' ? 'bg-lime-600 text-white' : isDark ? 'bg-[#0A0A0B] text-zinc-300' : 'bg-zinc-100 text-zinc-700'}`}>Kustom</button>
           </div>
         </div>
         {cashflowPeriod === 'custom' && (
-          <div className={`mt-3 flex flex-col gap-3 rounded-xl border p-3 sm:flex-row sm:items-end ${isDark ? 'border-[#424242] bg-[#212121]' : 'border-zinc-200 bg-zinc-50'}`}>
+          <div className={`mt-3 flex flex-col gap-3 rounded-xl border p-3 sm:flex-row sm:items-end ${isDark ? 'border-[#26272B] bg-[#0A0A0B]' : 'border-zinc-200 bg-zinc-50'}`}>
             <div className="flex-1">
               <label htmlFor="cashflow-custom-start" className="mb-1 block text-xs text-zinc-500">Tanggal awal</label>
-              <input id="cashflow-custom-start" type="date" value={customStart} max={customEnd} onChange={(e) => e.target.value && setCustomStart(e.target.value)} className={`w-full rounded-lg border p-2 text-sm ${isDark ? 'border-[#424242] bg-[#303030] text-zinc-100' : 'border-zinc-300 bg-white text-zinc-900'}`} />
+              <input id="cashflow-custom-start" type="date" value={customStart} max={customEnd} onChange={(e) => e.target.value && setCustomStart(e.target.value)} className={`w-full rounded-lg border p-2 text-sm ${isDark ? 'border-[#26272B] bg-[#1F2024] text-zinc-100' : 'border-zinc-300 bg-white text-zinc-900'}`} />
             </div>
             <div className="flex-1">
               <label htmlFor="cashflow-custom-end" className="mb-1 block text-xs text-zinc-500">Tanggal akhir</label>
-              <input id="cashflow-custom-end" type="date" value={customEnd} min={customStart} onChange={(e) => e.target.value && setCustomEnd(e.target.value)} className={`w-full rounded-lg border p-2 text-sm ${isDark ? 'border-[#424242] bg-[#303030] text-zinc-100' : 'border-zinc-300 bg-white text-zinc-900'}`} />
+              <input id="cashflow-custom-end" type="date" value={customEnd} min={customStart} onChange={(e) => e.target.value && setCustomEnd(e.target.value)} className={`w-full rounded-lg border p-2 text-sm ${isDark ? 'border-[#26272B] bg-[#1F2024] text-zinc-100' : 'border-zinc-300 bg-white text-zinc-900'}`} />
             </div>
-            <button type="button" onClick={() => { setCustomStart(today); setCustomEnd(today); setSelectedDay(today); setCashflowPeriod('today'); }} className={`rounded-lg px-3 py-2 text-xs font-medium ${isDark ? 'bg-[#383838] text-zinc-200' : 'bg-white text-zinc-700 border border-zinc-200'}`}>Kembali ke hari ini</button>
+            <button type="button" onClick={() => { setCustomStart(today); setCustomEnd(today); setSelectedDay(today); setCashflowPeriod('today'); }} className={`rounded-lg px-3 py-2 text-xs font-medium ${isDark ? 'bg-[#232428] text-zinc-200' : 'bg-white text-zinc-700 border border-zinc-200'}`}>Kembali ke hari ini</button>
           </div>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-          <div className={`rounded-xl p-3 ${isDark ? 'bg-[#212121]' : 'bg-[#f7f7f7]'}`}>
+          <div className={`rounded-xl p-3 ${isDark ? 'bg-[#0A0A0B]' : 'bg-[#f7f7f7]'}`}>
             <p className="text-xs text-zinc-500">Total pemasukan</p>
             <p className="mt-1 text-base font-semibold text-emerald-500">+ {formatCurrency(dailyIncome)}</p>
           </div>
-          <div className={`rounded-xl p-3 ${isDark ? 'bg-[#212121]' : 'bg-[#f7f7f7]'}`}>
+          <div className={`rounded-xl p-3 ${isDark ? 'bg-[#0A0A0B]' : 'bg-[#f7f7f7]'}`}>
             <p className="text-xs text-zinc-500">Total pengeluaran</p>
             <p className="mt-1 text-base font-semibold text-rose-500">− {formatCurrency(dailyExpense)}</p>
           </div>
-          <div className={`rounded-xl p-3 ${isDark ? 'bg-[#212121]' : 'bg-[#f7f7f7]'}`}>
+          <div className={`rounded-xl p-3 ${isDark ? 'bg-[#0A0A0B]' : 'bg-[#f7f7f7]'}`}>
             <p className="text-xs text-zinc-500">Arus kas bersih</p>
             <p className={`mt-1 text-base font-semibold ${dailyNet >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{dailyNet >= 0 ? '+' : '−'} {formatCurrency(Math.abs(dailyNet))}</p>
             <p className="text-[11px] text-zinc-500 mt-1">{selectedDayTransactions.length} transaksi</p>
@@ -289,14 +289,14 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
           <SlidersHorizontal className="w-3.5 h-3.5" /> Filter & urutkan catatan cashflow
         </div>
         <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
-          <div className={`flex flex-wrap items-center gap-1 rounded-xl p-1 ${isDark ? 'bg-[#212121]' : 'bg-[#f7f7f7]'}`}>
+          <div className={`flex flex-wrap items-center gap-1 rounded-xl p-1 ${isDark ? 'bg-[#0A0A0B]' : 'bg-[#f7f7f7]'}`}>
             {([
               ['all', `Semua (${periodTransactions.length})`],
               ['income', 'Pemasukan'],
               ['expense', 'Pengeluaran'],
             ] as const).map(([value, label]) => (
               <button key={value} onClick={() => setFilterType(value)}
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${filterType === value ? (isDark ? 'bg-[#424242] text-white' : 'bg-white text-zinc-900 shadow-sm') : 'text-zinc-500 hover:text-current'}`}>
+                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${filterType === value ? (isDark ? 'bg-[#26272B] text-white' : 'bg-white text-zinc-900 shadow-sm') : 'text-zinc-500 hover:text-current'}`}>
                 {label}
               </button>
             ))}
@@ -319,7 +319,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
         {filteredTransactions.length === 0 ? (
           <div
             className={`p-10 text-center rounded-xl border border-dashed text-xs text-zinc-400 ${
-              isDark ? 'border-[#424242] bg-[#2f2f2f]' : 'border-zinc-300 bg-white'
+              isDark ? 'border-[#26272B] bg-[#1A1B1E]' : 'border-zinc-300 bg-white'
             }`}
           >
             Belum ada transaksi pada kategori ini.
@@ -330,7 +330,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
               key={tx.id}
               className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
                 isDark
-                  ? 'bg-[#2f2f2f] border-[#424242] hover:border-zinc-500'
+                  ? 'bg-[#1A1B1E] border-[#26272B] hover:border-zinc-500'
                   : 'bg-white border-zinc-200 hover:border-zinc-400 shadow-2xs'
               }`}
             >
@@ -383,7 +383,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
         <div onMouseDown={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div
             className={`w-full max-w-md border rounded-2xl p-5 shadow-2xl ${
-              isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-300'
+              isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-white border-zinc-300'
             }`}
           >
             <div className="flex items-center justify-between pb-3 border-b border-inherit">
@@ -400,7 +400,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
               {/* Type Switcher */}
               <div
                 className={`grid grid-cols-2 gap-1 p-1 rounded-lg border ${
-                  isDark ? 'bg-[#212121] border-[#424242]' : 'bg-zinc-100 border-zinc-200'
+                  isDark ? 'bg-[#0A0A0B] border-[#26272B]' : 'bg-zinc-100 border-zinc-200'
                 }`}
               >
                 <button
@@ -440,7 +440,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="Contoh: 50000"
                   className={`w-full px-3 py-2 rounded-lg border font-mono text-sm focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
-                    isDark ? 'bg-[#212121] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                    isDark ? 'bg-[#0A0A0B] border-[#26272B] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}
                 />
               </div>
@@ -456,7 +456,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Contoh: Makan siang, Gaji Freelance"
                   className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
-                    isDark ? 'bg-[#212121] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                    isDark ? 'bg-[#0A0A0B] border-[#26272B] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}
                 />
               </div>
@@ -472,7 +472,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                     onChange={(e) => setCategory(e.target.value)}
                     placeholder="Ketik kategori (opsional)"
                     className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden ${
-                      isDark ? 'bg-[#212121] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                      isDark ? 'bg-[#0A0A0B] border-[#26272B] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
                   />
                 </div>
@@ -487,7 +487,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden ${
-                      isDark ? 'bg-[#212121] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                      isDark ? 'bg-[#0A0A0B] border-[#26272B] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
                   />
                 </div>

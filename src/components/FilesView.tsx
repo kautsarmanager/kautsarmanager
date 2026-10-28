@@ -147,7 +147,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
       {/* Storage Status & Filter bar */}
       <div
         className={`flex items-center justify-between p-3 rounded-xl border ${
-          isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-200 shadow-2xs'
+          isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-white border-zinc-200 shadow-2xs'
         }`}
       >
         <div className="flex items-center gap-2.5 text-xs">
@@ -163,7 +163,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
           onChange={(e) => setFilterCategory(e.target.value)}
           className={`border rounded-lg px-2.5 py-1.5 text-xs focus:outline-hidden ${
             isDark
-              ? 'bg-[#171717] border-[#424242] text-zinc-300'
+              ? 'bg-[#111113] border-[#26272B] text-zinc-300'
               : 'bg-zinc-50 border-zinc-200 text-zinc-700'
           }`}
         >
@@ -181,7 +181,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
         {filteredFiles.length === 0 ? (
           <div
             className={`col-span-full p-10 text-center rounded-xl border border-dashed text-xs text-zinc-400 ${
-              isDark ? 'border-[#424242] bg-[#2f2f2f]' : 'border-zinc-300 bg-white'
+              isDark ? 'border-[#26272B] bg-[#1A1B1E]' : 'border-zinc-300 bg-white'
             }`}
           >
             Belum ada file di kategori ini.
@@ -192,7 +192,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
               key={file.id}
               className={`flex flex-col justify-between p-3.5 rounded-xl border transition-all ${
                 isDark
-                  ? 'bg-[#2f2f2f] border-[#424242] hover:border-zinc-700'
+                  ? 'bg-[#1A1B1E] border-[#26272B] hover:border-zinc-700'
                   : 'bg-white border-zinc-200 hover:border-zinc-400 shadow-2xs'
               }`}
             >
@@ -200,7 +200,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
                 <div className="flex items-start justify-between gap-2">
                   <div
                     className={`p-1.5 rounded-lg border ${
-                      isDark ? 'bg-[#171717] border-[#424242]' : 'bg-zinc-50 border-zinc-200'
+                      isDark ? 'bg-[#111113] border-[#26272B]' : 'bg-zinc-50 border-zinc-200'
                     }`}
                   >
                     {getFileIcon(file.file_type)}
@@ -248,7 +248,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
         <div onMouseDown={(e) => { if (e.target === e.currentTarget && !isUploading) setIsModalOpen(false); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div
             className={`w-full max-w-md border rounded-2xl p-5 shadow-2xl ${
-              isDark ? 'bg-[#2f2f2f] border-[#424242]' : 'bg-white border-zinc-300'
+              isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-white border-zinc-300'
             }`}
           >
             <div className="flex items-center justify-between pb-3 border-b border-inherit">
@@ -283,8 +283,8 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
                   isDragging
                     ? 'border-lime-400 bg-lime-500/10'
                     : selectedFile
-                    ? 'border-zinc-500 bg-[#121319]'
-                    : 'border-[#262837] bg-[#171717] hover:border-zinc-500'
+                    ? 'border-zinc-500 bg-[#0E0E10]'
+                    : 'border-[#26272B] bg-[#111113] hover:border-zinc-500'
                 }`}
               >
                 {selectedFile ? (
@@ -320,7 +320,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
                   onChange={(e) => setCategory(e.target.value)}
                   placeholder="Kuliah, Tugas, dll..."
                   className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
-                    isDark ? 'bg-[#171717] border-[#424242] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
+                    isDark ? 'bg-[#111113] border-[#26272B] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}
                 />
               </div>
