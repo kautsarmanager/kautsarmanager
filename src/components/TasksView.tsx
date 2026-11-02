@@ -35,7 +35,8 @@ export const TasksView: React.FC<TasksViewProps> = ({
   const today = useToday(); // memicu render ulang saat hari berganti (status 'Hari Ini'/'Lewat Deadline' ikut segar)
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'completed'>('all');
+  // 'active' = daftar utama (hanya yang BELUM dicentang); 'history' = Riwayat (yang sudah selesai).
+  const [filterStatus, setFilterStatus] = useState<'active' | 'history'>('active');
   const [filterDeadline, setFilterDeadline] = useState<'all' | 'overdue' | 'today' | 'soon'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(initialCreateOpen);
@@ -55,6 +56,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
     setEditingTask(null);
     setTitle(''); setDescription(''); setCategory(''); setReminder('');
     setPriority('medium'); setDeadline(getLocalDateString());
+    setFilterStatus('active'); // tugas baru selalu muncul di daftar utama
     setIsModalOpen(true);
   };
 
@@ -63,22 +65,31 @@ export const TasksView: React.FC<TasksViewProps> = ({
 
   const categories = Array.from(new Set(tasks.map((t) => t.category).filter(Boolean)));
 
-  const filteredTasks = tasks.filter((t) => {
-    if (searchQuery.trim() && !t.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    if (filterCategory !== 'all' && t.category !== filterCategory) return false;
-    if (filterPriority !== 'all' && t.priority !== filterPriority) return false;
-    if (filterStatus === 'pending' && t.status === 'completed') return false;
-    if (filterStatus === 'completed' && t.status !== 'completed') return false;
+  const activeCount = tasks.filter((t) => t.status !== 'completed').length;
+  const historyCount = tasks.length - activeCount;
+  const hasActiveFilters = Boolean(searchQuery.trim()) || filterCategory !== 'all' || filterPriority !== 'all' || filterDeadline !== 'all';
 
-    if (filterDeadline !== 'all') {
-      const { urgency } = evaluateTaskUrgency(t);
-      if (filterDeadline === 'overdue' && urgency !== 'overdue') return false;
-      if (filterDeadline === 'today' && urgency !== 'today') return false;
-      if (filterDeadline === 'soon' && urgency !== 'tomorrow' && urgency !== 'soon') return false;
-    }
+  const filteredTasks = tasks
+    .filter((t) => {
+      if (searchQuery.trim() && !t.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (filterCategory !== 'all' && t.category !== filterCategory) return false;
+      if (filterPriority !== 'all' && t.priority !== filterPriority) return false;
+      // Tugas yang sudah dicentang hanya tampil di Riwayat; daftar utama hanya berisi yang belum selesai.
+      if (filterStatus === 'active' && t.status === 'completed') return false;
+      if (filterStatus === 'history' && t.status !== 'completed') return false;
 
-    return true;
-  });
+      // Filter deadline hanya relevan untuk tugas aktif.
+      if (filterStatus === 'active' && filterDeadline !== 'all') {
+        const { urgency } = evaluateTaskUrgency(t);
+        if (filterDeadline === 'overdue' && urgency !== 'overdue') return false;
+        if (filterDeadline === 'today' && urgency !== 'today') return false;
+        if (filterDeadline === 'soon' && urgency !== 'tomorrow' && urgency !== 'soon') return false;
+      }
+
+      return true;
+    })
+    // Riwayat: yang terakhir diselesaikan di paling atas (updated_at dicap saat dicentang).
+    .sort((a, b) => (filterStatus === 'history' ? Date.parse(b.updated_at) - Date.parse(a.updated_at) : 0));
 
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,7 +139,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
     dataService.toggleTaskStatus(task.id);
     if (onShowToast) {
       onShowToast(
-        isNowDone ? `Tugas "${task.title}" diselesaikan` : `Tugas "${task.title}" dibuka kembali`,
+        isNowDone ? `Tugas "${task.title}" selesai dan dipindah ke Riwayat` : `Tugas "${task.title}" dikembalikan ke daftar Tugas`,
         'success'
       );
     }
@@ -193,51 +204,39 @@ export const TasksView: React.FC<TasksViewProps> = ({
             />
           </div>
 
-          {/* Status Segmented Control */}
+          {/* Tampilan: Tugas (belum selesai) | Riwayat (sudah dicentang) */}
           <div
+            role="tablist"
+            aria-label="Tampilan tugas"
             className={`flex items-center p-0.5 rounded-lg border text-[11px] ${
               isDark ? 'bg-[#111113] border-[#26272B]' : 'bg-zinc-100 border-zinc-200'
             }`}
           >
-            <button
-              onClick={() => setFilterStatus('all')}
-              className={`px-2.5 py-1 rounded-md font-medium cursor-pointer transition-colors ${
-                filterStatus === 'all'
-                  ? isDark
-                    ? 'bg-[#26272B] text-white'
-                    : 'bg-white text-zinc-950 shadow-2xs'
-                  : 'text-zinc-400 hover:text-zinc-200'
-              }`}
-            >
-              Semua
-            </button>
-            <button
-              onClick={() => setFilterStatus('pending')}
-              className={`px-2.5 py-1 rounded-md font-medium cursor-pointer transition-colors ${
-                filterStatus === 'pending'
-                  ? isDark
-                    ? 'bg-[#26272B] text-white'
-                    : 'bg-white text-zinc-950 shadow-2xs'
-                  : 'text-zinc-400 hover:text-zinc-200'
-              }`}
-            >
-              Aktif
-            </button>
-            <button
-              onClick={() => setFilterStatus('completed')}
-              className={`px-2.5 py-1 rounded-md font-medium cursor-pointer transition-colors ${
-                filterStatus === 'completed'
-                  ? isDark
-                    ? 'bg-[#26272B] text-white'
-                    : 'bg-white text-zinc-950 shadow-2xs'
-                  : 'text-zinc-400 hover:text-zinc-200'
-              }`}
-            >
-              Selesai
-            </button>
+            {([
+              { id: 'active', label: 'Tugas', count: activeCount },
+              { id: 'history', label: 'Riwayat', count: historyCount },
+            ] as const).map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={filterStatus === tab.id}
+                onClick={() => setFilterStatus(tab.id)}
+                className={`px-2.5 py-1 rounded-md font-medium cursor-pointer transition-colors ${
+                  filterStatus === tab.id
+                    ? isDark
+                      ? 'bg-[#26272B] text-white'
+                      : 'bg-white text-zinc-950 shadow-2xs'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                {tab.label} <span className="font-mono opacity-70">({tab.count})</span>
+              </button>
+            ))}
           </div>
 
-          {/* Deadline Filter */}
+          {/* Deadline Filter (hanya untuk tugas aktif) */}
+          {filterStatus === 'active' && (
           <select
             value={filterDeadline}
             onChange={(e) => setFilterDeadline(e.target.value as 'all' | 'overdue' | 'today' | 'soon')}
@@ -252,6 +251,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
             <option value="today">⏰ Jatuh Tempo Hari Ini</option>
             <option value="soon">📅 Segera / Mendatang</option>
           </select>
+          )}
 
           {/* Category filter */}
           <select
@@ -301,19 +301,35 @@ export const TasksView: React.FC<TasksViewProps> = ({
               isDark ? 'border-[#26272B] bg-[#1A1B1E]' : 'border-zinc-300 bg-white'
             }`}
           >
-            <p className="text-zinc-400 text-xs">Tidak ada tugas yang sesuai filter.</p>
-            <button
-              onClick={() => {
-                setFilterCategory('all');
-                setFilterPriority('all');
-                setFilterStatus('all');
-                setFilterDeadline('all');
-                setSearchQuery('');
-              }}
-              className="mt-2 text-xs text-lime-400 hover:underline cursor-pointer"
-            >
-              Reset filter
-            </button>
+            <p className="text-zinc-400 text-xs">
+              {hasActiveFilters
+                ? 'Tidak ada tugas yang sesuai filter.'
+                : filterStatus === 'history'
+                  ? 'Belum ada riwayat. Tugas yang Anda centang selesai akan muncul di sini.'
+                  : historyCount > 0
+                    ? 'Tidak ada tugas aktif. Semua tugas sudah selesai dan tersimpan di Riwayat.'
+                    : 'Belum ada tugas. Tambahkan tugas pertama Anda.'}
+            </p>
+            {hasActiveFilters ? (
+              <button
+                onClick={() => {
+                  setFilterCategory('all');
+                  setFilterPriority('all');
+                  setFilterDeadline('all');
+                  setSearchQuery('');
+                }}
+                className="mt-2 text-xs text-lime-400 hover:underline cursor-pointer"
+              >
+                Reset filter
+              </button>
+            ) : filterStatus === 'active' && historyCount > 0 ? (
+              <button
+                onClick={() => setFilterStatus('history')}
+                className="mt-2 text-xs text-lime-400 hover:underline cursor-pointer"
+              >
+                Lihat Riwayat
+              </button>
+            ) : null}
           </div>
         ) : (
           filteredTasks.map((task) => {

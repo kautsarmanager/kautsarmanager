@@ -15,6 +15,12 @@ Tidak ada perubahan skema database. Tidak perlu menjalankan migrasi SQL baru.
 2. **Kolom kategori kosong** setiap kali "Catat Transaksi" dibuka (juga Tugas dan Upload File).
 3. **Perbaikan tanggal "hari ini" yang telat beberapa jam** (lihat di bawah).
 
+4. **Tugas selesai dipindah ke Riwayat.** Di halaman Tugas, filter "Semua/Aktif/Selesai" diganti dua tampilan:
+   **Tugas** (default, hanya yang belum dicentang) dan **Riwayat** (yang sudah dicentang, yang terakhir
+   diselesaikan di atas). Mencentang memindahkan tugas ke Riwayat; mencentang lagi di Riwayat mengembalikannya.
+   Jumlah ditampilkan di tiap tab, filter deadline hanya muncul di tampilan Tugas, dan menambah tugas baru
+   saat berada di Riwayat otomatis kembali ke tampilan Tugas.
+
 ## Perbaikan bug
 - **Tanggal/"Hari ini" basi.** Nilai tanggal dihitung sekali saat halaman dibuka, sehingga PWA yang dibiarkan
   terbuka melewati tengah malam tetap menganggap hari kemarin sebagai "hari ini" (form tanggal, cashflow,
