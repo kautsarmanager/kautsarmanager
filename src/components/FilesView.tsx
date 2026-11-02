@@ -16,7 +16,7 @@ import {
   FileUp,
 } from 'lucide-react';
 import { FileItem } from '../types';
-import { dataService } from '../services/dataService';
+import { dataService, ALLOWED_UPLOAD_EXTENSIONS } from '../services/dataService';
 
 interface FilesViewProps {
   files: FileItem[];
@@ -56,6 +56,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
         return <FileText className="w-4 h-4 text-blue-400" />;
       case 'pptx':
       case 'ppt':
+      case 'xlsx':
         return <FileSpreadsheet className="w-4 h-4 text-amber-400" />;
       case 'image':
       case 'png':
@@ -67,18 +68,28 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+  // Hanya format yang benar-benar diterima server/bucket yang boleh dipilih (dicek di sini agar pesannya jelas).
+  const ACCEPT_ATTR = Array.from(ALLOWED_UPLOAD_EXTENSIONS).map((ext) => `.${ext}`).join(',');
+  const ALLOWED_LABEL = Array.from(ALLOWED_UPLOAD_EXTENSIONS).map((ext) => ext.toUpperCase()).join(', ');
+  const pickFile = (file: File | undefined) => {
+    if (!file) return;
+    const ext = file.name.includes('.') ? file.name.split('.').pop()!.toLowerCase() : '';
+    if (!ALLOWED_UPLOAD_EXTENSIONS.has(ext)) {
+      onShowToast?.(`Format .${ext || '?'} tidak didukung. Gunakan: ${ALLOWED_LABEL}.`, 'error');
+      return;
     }
+    setSelectedFile(file);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    pickFile(e.target.files?.[0]);
+    e.target.value = ''; // izinkan memilih file yang sama lagi
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedFile(e.dataTransfer.files[0]);
-    }
+    pickFile(e.dataTransfer.files?.[0]);
   };
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
@@ -92,6 +103,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
         onShowToast(`File "${selectedFile.name}" berhasil diunggah`, 'success');
       }
       setSelectedFile(null);
+      setCategory('');
       setIsModalOpen(false);
     } catch (err) {
       console.error('Upload failed:', err);
@@ -128,13 +140,14 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
             Files & Materi
           </h1>
           <p className={`text-xs mt-0.5 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-            Dokumen, modul kuliah, dan tugas tersimpan di cloud storage.
+            Dokumen, materi, dan berkas penting tersimpan di cloud storage.
           </p>
         </div>
 
         <button
           onClick={() => {
             setSelectedFile(null);
+            setCategory(''); // kategori kosong setiap kali dialog dibuka
             setIsModalOpen(true);
           }}
           className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-xl bg-lime-600 hover:bg-lime-500 text-white shadow-xs shadow-lime-600/30 active:scale-[0.98] transition-all cursor-pointer"
@@ -267,7 +280,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 className="hidden"
-                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.zip"
+                accept={ACCEPT_ATTR}
               />
 
               {/* Drag & Drop Area */}
@@ -304,7 +317,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
                       Klik atau seret (*drag & drop*) file ke sini
                     </p>
                     <p className="text-[11px] text-zinc-500 mt-1 font-mono">
-                      PDF, DOCX, PPTX, JPG, PNG, ZIP
+                      PDF, DOCX, PPTX, XLSX, JPG, PNG, WEBP, TXT
                     </p>
                   </div>
                 )}
@@ -318,7 +331,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ files, isDark, onShowToast
                   type="text"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  placeholder="Kuliah, Tugas, dll..."
+                  placeholder="Contoh: Tugas, Catatan, Laporan (opsional)"
                   className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 focus:ring-lime-500 ${
                     isDark ? 'bg-[#111113] border-[#26272B] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                   }`}

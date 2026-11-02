@@ -138,7 +138,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className={`text-sm font-semibold tracking-tight ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
                 Manager
               </span>
-              <span className="block text-[10px] text-zinc-500 font-mono leading-none">v1.2</span>
+              <span className="block text-[10px] text-zinc-500 font-mono leading-none">v1.1.0</span>
             </div>
           </div>
           <button type="button" onClick={onToggleCollapsed}

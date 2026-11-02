@@ -1,4 +1,8 @@
 import { getLocalDateString } from '../utils/date';
+import {
+  AUTO_TIMEZONE, CURRENCY_OPTIONS, TIMEZONE_OPTIONS, normalizeTimezone, getTimezoneMismatch,
+  getUserPreferences, formatDateInUserTimezone,
+} from '../utils/preferences';
 import React, { useEffect, useState } from 'react';
 import {
   User,
@@ -10,7 +14,7 @@ import {
 import { UserProfile, UserAccount } from '../types';
 import { dataService } from '../services/dataService';
 import { PWAInstallButton } from './PWAInstallButton';
-import { KeyRound, Smartphone, LogOut, LockKeyhole } from 'lucide-react';
+import { KeyRound, Smartphone, LogOut, LockKeyhole, Globe } from 'lucide-react';
 import { authService } from '../services/authService';
 
 interface SettingsViewProps {
@@ -33,6 +37,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [pinConfigured, setPinConfigured] = useState(authService.hasPin());
   const [pinMessage, setPinMessage] = useState('');
   const [pinError, setPinError] = useState(false);
+  const [regionalSaved, setRegionalSaved] = useState('');
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 30000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const refreshPinStatus = () => setPinConfigured(authService.hasPin());
@@ -211,6 +221,66 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         </form>
       </div>
+
+      {/* Preferensi Regional: mata uang & zona waktu (menentukan "hari ini" di seluruh aplikasi) */}
+      {(() => {
+        const tzValue = normalizeTimezone(profile.timezone);
+        const tzOptions = TIMEZONE_OPTIONS.some((o) => o.value === tzValue)
+          ? TIMEZONE_OPTIONS : [{ value: tzValue, label: tzValue }, ...TIMEZONE_OPTIONS];
+        const currencyValue = profile.currency || 'IDR';
+        const currencyOptions = CURRENCY_OPTIONS.some((o) => o.value === currencyValue)
+          ? CURRENCY_OPTIONS : [{ value: currencyValue, label: currencyValue }, ...CURRENCY_OPTIONS];
+        const effectiveTz = getUserPreferences().timezone;
+        const tzInfo = getTimezoneMismatch();
+        const selectClass = `w-full rounded-lg border px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-lime-500 ${isDark ? 'bg-[#0E0E10] border-[#26272B] text-zinc-100' : 'bg-white border-zinc-300 text-zinc-900'}`;
+        const labelClass = `block text-[11px] font-semibold mb-1 ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`;
+        const save = (patch: Partial<UserProfile>) => { dataService.updateProfile(patch); setRegionalSaved('Tersimpan'); window.setTimeout(() => setRegionalSaved(''), 2000); };
+        return (
+          <div className={`p-5 rounded-2xl border transition-all ${isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-white border-[#e5e7ef] shadow-xs'}`}>
+            <div className={`flex items-center justify-between pb-3 mb-4 border-b ${isDark ? 'border-[#26272B]' : 'border-[#e8ebf2]'}`}>
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-lime-400" />
+                <h3 className={`text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Preferensi Regional</h3>
+              </div>
+              {regionalSaved && <span role="status" className="text-[11px] text-emerald-500">{regionalSaved}</span>}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div>
+                <label htmlFor="pref-currency" className={labelClass}>Mata Uang</label>
+                <select id="pref-currency" value={currencyValue} onChange={(e) => save({ currency: e.target.value })} className={selectClass}>
+                  {currencyOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+                <p className="mt-1 text-[10px] text-zinc-500">Hanya mengubah tampilan simbol/format; nominal tidak dikonversi.</p>
+              </div>
+              <div>
+                <label htmlFor="pref-timezone" className={labelClass}>Zona Waktu</label>
+                <select id="pref-timezone" value={tzValue} onChange={(e) => save({ timezone: e.target.value })} className={selectClass}>
+                  {tzOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+                <p className="mt-1 text-[10px] text-zinc-500">Menentukan kapan hari berganti untuk "Hari ini", transaksi, dan pengingat.</p>
+              </div>
+            </div>
+            <p className={`mt-3 text-[11px] ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+              Saat ini menurut aplikasi:{' '}
+              <span className="font-mono">
+                {formatDateInUserTimezone(now, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} ({effectiveTz})
+              </span>
+            </p>
+            {tzInfo.mismatch && (
+              <div role="alert" className="mt-3 p-3 rounded-xl border border-amber-500/40 bg-amber-500/10 text-[11px] text-amber-500">
+                <p>
+                  Zona waktu akun (<b>{tzInfo.profileTimezone}</b>) berbeda dengan perangkat Anda (<b>{tzInfo.deviceTimezone}</b>).
+                  Ini membuat tanggal "hari ini" bisa terlambat atau maju beberapa jam dibanding jam di perangkat.
+                </p>
+                <button type="button" onClick={() => save({ timezone: AUTO_TIMEZONE })}
+                  className="mt-2 px-3 py-1.5 rounded-lg bg-amber-500 text-black font-semibold hover:bg-amber-400 cursor-pointer">
+                  Ikuti zona waktu perangkat
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Account, Referral & PIN Security Section */}
       <div

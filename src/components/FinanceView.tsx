@@ -1,6 +1,8 @@
 import { formatCurrency } from '../utils/preferences';
-import { getLocalDateString } from '../utils/date';
-import React, { useMemo, useState } from 'react';
+import { shiftDateString } from '../utils/date';
+import { useToday } from '../hooks/useToday';
+import { compareChrono, mergeVisibleOrder } from '../utils/transactions';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   TrendingUp,
   TrendingDown,
@@ -10,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   SlidersHorizontal,
+  GripVertical,
   X,
 } from 'lucide-react';
 import { Transaction, TransactionType } from '../types';
@@ -21,28 +24,48 @@ interface FinanceViewProps {
   onShowToast?: (msg: string, type?: 'success' | 'info' | 'error') => void;
 }
 
+const LONG_PRESS_MS = 450;      // tahan selama ini sebelum catatan "terangkat"
+const MOVE_CANCEL_PX = 10;      // bergeser sebelum itu = pengguna sedang scroll, bukan drag
+const dayOfTx = (t: { transaction_date: string }) => String(t.transaction_date || '').slice(0, 10);
+
 export const FinanceView: React.FC<FinanceViewProps> = ({
   transactions,
   isDark,
   onShowToast,
 }) => {
+  // "Hari ini" selalu segar (zona waktu profil) dan memicu render ulang saat hari berganti.
+  const today = useToday();
+  const yesterday = shiftDateString(today, -1);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [sortMode, setSortMode] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
   const [cashflowPeriod, setCashflowPeriod] = useState<'today' | 'week' | 'month' | 'year' | 'all' | 'custom'>('today');
-  const [selectedDay, setSelectedDay] = useState<string>(getLocalDateString());
-  const [customStart, setCustomStart] = useState<string>(getLocalDateString());
-  const [customEnd, setCustomEnd] = useState<string>(getLocalDateString());
+  // null = "ikuti hari ini": otomatis pindah ke hari baru saat tengah malam, tidak tertinggal di kemarin.
+  const [dayOverride, setDayOverride] = useState<string | null>(null);
+  const [customStartRaw, setCustomStart] = useState<string | null>(null);
+  const [customEndRaw, setCustomEnd] = useState<string | null>(null);
+  const selectedDay = dayOverride ?? today;
+  const customStart = customStartRaw ?? today;
+  const customEnd = customEndRaw ?? today;
+  const setSelectedDay = (value: string) => setDayOverride(value === today ? null : value);
 
-  // Form State - all strictly empty by default
+  // Form State - selalu dikosongkan setiap kali modal dibuka (lihat openCreateModal)
   const [type, setType] = useState<TransactionType>('expense');
   const [amount, setAmount] = useState<string>('');
   const [category, setCategory] = useState<string>('');
   const [description, setDescription] = useState<string>('');
-  const [date, setDate] = useState<string>(getLocalDateString());
+  const [date, setDate] = useState<string>(today);
 
+  const openCreateModal = () => {
+    setType('expense');
+    setAmount('');
+    setCategory('');          // kategori TIDAK mewarisi isian transaksi sebelumnya
+    setDescription('');
+    setDate(today);           // tanggal diambil segar saat modal dibuka, bukan nilai saat halaman dimuat
+    setIsModalOpen(true);
+  };
 
-  const today = getLocalDateString();
   const dateFromLocal = (value: string) => new Date(`${value}T00:00:00`);
   const dateKey = (value: Date) => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
   const periodRange = useMemo(() => {
@@ -84,42 +107,207 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
     .reduce((acc, t) => acc + t.amount, 0);
   const dailyNet = dailyIncome - dailyExpense;
 
+  const formatDateAbs = (value: string) => dateFromLocal(value).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  // Label relatif: "Hari ini" hanya untuk tanggal yang benar-benar hari ini menurut zona waktu profil.
   const formatDateLong = (value: string) => {
     if (value === today) return 'Hari ini';
-    const parsed = dateFromLocal(value);
-    return parsed.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    if (value === yesterday) return 'Kemarin';
+    return formatDateAbs(value);
   };
   const formatPeriodLabel = () => {
-    if (cashflowPeriod === 'today') return selectedDay === today ? 'Hari ini' : formatDateLong(selectedDay);
+    if (cashflowPeriod === 'today') return formatDateLong(selectedDay);
     if (cashflowPeriod === 'all') return 'Sepanjang waktu';
     if (cashflowPeriod === 'custom') {
       const a = dateFromLocal(periodRange.start); const b = dateFromLocal(periodRange.end);
       const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long' };
       return periodRange.start === periodRange.end ? formatDateLong(periodRange.start) : a.getFullYear() === b.getFullYear() ? (a.getMonth() === b.getMonth() ? `${a.getDate()}–${b.getDate()} ${b.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}` : `${a.toLocaleDateString('id-ID', opts)} – ${b.toLocaleDateString('id-ID', { ...opts, year: 'numeric' })}`) : `${a.toLocaleDateString('id-ID', { ...opts, year: 'numeric' })} – ${b.toLocaleDateString('id-ID', { ...opts, year: 'numeric' })}`;
     }
-    if (cashflowPeriod === 'week') return `Pekan ${formatDateLong(periodRange.start)} – ${formatDateLong(periodRange.end)}`;
+    if (cashflowPeriod === 'week') return `Pekan ${formatDateAbs(periodRange.start)} – ${formatDateAbs(periodRange.end)}`;
     if (cashflowPeriod === 'month') return dateFromLocal(today).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-    if (cashflowPeriod === 'year') return dateFromLocal(today).getFullYear().toString();
-    const a = dateFromLocal(periodRange.start); const b = dateFromLocal(periodRange.end);
-    const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long' };
-    return a.getFullYear() === b.getFullYear()
-      ? (a.getMonth() === b.getMonth() ? `${a.getDate()}–${b.getDate()} ${b.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}` : `${a.toLocaleDateString('id-ID', opts)} – ${b.toLocaleDateString('id-ID', { ...opts, year: 'numeric' })}`)
-      : `${a.toLocaleDateString('id-ID', { ...opts, year: 'numeric' })} – ${b.toLocaleDateString('id-ID', { ...opts, year: 'numeric' })}`;
+    return dateFromLocal(today).getFullYear().toString();
   };
 
+  // Urutan waktu: tanggal, lalu urutan dalam hari (bisa diatur manual dengan geser). Mode nominal mengabaikan urutan manual.
   const filteredTransactions = useMemo(() => periodTransactions
     .filter((t) => filterType === 'all' || t.type === filterType)
     .sort((a, b) => {
-      const dateComparison = String(a.transaction_date || '').localeCompare(String(b.transaction_date || ''));
-      if (sortMode === 'newest') return -dateComparison || b.amount - a.amount;
-      if (sortMode === 'oldest') return dateComparison || b.amount - a.amount;
-      if (sortMode === 'highest') return b.amount - a.amount || -dateComparison;
-      return a.amount - b.amount || -dateComparison;
+      if (sortMode === 'newest') return compareChrono(b, a);
+      if (sortMode === 'oldest') return compareChrono(a, b);
+      if (sortMode === 'highest') return b.amount - a.amount || compareChrono(b, a);
+      return a.amount - b.amount || compareChrono(b, a);
     }), [periodTransactions, filterType, sortMode]);
 
   const selectedDayTransactions = periodTransactions.filter((t) => filterType === 'all' || t.type === filterType);
   const surfaceClass = isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-white border-[#e5e5e5]';
   const controlClass = isDark ? 'bg-[#0A0A0B] border-[#26272B] text-zinc-100' : 'bg-white border-zinc-200 text-zinc-800';
+
+  // ---------------------------------------------------------------------------
+  // Geser untuk mengubah urutan waktu (tekan lama lalu seret; Alt+↑/↓ di keyboard)
+  // ---------------------------------------------------------------------------
+  const canReorder = (sortMode === 'newest' || sortMode === 'oldest') && filteredTransactions.length > 1;
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOrder, setDragOrder] = useState<string[] | null>(null);
+  const draggingRef = useRef<string | null>(null);
+  const dragOrderRef = useRef<string[] | null>(null);
+  const pressRef = useRef<{ timer: number; id: string; x: number; y: number } | null>(null);
+  const pointerRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef(0);
+  // Data terbaru untuk listener window (dibuat sekali) agar tidak memakai nilai usang.
+  const latest = useRef({ filteredTransactions, transactions, sortMode, canReorder, onShowToast });
+  latest.current = { filteredTransactions, transactions, sortMode, canReorder, onShowToast };
+
+  const commitOrder = (draggedId: string, displayOrder: string[]) => {
+    const { transactions: all, sortMode: mode, onShowToast: toast } = latest.current;
+    const dragged = all.find((t) => t.id === draggedId);
+    if (!dragged) return;
+    const day = dayOfTx(dragged);
+    const byId = new Map(all.map((t) => [t.id, t] as const));
+    // Catatan hari itu yang terlihat (setelah filter), sesuai urutan tampilan baru -> kronologis naik.
+    const visibleDay = displayOrder.filter((id) => { const t = byId.get(id); return t && dayOfTx(t) === day; });
+    const visibleChrono = mode === 'newest' ? [...visibleDay].reverse() : visibleDay;
+    // Urutan lengkap hari itu (termasuk yang tersaring filter): yang tersaring tetap di slot-nya.
+    const fullChrono = all.filter((t) => dayOfTx(t) === day).sort(compareChrono).map((t) => t.id);
+    const result = mergeVisibleOrder(fullChrono, visibleChrono);
+    if (result.every((id, i) => id === fullChrono[i])) return;
+    const ok = dataService.reorderTransactions(result);
+    toast?.(ok ? 'Urutan waktu catatan diperbarui' : 'Urutan tidak dapat diubah', ok ? 'success' : 'error');
+  };
+
+  const stopLoop = () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); rafRef.current = 0; };
+
+  /** Bandingkan posisi pointer dengan baris di bawahnya; bila perlu, tukar posisi catatan yang sedang diseret. */
+  const applyHover = () => {
+    const activeId = draggingRef.current;
+    const current = dragOrderRef.current;
+    if (!activeId || !current) return;
+    const { x, y } = pointerRef.current;
+    // Hit-test geometris pada kotak tiap baris (bukan elementFromPoint): tetap akurat walau ada anak elemen meluap/menimpa.
+    const over = (Array.from(document.querySelectorAll('[data-tx-id]')) as HTMLElement[]).find((row) => {
+      const r = row.getBoundingClientRect();
+      return y >= r.top && y <= r.bottom && x >= r.left - 24 && x <= r.right + 24;
+    }) ?? null;
+    const overId = over?.dataset.txId;
+    if (!over || !overId || overId === activeId) return;
+    const from = current.indexOf(activeId);
+    const to = current.indexOf(overId);
+    const map = new Map(latest.current.transactions.map((t) => [t.id, t] as const));
+    const activeTx = map.get(activeId);
+    const overTx = map.get(overId);
+    // Hanya boleh bertukar di dalam hari yang sama (tanggal transaksi tidak diubah oleh fitur ini).
+    if (from < 0 || to < 0 || !activeTx || !overTx || dayOfTx(activeTx) !== dayOfTx(overTx)) return;
+    const rect = over.getBoundingClientRect();
+    // Histeresis: baru bertukar setelah melewati ±40% tinggi baris (mencegah berkedip).
+    const passed = to > from ? y >= rect.top + rect.height * 0.4 : y <= rect.bottom - rect.height * 0.4;
+    if (!passed) return;
+    const next = [...current];
+    next.splice(from, 1);
+    next.splice(to, 0, activeId);
+    dragOrderRef.current = next;
+    setDragOrder(next);
+  };
+
+  const dragLoop = () => {
+    if (!draggingRef.current) return;
+    const { y } = pointerRef.current;
+    // Gulir otomatis saat jari/kursor dekat tepi layar.
+    const edge = 90;
+    if (y < edge) window.scrollBy(0, -Math.ceil((edge - y) / 5));
+    else if (y > window.innerHeight - edge) window.scrollBy(0, Math.ceil((y - (window.innerHeight - edge)) / 5));
+    applyHover(); // juga saat layar bergulir sementara jari diam
+    rafRef.current = requestAnimationFrame(dragLoop);
+  };
+
+  const beginDrag = (id: string) => {
+    pressRef.current = null;
+    if (!latest.current.canReorder) return;
+    const order = latest.current.filteredTransactions.map((t) => t.id);
+    draggingRef.current = id;
+    dragOrderRef.current = order;
+    setDragOrder(order);
+    setDragId(id);
+    try { navigator.vibrate?.(25); } catch { /* tidak semua perangkat mendukung getar */ }
+    stopLoop();
+    rafRef.current = requestAnimationFrame(dragLoop);
+  };
+
+  const finishDrag = (commit: boolean) => {
+    if (pressRef.current) { window.clearTimeout(pressRef.current.timer); pressRef.current = null; }
+    const id = draggingRef.current;
+    if (!id) return;
+    const finalOrder = dragOrderRef.current;
+    draggingRef.current = null;
+    dragOrderRef.current = null;
+    stopLoop();
+    setDragId(null);
+    setDragOrder(null);
+    if (commit && finalOrder) commitOrder(id, finalOrder);
+  };
+
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      pointerRef.current = { x: e.clientX, y: e.clientY };
+      if (draggingRef.current) { applyHover(); return; } // respons langsung, tanpa menunggu frame animasi
+      const press = pressRef.current;
+      // Bergeser sebelum tahan lama selesai = pengguna sedang scroll: batalkan, jangan drag.
+      if (press && Math.hypot(e.clientX - press.x, e.clientY - press.y) > MOVE_CANCEL_PX) {
+        window.clearTimeout(press.timer);
+        pressRef.current = null;
+      }
+    };
+    const onUp = (e: PointerEvent) => {
+      pointerRef.current = { x: e.clientX, y: e.clientY };
+      if (draggingRef.current) applyHover(); // evaluasi terakhir tepat di titik lepas
+      finishDrag(true);
+    };
+    const onCancel = () => finishDrag(false);
+    // Saat drag aktif, cegah halaman ikut ter-scroll oleh sentuhan.
+    const onTouchMove = (e: TouchEvent) => { if (draggingRef.current) e.preventDefault(); };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onCancel);
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onCancel);
+      window.removeEventListener('touchmove', onTouchMove);
+      stopLoop();
+      if (pressRef.current) window.clearTimeout(pressRef.current.timer);
+    };
+  }, []);
+
+  // Pindah mode urut/filter saat drag = batalkan.
+  useEffect(() => { if (!canReorder) finishDrag(false); }, [canReorder]);
+
+  const startPress = (e: React.PointerEvent, tx: Transaction) => {
+    if (!canReorder) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if ((e.target as HTMLElement).closest('button, a, input, select, textarea')) return;
+    pointerRef.current = { x: e.clientX, y: e.clientY };
+    if (pressRef.current) window.clearTimeout(pressRef.current.timer);
+    pressRef.current = { id: tx.id, x: e.clientX, y: e.clientY, timer: window.setTimeout(() => beginDrag(tx.id), LONG_PRESS_MS) };
+  };
+
+  // Alternatif keyboard: Alt+↑ / Alt+↓ menggeser satu langkah (di tampilan) dalam hari yang sama.
+  const handleRowKeyDown = (e: React.KeyboardEvent, tx: Transaction) => {
+    if (!canReorder || !e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+    e.preventDefault();
+    const ids = filteredTransactions.map((t) => t.id);
+    const from = ids.indexOf(tx.id);
+    const to = from + (e.key === 'ArrowUp' ? -1 : 1);
+    const neighbor = filteredTransactions[to];
+    if (!neighbor || dayOfTx(neighbor) !== dayOfTx(tx)) { onShowToast?.('Urutan hanya dapat diubah di dalam hari yang sama.', 'info'); return; }
+    const next = [...ids];
+    next.splice(from, 1);
+    next.splice(to, 0, tx.id);
+    commitOrder(tx.id, next);
+  };
+
+  const displayedTransactions = useMemo(() => {
+    if (!dragOrder) return filteredTransactions;
+    const byId = new Map(filteredTransactions.map((t) => [t.id, t] as const));
+    return dragOrder.map((id) => byId.get(id)).filter((t): t is Transaction => Boolean(t));
+  }, [dragOrder, filteredTransactions]);
 
   const handleCreateTransaction = (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,6 +338,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
 
     setAmount('');
     setDescription('');
+    setCategory('');
     setIsModalOpen(false);
   };
 
@@ -175,7 +364,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
         </div>
 
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={openCreateModal}
           className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-xl bg-lime-600 hover:bg-lime-500 text-white shadow-xs shadow-lime-600/30 active:scale-[0.98] transition-all cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
@@ -237,11 +426,11 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
           </div>
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <div className="flex items-center gap-2 w-full sm:w-auto" aria-label="Pilih tanggal cashflow">
-              <button type="button" onClick={() => { const d = dateFromLocal(selectedDay); d.setDate(d.getDate() - 1); setSelectedDay(dateKey(d)); setCashflowPeriod('today'); }} aria-label="Hari sebelumnya" title="Hari sebelumnya" className={`h-10 w-10 shrink-0 rounded-lg border flex items-center justify-center ${isDark ? 'border-[#26272B] bg-[#0A0A0B] hover:bg-[#232428]' : 'border-zinc-200 bg-white hover:bg-zinc-100'}`}><ChevronLeft className="h-4 w-4" /></button>
+              <button type="button" onClick={() => { setSelectedDay(shiftDateString(selectedDay, -1)); setCashflowPeriod('today'); }} aria-label="Hari sebelumnya" title="Hari sebelumnya" className={`h-10 w-10 shrink-0 rounded-lg border flex items-center justify-center ${isDark ? 'border-[#26272B] bg-[#0A0A0B] hover:bg-[#232428]' : 'border-zinc-200 bg-white hover:bg-zinc-100'}`}><ChevronLeft className="h-4 w-4" /></button>
               <div className={`flex h-10 flex-1 sm:flex-none sm:w-[250px] min-w-0 items-center justify-center rounded-lg border px-3 text-center ${isDark ? 'border-[#26272B] bg-[#0A0A0B]' : 'border-zinc-200 bg-white'}`}>
-                <span className={`truncate text-xs font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-800'}`}>{selectedDay === today ? 'Hari ini' : formatDateLong(selectedDay)}</span>
+                <span className={`truncate text-xs font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-800'}`}>{formatDateLong(selectedDay)}</span>
               </div>
-              <button type="button" onClick={() => { const d = dateFromLocal(selectedDay); d.setDate(d.getDate() + 1); setSelectedDay(dateKey(d)); setCashflowPeriod('today'); }} aria-label="Hari berikutnya" title="Hari berikutnya" className={`h-10 w-10 shrink-0 rounded-lg border flex items-center justify-center ${isDark ? 'border-[#26272B] bg-[#0A0A0B] hover:bg-[#232428]' : 'border-zinc-200 bg-white hover:bg-zinc-100'}`}><ChevronRight className="h-4 w-4" /></button>
+              <button type="button" onClick={() => { setSelectedDay(shiftDateString(selectedDay, 1)); setCashflowPeriod('today'); }} aria-label="Hari berikutnya" title="Hari berikutnya" className={`h-10 w-10 shrink-0 rounded-lg border flex items-center justify-center ${isDark ? 'border-[#26272B] bg-[#0A0A0B] hover:bg-[#232428]' : 'border-zinc-200 bg-white hover:bg-zinc-100'}`}><ChevronRight className="h-4 w-4" /></button>
               <label className={`relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border ${isDark ? 'border-[#26272B] bg-[#0A0A0B] hover:bg-[#232428]' : 'border-zinc-200 bg-white hover:bg-zinc-100'}`} title="Pilih tanggal tertentu" aria-label="Pilih tanggal tertentu">
                 <Calendar className="h-4 w-4 text-zinc-400" />
                 <input type="date" aria-label="Pilih tanggal cashflow" value={selectedDay} onChange={(e) => { if (e.target.value) { setSelectedDay(e.target.value); setCashflowPeriod('today'); } }} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
@@ -263,7 +452,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
               <label htmlFor="cashflow-custom-end" className="mb-1 block text-xs text-zinc-500">Tanggal akhir</label>
               <input id="cashflow-custom-end" type="date" value={customEnd} min={customStart} onChange={(e) => e.target.value && setCustomEnd(e.target.value)} className={`w-full rounded-lg border p-2 text-sm ${isDark ? 'border-[#26272B] bg-[#1F2024] text-zinc-100' : 'border-zinc-300 bg-white text-zinc-900'}`} />
             </div>
-            <button type="button" onClick={() => { setCustomStart(today); setCustomEnd(today); setSelectedDay(today); setCashflowPeriod('today'); }} className={`rounded-lg px-3 py-2 text-xs font-medium ${isDark ? 'bg-[#232428] text-zinc-200' : 'bg-white text-zinc-700 border border-zinc-200'}`}>Kembali ke hari ini</button>
+            <button type="button" onClick={() => { setCustomStart(null); setCustomEnd(null); setDayOverride(null); setCashflowPeriod('today'); }} className={`rounded-lg px-3 py-2 text-xs font-medium ${isDark ? 'bg-[#232428] text-zinc-200' : 'bg-white text-zinc-700 border border-zinc-200'}`}>Kembali ke hari ini</button>
           </div>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
@@ -314,6 +503,15 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
         </div>
       </div>
 
+      {/* Petunjuk geser urutan */}
+      <p className="text-[11px] text-zinc-500 -mb-2 px-1">
+        {canReorder
+          ? 'Tahan lama pada sebuah catatan, lalu geser untuk mengubah urutan waktunya (di hari yang sama). Keyboard: Alt + ↑/↓.'
+          : sortMode === 'highest' || sortMode === 'lowest'
+            ? 'Urutan manual aktif saat diurutkan berdasarkan waktu (terbaru/terlama).'
+            : ''}
+      </p>
+
       {/* Transactions Table / List */}
       <div className="space-y-1.5">
         {filteredTransactions.length === 0 ? (
@@ -325,16 +523,32 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
             Belum ada transaksi pada kategori ini.
           </div>
         ) : (
-          filteredTransactions.map((tx) => (
+          displayedTransactions.map((tx, index) => {
+            const isDragging = dragId === tx.id;
+            const day = dayOfTx(tx);
+            const showDayHeader = cashflowPeriod !== 'today' && (index === 0 || dayOfTx(displayedTransactions[index - 1]) !== day);
+            return (
+            <React.Fragment key={tx.id}>
+            {showDayHeader && (
+              <p className={`pt-2 px-1 text-[11px] font-semibold ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{formatDateLong(day)}</p>
+            )}
             <div
-              key={tx.id}
-              className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
-                isDark
-                  ? 'bg-[#1A1B1E] border-[#26272B] hover:border-zinc-500'
-                  : 'bg-white border-zinc-200 hover:border-zinc-400 shadow-2xs'
-              }`}
+              data-tx-id={tx.id}
+              tabIndex={canReorder ? 0 : undefined}
+              onPointerDown={(e) => startPress(e, tx)}
+              onKeyDown={(e) => handleRowKeyDown(e, tx)}
+              onContextMenu={(e) => { if (draggingRef.current || pressRef.current) e.preventDefault(); }}
+              style={canReorder ? { WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' } : undefined}
+              className={`flex items-center justify-between p-3 rounded-xl border transition-all ${canReorder ? 'cursor-grab' : ''} ${
+                isDragging
+                  ? 'relative z-10 scale-[1.02] shadow-xl ring-2 ring-lime-400 cursor-grabbing'
+                  : isDark
+                    ? 'bg-[#1A1B1E] border-[#26272B] hover:border-zinc-500'
+                    : 'bg-white border-zinc-200 hover:border-zinc-400 shadow-2xs'
+              } ${isDragging ? (isDark ? 'bg-[#232428] border-[#26272B]' : 'bg-white border-zinc-300') : ''}`}
             >
               <div className="flex items-center gap-3 min-w-0">
+                {canReorder && <GripVertical aria-hidden="true" className="w-4 h-4 shrink-0 text-zinc-500" />}
                 <div
                   className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border ${
                     tx.type === 'income'
@@ -353,7 +567,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                     {tx.description}
                   </p>
                   <p className="text-[11px] font-mono text-zinc-500 mt-0.5">
-                    {tx.category} • {((tx.transaction_date || '').slice(0, 10) === today) ? 'Hari ini' : formatDateLong(String(tx.transaction_date || '').slice(0, 10))}
+                    {tx.category || 'Tanpa kategori'} • {formatDateLong(day)}
                   </p>
                 </div>
               </div>
@@ -368,13 +582,16 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                 </span>
                 <button
                   onClick={() => handleDelete(tx)}
+                  aria-label="Hapus catatan"
                   className="p-1 text-zinc-500 hover:text-rose-400 rounded-md hover:bg-zinc-800/50 transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
-          ))
+            </React.Fragment>
+            );
+          })
         )}
       </div>
 
@@ -478,9 +695,18 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-400 mb-1">
-                    Tanggal
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-medium text-zinc-400">Tanggal</label>
+                    <button
+                      type="button"
+                      onClick={() => setDate(today)}
+                      className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors cursor-pointer ${
+                        isDark ? 'border-[#26272B] text-zinc-400 hover:text-zinc-100' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-100'
+                      }`}
+                    >
+                      Hari ini
+                    </button>
+                  </div>
                   <input
                     type="date"
                     required
@@ -490,6 +716,9 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
                       isDark ? 'bg-[#0A0A0B] border-[#26272B] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}
                   />
+                  <p className={`mt-1 text-[10px] ${date === today ? 'text-emerald-500' : 'text-amber-500'}`}>
+                    {date === today ? 'Hari ini' : `${date === yesterday ? 'Kemarin' : 'Bukan hari ini'} · hari ini: ${today}`}
+                  </p>
                 </div>
               </div>
 

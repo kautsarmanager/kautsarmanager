@@ -11,6 +11,7 @@ import {
 import { dataService } from '../services/dataService';
 import type { NavTab } from './Sidebar';
 import { Task, Transaction, FileItem, WishlistItem } from '../types';
+import { wishlistPercent } from '../utils/wishlist';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
@@ -84,8 +85,8 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ketik pencarian (contoh: 'matdis', 'laporan', 'laptop')..."
-            className="flex-1 bg-transparent text-xs text-zinc-100 placeholder-zinc-500 focus:outline-hidden"
+            placeholder="Cari tugas, transaksi, file, atau wishlist..."
+            className={`flex-1 bg-transparent text-xs placeholder-zinc-500 focus:outline-hidden ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}
           />
           {query && (
             <button
@@ -135,7 +136,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                         }`}
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium truncate text-zinc-200">{t.title}</p>
+                          <p className={`font-medium truncate ${isDark ? 'text-zinc-200' : 'text-zinc-800'}`}>{t.title}</p>
                           <p className="text-[10px] text-zinc-500 font-mono">
                             {t.category} • Deadline: {t.deadline}
                           </p>
@@ -167,7 +168,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                         }`}
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium truncate text-zinc-200">{tx.description}</p>
+                          <p className={`font-medium truncate ${isDark ? 'text-zinc-200' : 'text-zinc-800'}`}>{tx.description}</p>
                           <p className="text-[10px] text-zinc-500 font-mono">
                             {tx.category} • {tx.transaction_date}
                           </p>
@@ -203,7 +204,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                         }`}
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium truncate text-zinc-200">{f.name}</p>
+                          <p className={`font-medium truncate ${isDark ? 'text-zinc-200' : 'text-zinc-800'}`}>{f.name}</p>
                           <p className="text-[10px] text-zinc-500 font-mono">{f.category}</p>
                         </div>
                         <span className="text-[9px] font-mono uppercase px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-400 ml-2">
@@ -233,13 +234,13 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                         }`}
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium truncate text-zinc-200">{w.name}</p>
+                          <p className={`font-medium truncate ${isDark ? 'text-zinc-200' : 'text-zinc-800'}`}>{w.name}</p>
                           <p className="text-[10px] text-zinc-500 font-mono">
                             Target: {formatCurrency(w.target_price)}
                           </p>
                         </div>
                         <span className="text-xs font-mono font-bold text-lime-400 ml-2">
-                          {Math.min(100, Math.round((w.saved_amount / (w.target_price || 1)) * 100))}%
+                          {wishlistPercent(w)}%
                         </span>
                       </div>
                     ))}

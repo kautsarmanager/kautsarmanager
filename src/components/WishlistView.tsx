@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { WishlistItem, WishlistSubTarget } from '../types';
 import { dataService } from '../services/dataService';
+import { wishlistPercent } from '../utils/wishlist';
 
 interface WishlistViewProps {
   wishlist: WishlistItem[];
@@ -147,7 +148,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
           </div>
         ) : (
           wishlist.map((item) => {
-            const pct = item.target_price > 0 ? Math.min(100, Math.round((item.saved_amount / item.target_price) * 100)) : 0;
+            const pct = wishlistPercent(item);
             const isCompleted = item.completed || pct >= 100;
             const remaining = Math.max(0, item.target_price - item.saved_amount);
 
@@ -442,7 +443,7 @@ export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, isDark, on
                     type="text"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    placeholder="Elektronik, Kuliah..."
+                    placeholder="Elektronik, Liburan..."
                     className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden ${
                       isDark ? 'bg-[#111113] border-[#26272B] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}

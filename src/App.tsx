@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Sidebar, NavTab } from './components/Sidebar';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
@@ -21,6 +21,8 @@ import { AppLockScreen } from './components/AppLockScreen';
 import { dataService } from './services/dataService';
 import { notificationService } from './services/notificationService';
 import { authService } from './services/authService';
+import { useToday } from './hooks/useToday';
+import { getTimezoneMismatch } from './utils/preferences';
 import {
   UserProfile,
   DashboardSummary,
@@ -78,12 +80,33 @@ export default function App() {
     setToasts((prev) => [...prev.slice(-4), { id, title, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, type === 'error' ? 7000 : 2800);
+    }, type === 'error' ? 7000 : title.length > 60 ? 6000 : 2800);
   };
 
   const dismissToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
+
+  // "Hari ini" selalu segar (zona waktu profil). Ringkasan dashboard dihitung ulang saat hari berganti,
+  // supaya angka "hari ini" tidak tertinggal di hari kemarin bila aplikasi dibiarkan terbuka.
+  const today = useToday();
+  useEffect(() => {
+    setSummary(dataService.getDashboardSummary());
+  }, [today]);
+
+  // Banner pengingat deadline di dalam aplikasi (tidak butuh izin notifikasi browser).
+  useEffect(() => notificationService.onInAppNotification((title, body) => showToast(`${title} — ${body}`, 'info')), []);
+
+  // Peringatan sekali per sesi bila zona waktu akun berbeda dengan perangkat (penyebab tanggal "telat beberapa jam").
+  const tzWarnedRef = useRef(false);
+  useEffect(() => {
+    if (!currentUser || tzWarnedRef.current) return;
+    const info = getTimezoneMismatch();
+    if (info.mismatch) {
+      tzWarnedRef.current = true;
+      showToast(`Zona waktu akun (${info.profileTimezone}) berbeda dengan perangkat (${info.deviceTimezone}), sehingga tanggal "hari ini" bisa berbeda. Ubah di Pengaturan > Preferensi Regional.`, 'error');
+    }
+  }, [currentUser, profile.timezone]);
 
   // Restore the Supabase session before rendering the login screen.
   useEffect(() => {
@@ -180,8 +203,8 @@ export default function App() {
   // Flag "buka modal tugas" tidak boleh bertahan setelah pengguna pindah tab.
   useEffect(() => { if (activeTab !== 'tasks') setInitialTaskModalOpen(false); }, [activeTab]);
 
-  const handleLogout = async () => {
-    if (!window.confirm('Keluar dari akun sekarang?')) return;
+  const handleLogout = async (skipConfirm = false) => {
+    if (!skipConfirm && !window.confirm('Keluar dari akun sekarang?')) return;
     try {
       const { pending } = await dataService.prepareForSignOut();
       if (pending > 0 && !window.confirm(`${pending} perubahan belum tersinkron ke cloud dan hanya ada di perangkat ini. Keluar tetap akan menyimpannya di perangkat, tetapi tidak muncul di perangkat lain sampai Anda masuk lagi dan online. Lanjutkan keluar?`)) return;
@@ -232,7 +255,7 @@ export default function App() {
           onUnlocked={() => {
             setIsAppLocked(false);
           }}
-          onForgotPin={() => { void authService.logout(); }}
+          onForgotPin={() => { void handleLogout(true); }}
           isDark={isDark}
           onShowToast={showToast}
         />

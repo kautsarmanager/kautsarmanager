@@ -5,6 +5,7 @@ import { notificationService } from '../services/notificationService';
 import { NotificationPanel } from './NotificationPanel';
 import { PWAInstallButton } from './PWAInstallButton';
 import { formatDateInUserTimezone } from '../utils/preferences';
+import { useToday } from '../hooks/useToday';
 
 interface HeaderProps {
   onOpenSearch: () => void;
@@ -35,6 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [notificationOpen, setNotificationOpen] = useState(false);
 
+  useToday(); // render ulang saat hari berganti agar tanggal & jumlah pengingat tidak basi
   const todayFormatted = formatDateInUserTimezone(new Date(), { day: 'numeric', month: 'short', year: 'numeric' });
 
   const counts = notificationService.getUrgentCounts(tasks);

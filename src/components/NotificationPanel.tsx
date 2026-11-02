@@ -41,6 +41,9 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
     notificationService.getPermissionStatus()
   );
   const panelRef = useRef<HTMLDivElement>(null);
+  // markAsRead hanya mengubah penyimpanan; paksa render ulang agar status dibaca langsung terlihat.
+  const [, setReadVersion] = useState(0);
+  const bumpRead = () => setReadVersion((v) => v + 1);
 
   // Close when clicking outside or pressing Escape
   useEffect(() => {
@@ -102,7 +105,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
   const handleCompleteTask = (task: Task, e: React.MouseEvent) => {
     e.stopPropagation();
     dataService.toggleTaskStatus(task.id);
-    notificationService.markAsRead(task.id);
+    notificationService.markAsRead(task);
     notificationService.playChime('regular');
     if (onShowToast) {
       onShowToast(`Tugas "${task.title}" berhasil diselesaikan!`, 'success');
@@ -111,17 +114,19 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
 
   const handleMarkAsRead = (n: TaskDeadlineNotification, e: React.MouseEvent) => {
     e.stopPropagation();
-    notificationService.markAsRead(n.id);
+    notificationService.markAsRead(n.task);
+    bumpRead();
     if (onShowToast) onShowToast('Notifikasi ditandai sudah dibaca', 'info');
   };
 
   const handleMarkAllRead = () => {
     notificationService.markAllAsRead(tasks);
+    bumpRead();
     if (onShowToast) onShowToast('Semua notifikasi ditandai sudah dibaca', 'info');
   };
 
   const handleItemClick = (task: Task) => {
-    notificationService.markAsRead(task.id);
+    notificationService.markAsRead(task);
     onClose();
     onNavigateToTasks();
   };
@@ -322,7 +327,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
               <div
                 key={n.id}
                 onClick={() => handleItemClick(n.task)}
-                className={`p-2.5 rounded-xl border transition-all cursor-pointer group ${
+                className={`p-2.5 rounded-xl border transition-all cursor-pointer group ${n.isRead ? 'opacity-55' : ''} ${
                   n.urgency === 'overdue'
                     ? isDark
                       ? 'bg-rose-500/5 border-rose-500/20 hover:border-rose-500/40'

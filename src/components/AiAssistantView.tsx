@@ -15,6 +15,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { dataService } from '../services/dataService';
+import { wishlistPercent } from '../utils/wishlist';
 import { Task, Transaction, WishlistItem, FileItem, DashboardSummary, UserProfile } from '../types';
 
 interface Message {
@@ -27,6 +28,14 @@ interface Message {
 interface AiAssistantViewProps {
   isDark: boolean;
 }
+
+/** Merender **teks tebal** sebagai <strong> (sebelumnya tanda bintang tampil mentah). */
+const renderRich = (text: string): React.ReactNode[] =>
+  text.split(/(\*\*[^*\n]+\*\*)/g).map((part, index) =>
+    part.length > 4 && part.startsWith('**') && part.endsWith('**')
+      ? <strong key={index} className="font-semibold">{part.slice(2, -2)}</strong>
+      : <React.Fragment key={index}>{part}</React.Fragment>
+  );
 
 export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
   const [messages, setMessages] = useState<Message[]>([
@@ -62,7 +71,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
     },
     {
       id: 'files',
-      label: 'Cek Dokumen & File Kuliah',
+      label: 'Cek Dokumen & File',
       icon: FolderArchive,
       color: 'text-sky-400',
     },
@@ -147,7 +156,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
 
       let res = `🎯 **Progres Tabungan Wishlist (Rata-rata: ${summary.wishlist_progress_average}%):**\n\n`;
       wishlist.forEach((w, i) => {
-        const pct = Math.min(100, Math.round((w.saved_amount / (w.target_price || 1)) * 100));
+        const pct = wishlistPercent(w);
         const sisa = Math.max(0, w.target_price - w.saved_amount);
         res += `${i + 1}. **${w.name}** [${pct}%]\n`;
         res += `   • Terkumpul: ${formatCurrency(w.saved_amount)} / ${formatCurrency(w.target_price)}\n`;
@@ -184,7 +193,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
     if (isLoading) return;
 
     const userMsg: Message = {
-      id: `u-${Date.now()}`,
+      id: `u-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       sender: 'user',
       text: action.label,
       timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
@@ -196,7 +205,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
     setTimeout(() => {
       const responseText = generateAnswer(action.id);
       const assistantMsg: Message = {
-        id: `a-${Date.now()}`,
+        id: `a-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         sender: 'assistant',
         text: responseText,
         timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
@@ -285,7 +294,7 @@ export const AiAssistantView: React.FC<AiAssistantViewProps> = ({ isDark }) => {
                 }`}
               >
                 <div className="leading-relaxed whitespace-pre-line text-xs font-sans">
-                  {m.text}
+                  {renderRich(m.text)}
                 </div>
                 <div
                   className={`text-[10px] mt-2 font-mono text-right ${

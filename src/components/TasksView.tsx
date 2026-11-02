@@ -1,4 +1,5 @@
-import { getLocalDateString } from '../utils/date';
+import { getLocalDateString, shiftDateString } from '../utils/date';
+import { useToday } from '../hooks/useToday';
 import React, { useEffect, useState } from 'react';
 import {
   Plus,
@@ -31,6 +32,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
   isDark,
   onShowToast,
 }) => {
+  const today = useToday(); // memicu render ulang saat hari berganti (status 'Hari Ini'/'Lewat Deadline' ikut segar)
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'completed'>('all');
@@ -48,8 +50,16 @@ export const TasksView: React.FC<TasksViewProps> = ({
   const [category, setCategory] = useState('');
   const [reminder, setReminder] = useState('');
 
+  // Membuka form "tambah" selalu mulai dari kondisi bersih: bukan mode edit, kategori kosong, tanggal = hari ini.
+  const openCreate = () => {
+    setEditingTask(null);
+    setTitle(''); setDescription(''); setCategory(''); setReminder('');
+    setPriority('medium'); setDeadline(getLocalDateString());
+    setIsModalOpen(true);
+  };
+
   // Quick-add dari Header saat tab Tugas sudah terbuka harus tetap membuka modal.
-  useEffect(() => { if (initialCreateOpen) setIsModalOpen(true); }, [initialCreateOpen]);
+  useEffect(() => { if (initialCreateOpen) openCreate(); }, [initialCreateOpen]);
 
   const categories = Array.from(new Set(tasks.map((t) => t.category).filter(Boolean)));
 
@@ -91,11 +101,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
       onShowToast?.(`Tugas "${title.trim()}" dengan deadline berhasil dibuat`, 'success');
     }
 
-    setTitle('');
-    setDescription('');
-    setReminder('');
-    setEditingTask(null);
-    setIsModalOpen(false);
+    closeTaskModal();
   };
 
   const handleEdit = (task: Task, e: React.MouseEvent) => {
@@ -139,9 +145,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
 
   const setQuickDeadline = (days: number) => {
     // Tambah hari pada tanggal kalender (bukan +24 jam) agar aman saat pergantian DST/zona waktu.
-    const [y, m, day] = getLocalDateString().split('-').map(Number);
-    const d = new Date(Date.UTC(y, m - 1, day + days, 12));
-    setDeadline(d.toISOString().slice(0, 10));
+    setDeadline(shiftDateString(getLocalDateString(), days));
   };
 
   return (
@@ -158,7 +162,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
         </div>
 
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={openCreate}
           className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-xl bg-lime-600 hover:bg-lime-500 text-white shadow-xs shadow-lime-600/30 active:scale-[0.98] transition-all cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
@@ -466,7 +470,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
 
       {/* Modal Tambah Tugas */}
       {isModalOpen && (
-        <div onMouseDown={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div onMouseDown={(e) => { if (e.target === e.currentTarget) closeTaskModal(); }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div
             className={`w-full max-w-md border rounded-2xl p-5 shadow-2xl ${
               isDark ? 'bg-[#1A1B1E] border-[#26272B]' : 'bg-white border-zinc-300'
@@ -478,7 +482,9 @@ export const TasksView: React.FC<TasksViewProps> = ({
                 <h2 className="text-sm font-semibold">{editingTask ? 'Edit Tugas & Pengingat' : 'Tambah Tugas & Pengingat'}</h2>
               </div>
               <button
-                onClick={() => setIsModalOpen(false)}
+                type="button"
+                onClick={closeTaskModal}
+                aria-label="Tutup"
                 className="text-zinc-500 hover:text-zinc-300 cursor-pointer"
               >
                 <X className="w-4 h-4" />
@@ -597,7 +603,7 @@ export const TasksView: React.FC<TasksViewProps> = ({
                     type="text"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    placeholder="Kuliah, Kerja..."
+                    placeholder="Contoh: Pekerjaan, Pribadi... (opsional)"
                     className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden ${
                       isDark ? 'bg-[#111113] border-[#26272B] text-zinc-100' : 'bg-zinc-50 border-zinc-200 text-zinc-900'
                     }`}

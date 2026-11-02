@@ -1,5 +1,7 @@
 import { formatCurrency } from '../utils/preferences';
-import { getLocalDateString } from '../utils/date';
+import { getLocalTimeString } from '../utils/date';
+import { useToday } from '../hooks/useToday';
+import { wishlistPercent } from '../utils/wishlist';
 import React, { useState } from 'react';
 import {
   CheckCircle2,
@@ -65,8 +67,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 }) => {
   const [taskTab, setTaskTab] = useState<'today' | 'urgent' | 'all' | 'completed'>('today');
 
-  const todayStr = getLocalDateString();
-  const currentHour = new Date().getHours();
+  const todayStr = useToday(); // segar saat hari berganti (zona waktu profil)
+  const currentHour = Number(getLocalTimeString().slice(0, 2)); // jam menurut zona waktu profil, bukan jam perangkat
   const greeting =
     currentHour < 11
       ? 'Selamat Pagi'
@@ -530,10 +532,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {wishlist[0].name}
                   </span>
                   <span className="font-mono text-lime-400 font-bold text-xs">
-                    {Math.min(
-                      100,
-                      Math.round((wishlist[0].saved_amount / (wishlist[0].target_price || 1)) * 100)
-                    )}
+                    {wishlistPercent(wishlist[0])}
                     %
                   </span>
                 </div>
@@ -546,10 +545,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <div
                     className="h-full bg-lime-500 rounded-full transition-all duration-300"
                     style={{
-                      width: `${Math.min(
-                        100,
-                        Math.round((wishlist[0].saved_amount / (wishlist[0].target_price || 1)) * 100)
-                      )}%`,
+                      width: `${wishlistPercent(wishlist[0])}%`,
                     }}
                   />
                 </div>
@@ -571,7 +567,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           >
             <div className="flex items-center justify-between mb-2.5">
               <h2 className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-zinc-200' : 'text-zinc-800'}`}>
-                Dokumen Kuliah
+                Dokumen Terbaru
               </h2>
               <button
                 onClick={() => onNavigate('files')}

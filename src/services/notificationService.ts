@@ -1,5 +1,5 @@
 import { Task } from '../types';
-import { getLocalDateString } from '../utils/date';
+import { getLocalDateString, getLocalTimeString } from '../utils/date';
 
 export type DeadlineUrgency = 'overdue' | 'today' | 'tomorrow' | 'soon' | 'future';
 
@@ -175,7 +175,8 @@ class NotificationService {
 
   private saveReadState() {
     try {
-      localStorage.setItem(READ_STORAGE_KEY, JSON.stringify(Array.from(this.readIds)));
+      // Simpan maksimal 500 entri terbaru agar localStorage tidak membengkak.
+      localStorage.setItem(READ_STORAGE_KEY, JSON.stringify(Array.from(this.readIds).slice(-500)));
     } catch {}
   }
 
@@ -209,7 +210,7 @@ class NotificationService {
         urgencyLabel: label,
         formattedDate,
         reminderTime: task.reminder,
-        isRead: this.readIds.has(task.id),
+        isRead: this.readIds.has(this.readKey(task, urgency)),
         message,
       };
     });
@@ -257,18 +258,23 @@ class NotificationService {
   }
 
   /**
-   * Mark notification as read
+   * Kunci "sudah dibaca" = tugas + deadline + tingkat urgensi. Dengan begitu tugas yang diabaikan saat
+   * "Hari Ini" tetap memunculkan peringatan baru ketika berubah menjadi "Lewat Deadline", dan
+   * mengubah deadline otomatis mereset statusnya.
    */
-  public markAsRead(taskId: string) {
-    this.readIds.add(taskId);
+  private readKey(task: Task, urgency: DeadlineUrgency): string {
+    return `${task.id}|${task.deadline}|${urgency}`;
+  }
+
+  /** Tandai satu notifikasi (pada tingkat urgensinya saat ini) sudah dibaca. */
+  public markAsRead(task: Task) {
+    this.readIds.add(this.readKey(task, evaluateTaskUrgency(task).urgency));
     this.saveReadState();
   }
 
-  /**
-   * Mark all notifications as read
-   */
+  /** Tandai semua notifikasi saat ini sudah dibaca. */
   public markAllAsRead(tasks: Task[]) {
-    tasks.forEach((t) => this.readIds.add(t.id));
+    tasks.forEach((t) => this.readIds.add(this.readKey(t, evaluateTaskUrgency(t).urgency)));
     this.saveReadState();
   }
 
@@ -351,38 +357,25 @@ class NotificationService {
   /**
    * Send a browser native notification and dispatch in-app fallback
    */
-  public sendBrowserNotification(title: string, body: string, taskId?: string) {
-    // Always trigger in-app banner for guaranteed visibility on all devices
-    this.dispatchInApp(title, body);
-
-    if (!this.isNotificationSupported() || Notification.permission !== 'granted') {
-      return;
-    }
-
-    // Debounce native push per task
-    const now = Date.now();
-    if (taskId) {
-      const last = this.lastNotified[taskId] || 0;
-      if (now - last < 3 * 60 * 60 * 1000) {
-        return;
-      }
-      this.lastNotified[taskId] = now;
+  public sendBrowserNotification(title: string, body: string, dedupeKey?: string) {
+    // Debounce per kunci (mis. per tugas) agar tidak mengulang setiap menit.
+    if (dedupeKey) {
+      const now = Date.now();
+      const last = this.lastNotified[dedupeKey] || 0;
+      if (now - last < 3 * 60 * 60 * 1000) return;
+      this.lastNotified[dedupeKey] = now;
       this.saveNotifiedState();
     }
 
-    try {
-      const notif = new Notification(title, {
-        body,
-        icon: '/icon.svg',
-        tag: taskId || 'pms-deadline',
-      });
+    // Banner in-app selalu ditampilkan (tidak butuh izin browser; penting untuk iOS/Safari non-PWA).
+    this.dispatchInApp(title, body);
 
-      notif.onclick = () => {
-        window.focus();
-        notif.close();
-      };
+    if (!this.isNotificationSupported() || Notification.permission !== 'granted') return;
+    try {
+      const notif = new Notification(title, { body, icon: '/icon.svg', tag: dedupeKey || 'pms-deadline' });
+      notif.onclick = () => { window.focus(); notif.close(); };
     } catch {
-      // Fallback handled by dispatchInApp
+      // Banner in-app sudah tampil sebagai cadangan.
     }
   }
 
@@ -393,30 +386,27 @@ class NotificationService {
     triggeredCount: number;
     urgentTitles: string[];
   } {
+    const nowTime = getLocalTimeString(); // HH:MM menurut zona waktu profil
     const notifications = this.getNotifications(tasks);
-    const urgent = notifications.filter(
-      (n) => (n.urgency === 'overdue' || n.urgency === 'today') && !n.isRead
-    );
+    // Lewat deadline: langsung. Hari ini: bila ada jam pengingat, baru bunyi ketika jamnya tiba.
+    const urgent = notifications.filter((n) => {
+      if (n.isRead) return false;
+      if (n.urgency === 'overdue') return true;
+      if (n.urgency !== 'today') return false;
+      const at = (n.task.reminder || '').slice(0, 5);
+      return !at || at <= nowTime;
+    });
 
-    if (urgent.length === 0) {
-      return { triggeredCount: 0, urgentTitles: [] };
-    }
+    if (urgent.length === 0) return { triggeredCount: 0, urgentTitles: [] };
 
-    // If browser permission is granted, push notifications
-    if (this.isNotificationSupported() && Notification.permission === 'granted') {
-      urgent.slice(0, 3).forEach((n) => {
-        const title =
-          n.urgency === 'overdue'
-            ? `⚠️ Tugas Lewat Deadline: ${n.task.title}`
-            : `⏰ Deadline Hari Ini: ${n.task.title}`;
-        this.sendBrowserNotification(title, n.message, n.task.id);
-      });
-    }
+    urgent.slice(0, 3).forEach((n) => {
+      const title = n.urgency === 'overdue'
+        ? `⚠️ Tugas Lewat Deadline: ${n.task.title}`
+        : `⏰ Pengingat Tugas: ${n.task.title}`;
+      this.sendBrowserNotification(title, n.message, `${n.task.id}|${n.task.deadline}|${n.urgency}|${(n.task.reminder || '').slice(0, 5)}`);
+    });
 
-    return {
-      triggeredCount: urgent.length,
-      urgentTitles: urgent.map((u) => u.task.title),
-    };
+    return { triggeredCount: urgent.length, urgentTitles: urgent.map((u) => u.task.title) };
   }
 }
 

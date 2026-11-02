@@ -1,5 +1,7 @@
 import { formatCurrency } from '../utils/preferences';
 import { getLocalDateString } from '../utils/date';
+import { wishlistPercent } from '../utils/wishlist';
+import { compareChrono, redistributeTimestamps, timestampMs } from '../utils/transactions';
 import {
   Task,
   Transaction,
@@ -26,7 +28,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 const MAX_AMOUNT = 9_999_999_999_999; // batas numeric(15,2)
 const MAX_SYNC_ATTEMPTS = 10;
 const PERMANENT_ERROR_CODES = new Set(['22P02', '22003', '22007', '23502', '23503', '23514', '42501', 'PGRST204', 'PGRST102']);
-const ALLOWED_UPLOAD_EXTENSIONS = new Set(['pdf', 'png', 'jpg', 'jpeg', 'webp', 'txt', 'docx', 'pptx', 'xlsx']);
+export const ALLOWED_UPLOAD_EXTENSIONS = new Set(['pdf', 'png', 'jpg', 'jpeg', 'webp', 'txt', 'docx', 'pptx', 'xlsx']);
 
 interface OutboxEntry {
   queueId: string;
@@ -53,7 +55,7 @@ const EMPTY_PROFILE = (userId: string, username: string, email = ''): UserProfil
   name: username,
   email,
   currency: 'IDR',
-  timezone: 'Asia/Jakarta (WIB)',
+  timezone: 'auto', // 'auto' = ikuti zona waktu perangkat (mencegah tanggal "telat beberapa jam")
   theme: 'light',
   is_online: true,
   sync_status: 'pending',
@@ -225,7 +227,7 @@ class DataService {
       const byCreatedDesc = <T extends { created_at: string }>(a: T, b: T) => String(b.created_at).localeCompare(String(a.created_at));
       applyCloud<Task>(STORAGE_KEYS.TASKS, 'tasks', tasksRes.data as Task[] | null, byCreatedDesc, true);
       applyCloud<Transaction>(STORAGE_KEYS.TRANSACTIONS, 'transactions', txRes.data as Transaction[] | null,
-        (a, b) => String(b.transaction_date).localeCompare(String(a.transaction_date)) || byCreatedDesc(a, b), true);
+        (a, b) => compareChrono(b, a), true);
       // URL bertanda tangan dibuat saat file dibuka (getFileUrl); tidak dibuat massal tiap sinkronisasi.
       applyCloud<FileItem>(STORAGE_KEYS.FILES, 'files', filesRes.data as FileItem[] | null, byCreatedDesc, false);
       applyCloud<WishlistItem>(STORAGE_KEYS.WISHLIST, 'wishlist_items', wishlistRes.data as WishlistItem[] | null, byCreatedDesc, true);
@@ -315,7 +317,7 @@ class DataService {
       case 'profiles':
         return {
           id: userId, name: cleanText(source.name, 80, 'Pengguna'), email: cleanText(source.email, 320), currency: cleanText(source.currency, 8, 'IDR'),
-          timezone: cleanText(source.timezone, 64, 'Asia/Jakarta'), theme: source.theme === 'dark' ? 'dark' : 'light',
+          timezone: cleanText(source.timezone, 64, 'auto'), theme: source.theme === 'dark' ? 'dark' : 'light',
         };
       default: return null;
     }
@@ -563,6 +565,43 @@ class DataService {
     return newTx;
   }
 
+  /**
+   * Mengubah urutan WAKTU catatan dalam SATU hari (hasil geser/drag di Finance).
+   * `idsChronological` = id catatan hari itu, terlama -> terbaru, dalam urutan yang diinginkan.
+   * Nominal, tanggal, kategori tidak berubah; hanya `created_at` dibagi ulang (set stempel waktu yang sama,
+   * ditata ke urutan baru) sehingga tidak butuh kolom baru dan tetap tersinkron lewat jalur upsert biasa.
+   */
+  public reorderTransactions(idsChronological: string[]): boolean {
+    const list = this.getTransactions();
+    const byId = new Map(list.map((t) => [t.id, t] as const));
+    const items = idsChronological.map((id) => byId.get(id));
+    if (items.length < 2 || items.some((item) => !item)) return false;
+    const found = items as Transaction[];
+    const day = String(found[0].transaction_date).slice(0, 10);
+    if (found.some((item) => String(item.transaction_date).slice(0, 10) !== day)) return false;
+
+    const stamps = redistributeTimestamps(found.map((item) => item.created_at));
+    const now = new Date().toISOString();
+    const changed: Transaction[] = [];
+    found.forEach((item, index) => {
+      if (timestampMs(stamps[index]) === timestampMs(item.created_at)) return;
+      const updated: Transaction = { ...item, created_at: stamps[index], updated_at: now };
+      byId.set(item.id, updated);
+      changed.push(updated);
+    });
+    if (changed.length === 0) return false;
+
+    const next = list.map((t) => byId.get(t.id) as Transaction).sort((a, b) => compareChrono(b, a));
+    this.writeJson(this.key(STORAGE_KEYS.TRANSACTIONS), next);
+    this.logActivity('finance', 'Mengubah urutan waktu catatan keuangan', 'updated');
+    this.notify();
+    if (this.cloudWritesEnabled && supabase && this.activeUserId) {
+      changed.forEach((tx) => this.enqueueMutation({ table: 'transactions', operation: 'upsert', payload: tx }, false));
+      void this.flushOutbox();
+    }
+    return true;
+  }
+
   public deleteTransaction(id: string): boolean {
     const list = this.getTransactions();
     const item = list.find((t) => t.id === id);
@@ -648,7 +687,7 @@ class DataService {
       id: fileId,
       user_id: userId,
       name: cleanText(file.name, 255, safeName),
-      category: cleanText(category, 60, 'Kuliah'),
+      category: cleanText(category, 60, 'Umum'),
       storage_path: storagePath,
       file_type: ext,
       file_size: file.size,
@@ -897,14 +936,11 @@ class DataService {
 
     const balance = totalIncome - totalExpense;
 
-    let wishlistSumPct = 0;
-    if (wishlist.length > 0) {
-      wishlist.forEach((w) => {
-        const pct = Math.min(100, Math.round((w.saved_amount / (w.target_price || 1)) * 100));
-        wishlistSumPct += pct;
-      });
-      wishlistSumPct = Math.round(wishlistSumPct / wishlist.length);
-    }
+    // Rata-rata progres hanya dari target yang punya nominal (target 0 tidak ikut dihitung).
+    const withTarget = wishlist.filter((w) => w.target_price > 0);
+    const wishlistSumPct = withTarget.length > 0
+      ? Math.round(withTarget.reduce((sum, w) => sum + wishlistPercent(w), 0) / withTarget.length)
+      : 0;
 
     return {
       today_tasks_count: todayTasks.length,
