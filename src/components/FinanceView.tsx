@@ -506,7 +506,7 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
       {/* Petunjuk geser urutan */}
       <p className="text-[11px] text-zinc-500 -mb-2 px-1">
         {canReorder
-          ? 'Tahan lama pada sebuah catatan, lalu geser untuk mengubah urutan waktunya (di hari yang sama). Keyboard: Alt + ↑/↓.'
+          ? ''
           : sortMode === 'highest' || sortMode === 'lowest'
             ? 'Urutan manual aktif saat diurutkan berdasarkan waktu (terbaru/terlama).'
             : ''}
